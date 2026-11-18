@@ -76,7 +76,8 @@
         @media (prefers-reduced-motion: reduce) { #rv-gate *, #rv-gate { animation: none !important; } }
         @media (max-width: 420px) { #rv-gate .rv-card { padding: 34px 22px 22px; } #rv-gate .rv-lockup { width: 190px; } }
         .rv-ui { font-family: "Open Sans", system-ui, sans-serif; color: #1F3A4D; }
-        #rv-bar { position: fixed; right: 18px; bottom: 18px; z-index: 9000; display: flex; gap: 8px; }
+        #rv-bar { position: fixed; right: 18px; bottom: 18px; z-index: 9000; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; max-width: calc(100vw - 36px); }
+        body { padding-bottom: calc(var(--rv-bar-h, 50px) + 46px); }
         #rv-bar button { font: inherit; font-weight: 800; border: 0; border-radius: 40px; padding: 12px 18px; cursor: pointer; box-shadow: 0 6px 18px rgba(31,58,77,.25); }
         #rv-bar .add { background: #F2845C; color: #fff; }
         #rv-bar .add.on { background: #1F3A4D; }
@@ -130,7 +131,7 @@
         #rv-lockask button { font: inherit; font-weight: 700; border: 1px solid #E9E1D6; background: #fff; border-radius: 30px; padding: 8px 16px; cursor: pointer; }
         #rv-lockask button.main { background: #1F3A4D; border-color: #1F3A4D; color: #fff; }
         #rv-bar .all { font-weight: 800; text-decoration: none; border-radius: 40px; padding: 12px 18px; background: #1F3A4D; color: #fff; box-shadow: 0 6px 18px rgba(31,58,77,.25); white-space: nowrap; }
-        @media (max-width: 520px) { #rv-bar { left: 12px; right: 12px; bottom: 12px; justify-content: center; } #rv-bar button, #rv-bar .all { padding: 11px 13px; font-size: 14px; } }
+        @media (max-width: 520px) { #rv-bar { left: 8px; right: 8px; bottom: 10px; justify-content: center; gap: 6px; max-width: none; } #rv-bar button, #rv-bar .all { padding: 10px 11px; font-size: 13px; } #rv-bar .lg { display: none; } #rv-panel.rv-ui { bottom: calc(var(--rv-bar-h, 50px) + 20px); width: calc(100vw - 16px); right: 8px; border-radius: 0 0 16px 16px; } }
         #rv-banner { position: fixed; left: 50%; top: 72px; transform: translateX(-50%); z-index: 9000; background: #1F3A4D; color: #fff; padding: 10px 18px; border-radius: 40px; font-weight: 700; font-size: 15px; display: none; max-width: 92vw; text-align: center; }
         #rv-banner.show { display: block; }
         #rv-banner.off { background: #C0392B; }
@@ -153,11 +154,11 @@
         .rv-c time { font-size: 12px; opacity: .6; margin-left: 6px; }
         .rv-c p { margin: 3px 0 0; white-space: pre-wrap; }
         .rv-c.reply { margin-left: 16px; }
-        #rv-panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(380px, 92vw); z-index: 9050; background: #FFF8F0; border-left: 1px solid #E9E1D6; box-shadow: -10px 0 30px rgba(31,58,77,.18); transform: translateX(105%); transition: transform .2s; display: flex; flex-direction: column; }
+        #rv-panel { position: fixed; top: 0; right: 0; bottom: calc(var(--rv-bar-h, 50px) + 34px); border-bottom: 1px solid #E9E1D6; border-bottom-left-radius: 16px; overflow: hidden; width: min(380px, 92vw); z-index: 9050; background: #FFF8F0; border-left: 1px solid #E9E1D6; box-shadow: -10px 0 30px rgba(31,58,77,.18); transform: translateX(105%); transition: transform .2s; display: flex; flex-direction: column; }
         #rv-panel.open { transform: none; }
         #rv-panel header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: #1F3A4D; color: #fff; font-weight: 800; }
         #rv-panel header button { font: inherit; background: none; border: 0; color: #fff; font-size: 22px; cursor: pointer; }
-        #rv-panel .body { overflow: auto; padding: 10px 14px 90px; }
+        #rv-panel .body { overflow: auto; padding: 10px 14px 16px; }
         #rv-panel .grp { font-size: 12px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #2A9D8F; margin: 14px 0 6px; }
         #rv-panel .item { display: block; width: 100%; text-align: left; font: inherit; background: #fff; border: 1px solid #E9E1D6; border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
         #rv-panel .item.done { opacity: .5; }
@@ -273,7 +274,8 @@
     const banner = h('div', { id: 'rv-banner', class: 'rv-ui' });
     const panelBody = h('div', { class: 'body' });
     const panel = h('aside', { id: 'rv-panel', class: 'rv-ui' }, h('header', {}, h('span', {}, 'Comments'), h('button', { onclick: () => panel.classList.remove('open'), 'aria-label': 'Close' }, '×')), panelBody);
-    const addBtn = h('button', { class: 'add' }, 'Add comment');
+    const addLabel = () => ['Add', h('span', { class: 'lg' }, ' comment')];
+    const addBtn = h('button', { class: 'add' }, ...addLabel());
     const listBtn = h('button', { class: 'list' }, 'Comments');
     // The bottom bar's way out: Versions on the current workflow, the current workflow on an archive.
     const bottomNav = (CFG.nav && CFG.nav.bottom) || { label: '← All pages', href: './' };
@@ -520,7 +522,7 @@
         const open = items.filter((x) => !x.c.resolved).length;
         // Unread counts all threads this reader started or joined, on every page and version.
         const fresh = comments.filter((x) => !x.parent).reduce((n, x) => n + unreadIn(x), 0);
-        listBtn.replaceChildren(`Comments ${open}`, fresh ? h('span', { class: 'rv-new' }, `${fresh} new`) : '');
+        listBtn.replaceChildren(`Comments ${open}`, fresh ? h('span', { class: 'rv-new' }, `${fresh}`, h('span', { class: 'lg' }, ' new')) : '');
         // On arrival, say it in words, once per visit: a badge alone is easy to miss.
         if (fresh && !greeted && online) {
             greeted = true;
@@ -793,12 +795,14 @@
         placing = on;
         html.classList.toggle('rv-placing', on);
         addBtn.classList.toggle('on', on);
-        addBtn.textContent = on ? 'Cancel' : 'Add comment';
+        if (on) addBtn.textContent = 'Cancel'; else addBtn.replaceChildren(...addLabel());
         if (on) { closePop(); say('Tap the spot you want to comment on.'); } else offlineNote();
     };
 
     function startPins() {
         document.body.append(pins, banner, panel, bar);
+        // The Comments panel always ends above the tool bar, however many rows the bar takes (Adam: the bar covered the tools).
+        new ResizeObserver(() => html.style.setProperty('--rv-bar-h', bar.offsetHeight + 'px')).observe(bar);
         addBtn.addEventListener('click', () => setPlacing(!placing));
         listBtn.addEventListener('click', () => { closePop(); panel.classList.toggle('open'); });
         drawBtn.addEventListener('click', startDraw);
