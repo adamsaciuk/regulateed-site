@@ -215,8 +215,8 @@
         if (top) top.insertBefore(h('a', { class: 'rv-ui rv-toplink', href: CFG.nav.top.href }, CFG.nav.top.label), top.children[1] || null);
         if (CFG.archived) {
             document.body.prepend(h('div', { id: 'rv-archived', class: 'rv-ui' },
-                h('b', {}, `Archived: ${CFG.tag || CFG.title}`), ` frozen ${CFG.frozen || ''}. Comments here stay exactly where they were made. `,
-                h('a', { href: CFG.currentHref || 'index.html' }, 'Open the current workflow →')));
+                h('b', {}, `${CFG.tag || CFG.title}, as it was.`), ' Comments here stay exactly where they were made. ',
+                h('a', { href: CFG.currentHref || 'index.html' }, `Open Sprint ${CFG.currentSprint || ''}, the current workflow →`)));
         }
         if (CFG.page) startPins();
         else document.body.append(h('div', { id: 'rv-bar', class: 'rv-ui' }, lockBtn));
@@ -287,7 +287,7 @@
     const addLabel = () => ['Add', h('span', { class: 'lg' }, ' comment')];
     const addBtn = h('button', { class: 'add' }, ...addLabel());
     const listBtn = h('button', { class: 'list' }, 'Comments');
-    // The bottom bar's way out: Versions on the current workflow, the current workflow on an archive.
+    // The bottom bar's way out: Sprints on the current workflow, the current sprint on an earlier one.
     const bottomNav = (CFG.nav && CFG.nav.bottom) || { label: '← All pages', href: './' };
     const allBtn = h('a', { class: 'all', href: bottomNav.href }, bottomNav.label);
     const drawBtn = h('button', { class: 'draw' }, 'Draw');
@@ -527,8 +527,8 @@
         place(box, x, y);
     };
 
-    // Native comments are numbered 1, 2, 3; carried ones wear their version tag (v1).
-    const labelOf = (item, n) => (item.from ? String(item.from.tag).replace(/^.* (v\d+)$/, '$1') : String(n));
+    // Native comments are numbered 1, 2, 3; carried ones wear their sprint (S1).
+    const labelOf = (item, n) => (item.from ? 'S' + (item.from.sprint || String(item.from.tag).replace(/^Sprint (\d+).*$/, '$1')) : String(n));
     const numberedItems = () => {
         let n = 0;
         return placed().map((item) => ({ ...item, label: labelOf(item, item.from ? 0 : ++n) }));

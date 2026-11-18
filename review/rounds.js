@@ -116,7 +116,7 @@
     };
     const flashAt = (anchor) => {
         const p = RV.pointOf(anchor);
-        if (!p) { RV.say('That spot is not on this version of the page any more.'); setTimeout(() => RV.say(''), 3000); return; }
+        if (!p) { RV.say('That spot is not on this page any more.'); setTimeout(() => RV.say(''), 3000); return; }
         scrollTo({ top: Math.max(0, p.y - innerHeight / 3), behavior: 'smooth' });
         const ring = h('div', { class: 'rv-ring' });
         ring.style.left = p.x + 'px';
@@ -157,7 +157,7 @@
                     else location.href = (page === links().currentPage ? links().current : links()[page] || links().current || 'index.html') + '?spot=' + encodeURIComponent(arg) + '#' + s.route;
                 });
             }
-            case 'v1': return make('', 'Version 1', label || 'As it was in v1', () => { location.href = (links()['workflow@1'] || 'workflow-v1.html') + '#' + arg; });
+            case 'v1': return make('', 'Sprint 1', label || 'As it was', () => { location.href = (links()['workflow@1'] || 'workflow-v1.html') + '#' + arg; });
             case 'manual': return make('', '', label || 'The review manual', () => { location.href = links().manual || 'manual.html'; });
             case 'chat': return make('', '', label || 'Iris Chat', () => openPanel('iris'));
             case 'tracker': return make('ck-item', '', label || 'The sprint tracker', () => openTracker(null));
@@ -266,7 +266,7 @@
         body.replaceChildren();
         const it = openId && itemById(openId);
         if (!it) {
-            body.append(h('p', { class: 'rv-hint' }, 'Every comment is filed as an item in its sprint. We talk the items through, Adam decides, and the next version is built from them. ', chipFor('manual', '', 'How this works')));
+            body.append(h('p', { class: 'rv-hint' }, 'Every comment is filed as an item in its sprint. We talk the items through, Adam decides, and the next sprint is built from them. ', chipFor('manual', '', 'How this works')));
             for (const sp of tracker.sprints || []) {
                 const mine = tracker.items.filter((x) => String(x.sprint) === String(sp.n));
                 body.append(h('h3', { style: 'margin:16px 0 2px;font-size:18px' }, sp.title, h('span', { class: 'rv-pill ' + (sp.state === 'open' ? 'ok' : sp.state === 'demo' ? 'grey' : 'call'), style: 'margin-left:8px;vertical-align:2px' }, sp.state === 'talk-through' ? 'Talk-through' : sp.state)),
@@ -370,6 +370,9 @@
             const header = RV.panel.querySelector('header');
             header.firstChild.replaceWith(tabsEl);
             RV.panel.insertBefore(body, RV.panelBody.nextSibling);
+            // The bottom bar's Sprints button opens the Sprints tab.
+            const sprintsBtn = RV.bar.querySelector('.all[href="#sprints"]');
+            if (sprintsBtn) sprintsBtn.addEventListener('click', (ev) => { ev.preventDefault(); openTracker(null); });
             const list = RV.bar.querySelector('.list');
             list.addEventListener('click', () => { tab = 'comments'; openId = null; paint(); });
             list.after(irisBtn);
