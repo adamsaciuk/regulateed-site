@@ -80,6 +80,8 @@
         #rv-bar .add { background: #F2845C; color: #fff; }
         #rv-bar .add.on { background: #1F3A4D; }
         #rv-bar .list { background: #fff; color: #1F3A4D; }
+        #rv-bar .all { font-weight: 800; text-decoration: none; border-radius: 40px; padding: 12px 18px; background: #1F3A4D; color: #fff; box-shadow: 0 6px 18px rgba(31,58,77,.25); white-space: nowrap; }
+        @media (max-width: 520px) { #rv-bar { left: 12px; right: 12px; bottom: 12px; justify-content: center; } #rv-bar button, #rv-bar .all { padding: 11px 13px; font-size: 14px; } }
         #rv-banner { position: fixed; left: 50%; top: 72px; transform: translateX(-50%); z-index: 9000; background: #1F3A4D; color: #fff; padding: 10px 18px; border-radius: 40px; font-weight: 700; font-size: 15px; display: none; max-width: 92vw; text-align: center; }
         #rv-banner.show { display: block; }
         #rv-banner.off { background: #C0392B; }
@@ -200,7 +202,9 @@
     const panel = h('aside', { id: 'rv-panel', class: 'rv-ui' }, h('header', {}, h('span', {}, 'Comments'), h('button', { onclick: () => panel.classList.remove('open'), 'aria-label': 'Close' }, '×')), panelBody);
     const addBtn = h('button', { class: 'add' }, 'Add comment');
     const listBtn = h('button', { class: 'list' }, 'Comments');
-    const bar = h('div', { id: 'rv-bar', class: 'rv-ui' }, addBtn, listBtn);
+    // Every review page leads back to the list of review pages.
+    const allBtn = h('a', { class: 'all', href: './', title: 'All review pages' }, '← All pages');
+    const bar = h('div', { id: 'rv-bar', class: 'rv-ui' }, allBtn, addBtn, listBtn);
     let pop = null;
 
     const route = () => location.hash.replace(/^#\/?/, '');
