@@ -96,6 +96,21 @@
         .rv-file select.need { border-color: #E0524B; box-shadow: 0 0 0 3px rgba(224,82,75,.15); }
         .rv-file .rq { font-size: 13px; font-weight: 700; display: flex; gap: 6px; align-items: center; }
         .rv-file .rq input { width: 17px; height: 17px; accent-color: #8A6FB0; }
+        .rv-sp { display: flex; align-items: center; gap: 8px; font-size: 20px; margin: 2px 0 2px; }
+        .rv-cn { border: 1px solid #E9E1D6; border-left: 5px solid #2A9D8F; border-radius: 12px; background: #fff; margin-bottom: 8px; }
+        .rv-cn.demo { border-left-color: #8A97A1; }
+        .rv-cnh, .rv-tnh { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; width: 100%; text-align: left; font: inherit; background: none; border: 0; padding: 10px 12px; cursor: pointer; color: #1F3A4D; }
+        .rv-cnh b { font-size: 16px; } .rv-cnh .meta { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; font-size: 11.5px; }
+        .rv-tw, .tw { width: 14px; color: #2A9D8F; font-weight: 800; }
+        .rv-ci { padding: 0 10px 10px 22px; }
+        .rv-roll { background: #F7FBFA; border: 1px solid #CBE9E3; border-radius: 10px; padding: 6px 10px; margin-bottom: 8px; font-size: 13.5px; }
+        .rv-rolltitle { font-size: 12px; font-weight: 800; color: #1E7268; text-transform: uppercase; letter-spacing: .8px; margin: 2px 0; }
+        .rv-roll .rv-sec { margin: 6px 0 2px; font-size: 11px; } .rv-roll ul { margin: 0; padding-left: 18px; }
+        .rv-tn { border-left: 2px solid #E9E1D6; margin: 0 0 6px; } .rv-tn.open { border-left-color: #F2845C; }
+        .rv-tnh { padding: 7px 8px; font-size: 14px; } .rv-tnh b { font-size: 14.5px; } .rv-tnh .by { flex-basis: 100%; padding-left: 20px; font-size: 12px; color: #4A5E6D; }
+        .rv-talk { padding: 2px 6px 8px 18px; display: flex; flex-direction: column; gap: 6px; }
+        .rv-talk .rv-msg { max-width: 100%; } .rv-talk .rv-shot { width: 100%; border-radius: 8px; margin-top: 6px; cursor: zoom-in; }
+        .rv-state.ok { background: #DDF1EC; }
         .rv-hist { font: inherit; font-weight: 800; font-size: 14px; color: #4A5E6D; background: #F7F1E8; border: 1px solid #E9E1D6; border-radius: 12px; padding: 9px 12px; width: 100%; text-align: left; cursor: pointer; margin-top: 14px; }
     `;
 
@@ -169,7 +184,7 @@
             case 'item': { const ct = catById(arg); return make('ck-item', 'Category', label || (ct ? ct.title : arg), () => openCategory(ct ? ct.id : null)); }
             case 'research': return make('ck-research', 'Research', label || research[arg] || arg, () => goRoute('foundations/research/' + arg));
             case 'page': return make('', 'Page', label || RV.routeName(arg), () => goRoute(arg));
-            case 'thread': return make('', 'Thread', label || 'Open the thread', () => openThreadAnywhere(arg));
+            case 'thread': return make('', 'Thread', label || ((comments().find((x) => x.id === arg) || {}).title) || 'Open the thread', () => (comments().some((x) => x.id === arg) ? focusThread(arg) : openThreadAnywhere(arg)));
             case 'spot': {
                 const s = spotOf(arg);
                 const page = s.page || links().currentPage || 'workflow';
@@ -225,9 +240,10 @@
         const demo = liveCats().find((x) => x.demo);
         if (RV.CFG.page === 'demo' && demo) sel.value = demo.id;
         const rq = h('input', { type: 'checkbox' });
-        const el = h('div', { class: 'rv-file' }, h('label', {}, 'Category'), sel, h('label', { class: 'rq' }, rq, 'This is a research request'));
+        const title = h('input', { placeholder: 'Short title, for example: Reggie icons', maxlength: '80' });
+        const el = h('div', { class: 'rv-file' }, h('label', {}, 'Thread title'), title, h('label', {}, 'Category'), sel, h('label', { class: 'rq' }, rq, 'This is a research request'));
         sel.addEventListener('change', () => sel.classList.remove('need'));
-        return { el, value: () => sel.value, research: () => rq.checked, ask: () => { sel.classList.add('need'); sel.focus(); RV.say('Choose a category for this thread first.'); setTimeout(() => RV.say(''), 3000); } };
+        return { el, value: () => sel.value, title: () => title.value.trim(), research: () => rq.checked, ask: () => { sel.classList.add('need'); sel.focus(); RV.say('Choose a category for this thread first.'); setTimeout(() => RV.say(''), 3000); } };
     };
 
     // ------------------------------------------------------------------ panel tabs
@@ -236,7 +252,7 @@
     let irisBtn = null;
     let sprintBtn = null;
     const openPanel = (which) => { tab = which; RV.closePop(); RV.panel.classList.add('open'); paint(); };
-    const openCategory = (id) => { openCat = id; openPanel('sprint'); };
+    const openCategory = (id) => { openCat = null; if (id) openCats.add(id); openPanel('sprint'); };
     const paint = () => {
         const fresh = irisUnseen().length;
         // Comments nest under categories (Adam): the sprint and Iris Chat are the only tabs.
@@ -270,58 +286,116 @@
         return b;
     };
 
-    // ------------------------------------------------------------------ the sprint: categories, then threads
+    // ------------------------------------------------------------------ the sprint as one tree
+    // Adam: "it is a hierarchial context and discussion tracker". Sprint, then its categories, then each
+    // category's titled threads, then the thread's discussion and answers, all in one tree. A pin on the
+    // page opens its thread here, under its category.
+    const openCats = new Set();
+    const openThreads = new Set();
+    let focusId = null;
+    const titleOf = (c) => c.title || plain(c.text).split(/[.?!\n]/)[0].slice(0, 60) || 'Untitled thread';
+    const endThread = (c, resolved, outcome) => async () => {
+        try { await RV.api('POST', `/api/review/comments/${c.id}/resolve`, { resolved, outcome }); } catch { RV.say('That did not save; please try again shortly.'); }
+        await RV.sync();
+    };
+    const canWrite = (c) => !RV.isPaused() || c.page === 'demo';
+    const threadNode = (c) => {
+        const [st, k] = stateOf(c);
+        const fresh = RV.unreadIn(c);
+        const open = openThreads.has(c.id);
+        const node = h('div', { class: 'rv-tn' + (open ? ' open' : ''), 'data-thread': c.id });
+        const head = h('button', { class: 'rv-tnh', type: 'button' }, h('span', { class: 'tw' }, open ? '▾' : '▸'), h('b', {}, titleOf(c)),
+            h('span', { class: 'rv-n ' + k }, st), fresh ? h('span', { class: 'rv-new' }, `${fresh} new`) : null,
+            h('span', { class: 'by' }, `${c.name} · ${RV.repliesOf(c).length} repl${RV.repliesOf(c).length === 1 ? 'y' : 'ies'}`));
+        head.addEventListener('click', () => { if (open) openThreads.delete(c.id); else { openThreads.add(c.id); RV.markSeen(c.id); } paint(); });
+        node.append(head);
+        if (!open) return node;
+        const talk = h('div', { class: 'rv-talk' });
+        for (const m of [c, ...RV.repliesOf(c)]) {
+            talk.append(h('div', { class: 'rv-msg' + (m.role === 'iris' ? ' iris' : RV.mine(m) ? ' me' : '') },
+                h('div', { class: 'who' }, m.role === 'iris' ? 'Iris' : m.name, h('time', {}, when(m.created))), ...chips(m.text), m.image ? RV.shotOf(m.image) : null));
+        }
+        if (c.research) talk.append(h('div', { class: 'rv-state' }, h('b', {}, 'Research request: '), c.research.state === 'answered' && c.research.slug ? chipFor('research', c.research.slug) : c.research.state === 'progress' ? 'Iris is working on it; the answer comes back here.' : 'Iris will research it and answer here.'));
+        if (c.resolved) talk.append(h('div', { class: 'rv-state' + (c.outcome === 'noaction' ? '' : ' ok') }, h('b', {}, c.outcome === 'noaction' ? 'Closed with no action' : 'Resolved'), c.note ? ': ' + plain(c.note).slice(0, 240) : ''));
+        const where = h('button', { class: 'rv-chip', type: 'button' }, h('span', { class: 'k' }, 'Evidence'), 'Show it on the page');
+        where.addEventListener('click', (ev) => { ev.stopPropagation(); RV.panel.classList.remove('open'); if (!RV.openThread(c.id)) openThreadAnywhere(c.id); });
+        talk.append(h('div', { style: 'margin:6px 0' }, where));
+        if (canWrite(c)) {
+            const area = h('textarea', { placeholder: 'Reply in this thread', maxlength: '4000' });
+            const send = h('button', { class: 'main', type: 'button' }, 'Reply');
+            send.addEventListener('click', async () => {
+                const name = myName();
+                if (!name) { RV.say('Choose who you are first: add something to a category once.'); setTimeout(() => RV.say(''), 3000); return; }
+                if (!area.value.trim()) { area.focus(); return; }
+                send.disabled = true;
+                try { await RV.api('POST', '/api/review/comments', { page: c.page, version: c.version || '1', route: c.route, anchor: null, parent: c.id, name, text: area.value.trim() }); }
+                catch { RV.say('That did not send; please try again shortly.'); }
+                await RV.sync();
+            });
+            const ends = c.resolved
+                ? [h('button', { type: 'button', onclick: endThread(c, false) }, 'Reopen')]
+                : [h('button', { type: 'button', onclick: endThread(c, true, 'resolved'), title: 'Agreed: something changes' }, 'Resolved'), h('button', { type: 'button', onclick: endThread(c, true, 'noaction'), title: 'Discussed: nothing changes' }, 'No action')];
+            talk.append(h('div', { class: 'rv-compose' }, area, h('div', { class: 'row' }, h('span', { style: 'display:flex;gap:6px' }, ...ends), send)));
+        }
+        node.append(talk);
+        return node;
+    };
+    const categoryNode = (ct, list) => {
+        const n = counts(list);
+        const fresh = list.reduce((a, c) => a + RV.unreadIn(c), 0);
+        const open = openCats.has(ct.id);
+        const node = h('div', { class: 'rv-cn' + (ct.demo ? ' demo' : '') + (open ? ' open' : '') });
+        const head = h('button', { class: 'rv-cnh', type: 'button' }, h('span', { class: 'tw' }, open ? '▾' : '▸'), h('b', {}, ct.title),
+            h('span', { class: 'meta' }, h('span', { class: 'rv-n open' }, `${n.open + (n.rq || 0)} open`), h('span', { class: 'rv-n res' }, `${n.res} resolved`), n.na ? h('span', { class: 'rv-n na' }, `${n.na} no action`) : null, fresh ? h('span', { class: 'rv-new' }, `${fresh} new`) : null));
+        head.addEventListener('click', () => { if (open) openCats.delete(ct.id); else openCats.add(ct.id); paint(); });
+        node.append(head);
+        if (!open) return node;
+        const inner = h('div', { class: 'rv-ci' }, h('p', { class: 'rv-hint' }, ct.purpose || ''));
+        const sum = ct.summary || {};
+        const part = (title, items) => (items && items.length ? h('div', { class: 'rv-sumpart' }, h('div', { class: 'rv-sec' }, title), h('ul', { class: 'rv-sum' }, ...items.map((x) => h('li', {}, ...chips(x))))) : null);
+        const parts = [part('Actions', sum.actions), part('Findings', sum.findings), part('Agreements', sum.agreements)].filter(Boolean);
+        if (parts.length || (ct.research || []).length) inner.append(h('div', { class: 'rv-roll' }, h('div', { class: 'rv-rolltitle' }, 'What this category has so far'), ...parts,
+            (ct.research || []).length ? h('div', {}, h('div', { class: 'rv-sec' }, 'Research'), ...ct.research.map((r) => chipFor('research', r))) : null));
+        const sorted = list.slice().sort((a, b) => Number(a.resolved) - Number(b.resolved) || a.created.localeCompare(b.created));
+        for (const c of sorted) inner.append(threadNode(c));
+        if (!list.length) inner.append(h('p', { class: 'rv-hint' }, 'No threads yet.'));
+        inner.append(h('p', { class: 'rv-hint', style: 'margin-top:8px' }, 'Add to this category: tap Add to a category anywhere on the site, tap the evidence, and choose this category.'));
+        node.append(inner);
+        return node;
+    };
     const paintSprint = () => {
         body.replaceChildren();
         const sp = (tracker.sprints || []).find((x) => String(x.n) === current()) || { title: `Sprint ${current()}`, note: '' };
-        const ct = openCat && catById(openCat);
-        if (ct) { paintCategory(ct); return; }
-        body.append(h('h3', { style: 'margin:4px 0 2px;font-size:19px' }, sp.title, h('span', { class: 'rv-pill ok', style: 'margin-left:8px;vertical-align:2px' }, 'Open')),
-            h('p', { class: 'rv-hint' }, sp.note || '', ' ', chipFor('manual', '', 'How this works')));
-        const freshList = threadsIn(current()).filter((c) => RV.unreadIn(c));
-        if (freshList.length) { body.append(h('div', { class: 'rv-sec', style: 'color:#E0703F' }, 'New for you')); for (const c of freshList) body.append(threadRow(c)); }
-        for (const x of liveCats()) {
-            const list = threadsIn(current(), x.id);
-            const n = counts(list);
-            const fresh = list.reduce((a, c) => a + RV.unreadIn(c), 0);
-            const b = h('button', { class: 'rv-cat' + (x.demo ? ' demo' : ''), type: 'button' }, h('b', {}, x.title), h('div', { class: 'p' }, x.purpose || ''),
-                h('div', { class: 'meta' }, h('span', { class: 'rv-n open' }, `${n.open} open`), n.rq ? h('span', { class: 'rv-n rq' }, `${n.rq} research`) : null,
-                    h('span', { class: 'rv-n res' }, `${n.res} resolved`), h('span', { class: 'rv-n na' }, `${n.na} no action`), fresh ? h('span', { class: 'rv-new' }, `${fresh} new`) : null));
-            b.addEventListener('click', () => openCategory(x.id));
-            body.append(b);
-        }
+        body.append(h('div', { class: 'rv-sp' }, h('b', {}, sp.title), h('span', { class: 'rv-pill ok' }, 'Open')), h('p', { class: 'rv-hint' }, sp.note || '', ' ', chipFor('manual', '', 'How this works')));
+        for (const ct of liveCats()) body.append(categoryNode(ct, threadsIn(current(), ct.id)));
         const loose = threadsIn(current(), null);
-        if (loose.length) {
-            body.append(h('div', { class: 'rv-sec' }, 'Not filed yet'), h('p', { class: 'rv-hint' }, 'Iris attaches each of these to a category.'));
-            for (const c of loose) body.append(threadRow(c));
-        }
-        // Earlier sprints are history: reachable, out of the way.
+        if (loose.length) body.append(categoryNode({ id: '_loose', title: 'Not filed yet', purpose: 'Iris attaches each of these to a category.' }, loose));
         for (const old of (tracker.sprints || []).filter((x) => String(x.n) !== current())) {
             const t = h('button', { class: 'rv-hist', type: 'button' }, `${showHistory ? '▾' : '▸'} ${old.title} · history`);
             t.addEventListener('click', () => { showHistory = !showHistory; paint(); });
             body.append(t);
             if (!showHistory) continue;
             body.append(h('p', { class: 'rv-hint' }, old.note || ''), h('div', {}, chipFor('v1', '', 'Workflow as it was'), ' ', h('a', { class: 'rv-chip', href: links()['data-collection@1'] || 'data-collection.html' }, 'Data collection as it was')));
-            const done = threadsIn(String(old.n));
-            if (done.length) { body.append(h('div', { class: 'rv-sec' }, `Threads closed in ${old.title}`)); for (const c of done) body.append(threadRow(c)); }
+            for (const c of threadsIn(String(old.n))) body.append(threadNode(c));
+        }
+        if (focusId) {
+            const el = body.querySelector(`[data-thread="${focusId}"]`);
+            focusId = null;
+            if (el) setTimeout(() => el.scrollIntoView({ block: 'start', behavior: 'smooth' }), 60);
         }
     };
-    const paintCategory = (ct) => {
-        const back = h('button', { class: 'rv-back', type: 'button' }, `← Sprint ${current()}`);
-        back.addEventListener('click', () => { openCat = null; paint(); });
-        const list = threadsIn(String(ct.sprint), ct.id);
-        const sum = ct.summary || {};
-        const part = (title, items, empty) => [h('div', { class: 'rv-sec' }, title), items && items.length ? h('ul', { class: 'rv-box rv-sum', style: 'padding-left:28px' }, ...items.map((x) => h('li', {}, ...chips(x)))) : h('div', { class: 'rv-box' }, h('i', {}, empty))];
-        body.replaceChildren(back, h('h3', { style: 'margin:6px 0 2px;font-size:20px' }, ct.title), h('p', { class: 'rv-hint' }, ct.purpose || ''),
-            ...part('Actions', sum.actions, 'What will change, gathered as threads are resolved.'),
-            ...part('Findings', sum.findings, 'What we learned, from threads and research.'),
-            ...part('Agreements', sum.agreements, 'What we agreed, as threads close.'));
-        if ((ct.research || []).length) body.append(h('div', { class: 'rv-sec' }, 'Research'), h('div', {}, ...ct.research.map((r) => chipFor('research', r))));
-        body.append(h('div', { class: 'rv-sec' }, `Threads (${list.length})`));
-        if (!list.length) body.append(h('p', { class: 'rv-hint' }, 'No threads yet.'));
-        for (const c of list.sort((a, b) => Number(a.resolved) - Number(b.resolved) || a.created.localeCompare(b.created))) body.append(threadRow(c));
-        body.append(h('p', { class: 'rv-hint', style: 'margin-top:10px' }, 'To start a thread here: tap Add comment anywhere on the site, then choose this category. Its discussion stays in the thread, and its outcome rolls up here.'));
+    // Open a thread in the tree, under its category (a pin, a chip or a link).
+    const focusThread = (id) => {
+        const c = comments().find((x) => x.id === id);
+        if (!c) return;
+        openCats.add(filed(c) ? c.category : '_loose');
+        if (sprintOf(c) !== current()) showHistory = true;
+        openThreads.add(id);
+        RV.markSeen(id);
+        focusId = id;
+        openPanel('sprint');
     };
+    const paintCategory = () => {};
 
     // ------------------------------------------------------------------ Iris Chat: general chat with Iris
     const composer = (placeholder, send) => {
@@ -402,14 +476,14 @@
     const fromQuery = () => {
         const q = new URLSearchParams(location.search);
         const clean = () => history.replaceState(null, '', location.pathname + location.hash);
-        if (q.get('thread')) { if (RV.openThread(q.get('thread'))) clean(); }
+        if (q.get('thread')) { RV.openThread(q.get('thread')); focusThread(q.get('thread')); clean(); }
         else if (q.get('category') || q.get('item')) { openCategory((catById(q.get('category') || q.get('item')) || {}).id || null); clean(); }
         else if (q.get('chat')) { openPanel('iris'); clean(); }
         else if (q.get('spot')) { const s = spotOf(q.get('spot')); setTimeout(() => flashAt(s.anchor), 400); clean(); }
     };
 
     window.RVX = {
-        chips, plain, threadHead, listTag, categoryPicker,
+        chips, plain, threadHead, listTag, categoryPicker, focusThread: (id) => focusThread(id),
         openItem: (id) => openCategory((catById(id) || {}).id || null),
         // A live page shows only the current sprint's threads; an earlier sprint's page shows its own as they were.
         visible: (c) => (RV && RV.CFG.archived ? true : sprintOf(c) === current()),

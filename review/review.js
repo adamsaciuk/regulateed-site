@@ -332,7 +332,9 @@
                 await api('POST', '/api/review/comments', item);
                 setQueue(queue().slice(1));
             }
-            const pages = [...new Set([CFG.page, ...SOURCES.map((s) => s.page), 'chat', 'item'])];
+            // Every page loads every review page's threads, so the sprint tree is whole wherever it is opened.
+            const L = CFG.links || {};
+            const pages = [...new Set([CFG.page, ...SOURCES.map((s) => s.page), 'chat', L.currentPage, ...Object.keys(L).filter((k) => k.includes('@')).map((k) => k.split('@')[0]), ...Object.keys(L).filter((k) => !k.includes('@') && k !== 'current' && k !== 'currentPage')].filter(Boolean))];
             comments = (await api('GET', '/api/review/comments?' + pages.map((p) => 'page=' + encodeURIComponent(p)).join('&'))).comments;
             online = true;
         } catch {
@@ -476,7 +478,7 @@
             if (filing && !filing.value()) { filing.ask(); return; }
             localStorage.setItem(NAME_KEY, name);
             const item = { page: CFG.page, version: VERSION, route: route(), anchor, parent, name, text: area.value.trim(), image: image || null,
-                category: filing ? filing.value() : null, research: filing ? filing.research() : false };
+                category: filing ? filing.value() : null, title: filing && filing.title ? filing.title() : null, research: filing ? filing.research() : false };
             save.disabled = true;
             try {
                 await api('POST', '/api/review/comments', item);
@@ -552,7 +554,8 @@
             const pin = h('button', { class: 'rv-pin' + (from ? ' carried' : '') + (p.approx ? ' moved' : '') + (unreadIn(c) ? ' unread' : ''), 'data-id': c.id, title: `${from ? from.tag + ': ' : ''}${c.name}: ${plainOf(c.text).slice(0, 80)}` }, h('span', {}, label));
             pin.style.left = p.x + 'px';
             pin.style.top = p.y + 'px';
-            pin.addEventListener('click', (ev) => { ev.stopPropagation(); thread(c, p.x, p.y, from, p.approx); });
+            // The pin stays on its evidence and opens its thread in the sprint tree, under its category.
+            pin.addEventListener('click', (ev) => { ev.stopPropagation(); if (RVX().focusThread) RVX().focusThread(c.id); else thread(c, p.x, p.y, from, p.approx); });
             pins.append(pin);
         }
         for (const [i, q] of queue().entries()) {
@@ -593,8 +596,9 @@
             const pin = pins.querySelector(`[data-id="${c.id}"]`);
             const p = pointOf(anchor);
             if (p) scrollTo({ top: Math.max(0, p.y - innerHeight / 3), behavior: 'smooth' });
-            if (pin) { pin.classList.add('flash'); setTimeout(() => pin.click(), 700); }
-            else if (p) setTimeout(() => thread(c, p.x, p.y, from, p.approx), 500);
+            if (pin) { pin.classList.add('flash'); setTimeout(() => { if (RVX().focusThread) pin.classList.remove('flash'); else pin.click(); }, 2000); }
+            else if (p && !RVX().focusThread) setTimeout(() => thread(c, p.x, p.y, from, p.approx), 500);
+            else if (RVX().focusThread) return;
             else thread(c, scrollX + Math.max(8, innerWidth / 2 - 170), scrollY + 90, from, !!from);
         }, 80);
     };
@@ -883,7 +887,7 @@
         addEventListener('keydown', (ev) => { if (ev.key === 'Escape') { setPlacing(false); closePop(); } });
         addEventListener('hashchange', () => { closePop(); setTimeout(render, 40); });
         addEventListener('resize', () => setTimeout(render, 60));
-        window.RV = { CFG, api, h, esc, say, needName, sync, render, route, routeName, me, mine, repliesOf, unreadIn, openThread, pointOf, pathOf, isUi, closePop, panel, panelBody, bar, AVATAR, NAME_KEY, PASS_KEY, VERSION, shotOf, comments: () => comments, isPaused: () => !!paused };
+        window.RV = { CFG, api, h, esc, say, needName, markSeen, sync, render, route, routeName, me, mine, repliesOf, unreadIn, openThread, pointOf, pathOf, isUi, closePop, panel, panelBody, bar, AVATAR, NAME_KEY, PASS_KEY, VERSION, shotOf, comments: () => comments, isPaused: () => !!paused };
         if (RVX().start) RVX().start();
         sync();
         setInterval(sync, 20000);
