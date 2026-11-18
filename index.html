@@ -11,43 +11,75 @@
 <style>
     :root { --teal: #2A9D8F; --coral: #F2845C; --slate: #1F3A4D; --paper: #FFF8F0; --mint: #7FD3C6; }
     * { box-sizing: border-box; }
-    html, body { margin: 0; min-height: 100%; }
+    /* one fixed screen: no scrolling, no bounce; every size also follows the screen's height so it all fits.
+       If a window is too short even so, the script adds .scrolls and the page scrolls rather than cut anything off */
+    html, body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none; }
     body {
         font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
-        background: var(--slate); color: #fff; min-height: 100vh; display: flex; flex-direction: column;
+        background: var(--slate); color: #fff; position: fixed; inset: 0; display: flex; flex-direction: column;
         --a: #F7A27F; --b: var(--mint); --ink: #fff; --k: var(--slate); --ring: rgba(255,255,255,.22);
     }
-    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 48px 24px 24px; }
-    .reggie { width: min(38vw, 170px); margin-bottom: 28px; animation: breathe 4s ease-in-out infinite; transform-origin: 50% 85%; }
-    .lockup { width: min(86vw, 520px); }
-    h1 { font-size: clamp(26px, 6vw, 44px); line-height: 1.15; margin: 36px 0 14px; letter-spacing: -.5px; }
-    p { font-size: clamp(16px, 3.6vw, 20px); line-height: 1.5; max-width: 560px; margin: 0 auto; opacity: .85; }
-    .soon { display: inline-block; margin-top: 32px; padding: 10px 22px; border-radius: 99px; background: var(--paper); color: var(--slate); font-weight: 700; letter-spacing: 2px; font-size: 13px; text-transform: uppercase; }
-    .steps { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 28px; font-size: 14px; }
+    html.scrolls, html.scrolls body { overflow: auto; height: auto; }
+    html.scrolls body { position: static; min-height: 100vh; }
+    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: min(48px, 5svh) 16px min(24px, 2svh); }
+    /* Reggie's stage: the script breathes him, rolls him now and then and calms him; CSS only sways his sprout and leans him */
+    .stage { width: min(calc(100vw - 32px), 700px); display: flex; justify-content: center; margin-bottom: min(28px, 3svh); }
+    .reggie { width: min(38vw, 170px, 18svh); overflow: visible; cursor: pointer; -webkit-tap-highlight-color: transparent; will-change: transform; }
+    .reggie * { transform-box: view-box; }
+    .reggie .lean { animation: lean 12s ease-in-out infinite; transform-origin: 50px 88px; }
+    .reggie .sprout { animation: sway 3s ease-in-out infinite; transform-origin: 50px 18px; }
+    .reggie .bud { animation: bob 3s ease-in-out infinite .35s; transform-origin: 61px 6px; }
+    .reggie.hop .float { animation: hop .7s cubic-bezier(.3,.7,.4,1) 1; }
+    .reggie.hop .body { animation: squish .7s ease-out 1; }
+    .lockup { width: min(86vw, 520px, 48svh); }
+    h1 { font-size: clamp(20px, min(6vw, 4.4svh), 44px); line-height: 1.15; margin: min(36px, 3.5svh) 0 min(14px, 1.5svh); letter-spacing: -.5px; }
+    p { font-size: clamp(14px, min(3.6vw, 2.3svh), 20px); line-height: 1.5; max-width: 560px; margin: 0 auto; opacity: .85; }
+    .soon { display: inline-block; margin-top: min(32px, 3.2svh); padding: 10px 22px; border-radius: 99px; background: var(--paper); color: var(--slate); font-weight: 700; letter-spacing: 2px; font-size: 13px; text-transform: uppercase; }
+    /* Coming soon breathes with Reggie: it swells on his breath in, a soft ring ripples out on his breath out,
+       and its glow is mint when he is calm and warms to coral when he is puffed (the script sets the three values) */
+    /* the badge itself never moves (moving text shimmers); only its glow and ring do, by opacity and transform */
+    .soon { --in: 0; --out: 0; --glow: 127 211 198; position: relative; isolation: isolate; }
+    .soon::before, .soon::after { content: ""; position: absolute; inset: -2px; border-radius: 99px; pointer-events: none; will-change: transform, opacity; }
+    .soon::before { z-index: -1; box-shadow: 0 0 26px 6px rgb(var(--glow)); opacity: calc(.25 + .45 * var(--in)); transform: scale(calc(.96 + .06 * var(--in))); }
+    .soon::after { border: 2px solid rgba(255, 248, 240, .5); opacity: calc((1 - var(--out)) * min(1, var(--out) * 6));
+        transform: scale(calc(1 + .1 * var(--out)), calc(1 + .45 * var(--out))); }
+    .steps { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: min(28px, 2.8svh); font-size: 14px; }
     .steps span { border: 1px solid rgba(255,255,255,.25); border-radius: 99px; padding: 6px 14px; opacity: .9; }
-    footer { text-align: center; font-size: 13px; opacity: .5; padding: 24px; }
-    @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
-    @media (prefers-reduced-motion: reduce) { .reggie { animation: none; } }
+    footer { text-align: center; font-size: 13px; opacity: .5; padding: min(24px, 2svh) 24px calc(min(24px, 2svh) + env(safe-area-inset-bottom)); }
+    /* phones and tablets: keep the copyright clear of Safari's floating address bar */
+    @media (hover: none) and (pointer: coarse) { footer { padding-bottom: calc(100px + env(safe-area-inset-bottom)); } }
+    /* short phones (iPhone SE): Reggie and the mark a little smaller so the page still fits one screen */
+    @media (max-height: 720px) { .reggie { width: min(38vw, 170px, 15svh); } .lockup { width: min(86vw, 520px, 43svh); } }
+    @keyframes lean { 0%, 30%, 100% { transform: rotate(0); } 40% { transform: rotate(-4deg); } 55% { transform: rotate(4deg); } 65% { transform: rotate(0); } }
+    @keyframes sway { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+    @keyframes bob { 0%, 100% { transform: translate(-1px, 0) scale(1); } 50% { transform: translate(1px, -1px) scale(1.15); } }
+    @keyframes hop { 0% { transform: translateY(0); } 35% { transform: translateY(-22px); } 70% { transform: translateY(0); } 85% { transform: translateY(-4px); } 100% { transform: translateY(0); } }
+    @keyframes squish { 0% { transform: scale(1.1, .88); } 30% { transform: scale(.92, 1.1); } 70% { transform: scale(1.08, .92); } 100% { transform: scale(1.03, .97); } }
+    @media (prefers-reduced-motion: reduce) { .reggie, .reggie * { animation: none !important; } }
 </style>
 </head>
 <body>
 <main>
-    <svg class="reggie" viewBox="0 0 100 100" role="img" aria-label="Reggie">
-        <path d="M50 18 C50 11 54 7 60 6" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--b)"/>
-        <circle cx="61" cy="6" r="3.5" style="fill:var(--a)"/>
-        <path d="M50 18 C73 18 86 34 86 56 C86 77 70 88 50 88 C30 88 14 77 14 56 C14 34 27 18 50 18 Z" style="fill:var(--b)"/>
-        <path d="M33 52 Q39 46 45 52 M55 52 Q61 46 67 52" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--k)"/>
-        <path d="M43 64 Q50 70 57 64" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--k)"/>
-        <circle cx="33" cy="62" r="4.5" opacity=".85" style="fill:var(--a)"/>
-        <circle cx="67" cy="62" r="4.5" opacity=".85" style="fill:var(--a)"/>
+    <div class="stage" id="stage">
+    <svg class="reggie" id="reggie" viewBox="0 0 100 100" role="img" aria-label="Reggie">
+        <ellipse id="shadow" cx="50" cy="95" rx="26" ry="3.5" opacity=".28" style="fill:#000"/>
+        <g id="roll"><g class="float" id="float"><g class="lean"><g class="body" id="body">
+            <g class="sprout">
+                <path d="M50 18 C50 11 54 7 60 6" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--b)"/>
+                <circle class="bud" cx="61" cy="6" r="3.5" style="fill:var(--a)"/>
+            </g>
+            <path d="M50 18 C73 18 86 34 86 56 C86 77 70 88 50 88 C30 88 14 77 14 56 C14 34 27 18 50 18 Z" style="fill:var(--b)"/>
+            <path d="M33 52 Q39 46 45 52 M55 52 Q61 46 67 52" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--k)"/>
+            <path id="smile" d="M43 64 Q50 70 57 64" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--k)"/>
+            <circle class="cheek" cx="33" cy="62" r="4.5" opacity=".8" style="fill:var(--a)"/>
+            <circle class="cheek" cx="67" cy="62" r="4.5" opacity=".8" style="fill:var(--a)"/>
+        </g></g></g></g>
     </svg>
+    </div>
     <svg class="lockup" viewBox="0 0 360 100" role="img" aria-label="RegulateED, classroom self-regulation">
         <circle cx="50" cy="50" r="44" fill="none" stroke-width="4" style="stroke:var(--ring)"/>
-        <path d="M14 50 L20 37 L26 62 L32 40 L38 58 L44 50" fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--a)">
-            <!-- the busy half settles and stirs again, like a breath -->
-            <animate class="calm" attributeName="d" dur="8s" repeatCount="indefinite" calcMode="spline" keyTimes="0;.45;.55;1" keySplines=".4 0 .2 1;0 0 1 1;.4 0 .2 1"
-                values="M14 50 L20 37 L26 62 L32 40 L38 58 L44 50;M14 50 L20 46 L26 54 L32 47 L38 53 L44 50;M14 50 L20 46 L26 54 L32 47 L38 53 L44 50;M14 50 L20 37 L26 62 L32 40 L38 58 L44 50"/>
-        </path>
+        <!-- the busy half follows Reggie: jagged while he rolls and puffs, smooth as he calms -->
+        <path id="busy" d="M14 50 L20 37 L26 62 L32 40 L38 58 L44 50" fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--a)"/>
         <path d="M44 50 C51 37 58 37 65 50 S79 63 86 50" fill="none" stroke-width="7" stroke-linecap="round" style="stroke:var(--b)"/>
         <text x="114" y="60" style="font:800 40px 'Segoe UI',system-ui,-apple-system,'Helvetica Neue',sans-serif;letter-spacing:-.5px;fill:var(--ink)">RegulateED</text>
         <text x="116" y="82" style="font:600 10.5px 'Segoe UI',system-ui,-apple-system,'Helvetica Neue',sans-serif;letter-spacing:2.2px;fill:var(--ink);opacity:.65">CLASSROOM SELF-REGULATION</text>
@@ -58,5 +90,130 @@
     <div class="soon">Coming soon</div>
 </main>
 <footer>&copy; 2026 RegulateED</footer>
+<script>
+    // Reggie at play: rest, lean back, roll somewhere (a little at random, always whole turns so he
+    // lands upright), rock to a stop, puff happily, slow down, calm, repeat. The mark's busy half
+    // follows him, so Reggie regulates the mark. Every change eases, so nothing snaps.
+    // one fixed screen, unless this window is too short to hold it all: then it scrolls instead of cutting off
+    const fit = () => {
+        const root = document.documentElement;
+        root.classList.remove("scrolls");
+        root.classList.toggle("scrolls", document.body.scrollHeight > document.body.clientHeight + 1);
+    };
+    fit();
+    addEventListener("resize", fit);
+
+    const $ = (id) => document.getElementById(id);
+    const reggie = $("reggie"), stage = $("stage"), roll = $("roll"), float = $("float"), body = $("body");
+    const smile = $("smile"), shadow = $("shadow"), busy = $("busy"), soon = document.querySelector(".soon");
+    const CALM_CHEEK = [246, 190, 170], HOT_CHEEK = [255, 106, 88];
+    const cheeks = [...reggie.querySelectorAll(".cheek")];
+    const JAG = [-13, 12, -10, 8];          // how far each busy point sits off the line at full busy
+    // each mood is [breath seconds, breath size, cheek flush, busy]; the puff and the slow-down scale with
+    // the effort of the roll: a single leaves him a little pink and soon calm, a triple leaves him red and puffing
+    const EFFORT = [0, .35, .7, 1];         // by number of turns
+    const moodOf = (name, e) => name === "puff" ? [2.6 - 1.2 * e, 1 + .5 * e, e, .4 + .6 * e]
+        : name === "slow" ? [2.8, 1 + .2 * e, .4 * e, .22 + .28 * e] : [4, 1, 0, .22];
+    const BREATHS = [0, 2, 4, 6];           // puffing breaths by number of turns
+    const rand = (a, b) => a + Math.random() * (b - a);
+    const ease = (u) => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+    const toward = (v, t, rate, dt) => v + (t - v) * Math.min(1, dt * rate);
+
+    let phase = "rest", start = 0, dur = rand(2.5, 4.5) * 1000, last = 0, rolls = 0;
+    let x = 0, from = 0, to = 0, angle = 0, turns = 0, dir = 1;
+    let mood = "rest", period = 4, size = 1, flush = 0, level = 1, breath = 0;
+
+    const go = (name, ms, now, m) => { phase = name; dur = ms; start = now; if (m) mood = m; };
+    const room = () => Math.max(0, (stage.clientWidth - reggie.clientWidth) / 2);
+
+    // A roll is 1 turn mostly, now and then 2 or 3. More turns means further, never faster: he travels
+    // a turn's worth of ground per turn (as far as the screen allows) and every turn takes the same calm time.
+    const TURN_MS = 2000;
+    function plan() {
+        const max = room(), circle = 2 * Math.PI * reggie.clientWidth * .36;
+        const showOff = Math.random();
+        rolls += 1;
+        turns = showOff < .12 ? 3 : showOff < .35 ? 2 : 1;
+        if (turns === 1 && x !== 0 && (rolls % 3 === 0 || Math.random() < .25)) return 0;    // home to the middle now and then
+        const ahead = (d) => d > 0 ? max - x : max + x;                     // ground left on that side
+        let d = turns > 1 ? (ahead(1) >= ahead(-1) ? 1 : -1) : (Math.random() < .5 ? 1 : -1);
+        if (ahead(d) < max * .3) d = -d;                                    // too close to the edge: turn round
+        return x + d * Math.min(turns * circle * rand(.85, 1), ahead(d));
+    }
+
+    function frame(now) {
+        const dt = Math.min(.1, (now - (last || now)) / 1000);
+        last = now;
+        const u = Math.min(1, (now - start) / dur);
+
+        if (phase === "rest" && u >= 1 && !reggie.classList.contains("hop") && room() > 30) {
+            from = x; to = plan(); dir = Math.sign(to - from) || 1;
+            go("windup", 650, now);
+        } else if (phase === "windup") {
+            angle = -dir * 8 * ease(u);                                    // a small lean back before he goes
+            if (u >= 1) go("roll", turns * TURN_MS, now);
+        } else if (phase === "roll") {
+            const e = (1 - Math.cos(Math.PI * u)) / 2;                    // a gentle start and stop
+            x = from + (to - from) * e;
+            angle = -dir * 8 + (dir * 360 * turns + dir * 8) * e;           // ends on a whole turn: upright
+            if (u >= 1) { angle = 0; go("rock", 900, now, "puff"); }
+        } else if (phase === "rock") {
+            const t = (now - start) / 1000;
+            angle = dir * 7 * Math.sin(t * 11) * Math.exp(-t * 4.5);
+            if (u >= 1) { angle = 0; go("puff", BREATHS[turns] * moodOf("puff", EFFORT[turns])[0] * 1000, now); }
+        } else if (phase === "puff") {
+            if (u >= 1) go("slow", 2000 + 3000 * EFFORT[turns], now, "slow");
+        } else if (phase === "slow") {
+            if (u >= 1) go("rest", rand(4.5, 9.5) * 1000, now, "rest");
+        }
+
+        // the breath eases between moods: rate, size and flush glide, the busy half follows
+        const [p, s, f, calm] = moodOf(mood, EFFORT[Math.min(3, turns)]);
+        const b = phase === "roll" || phase === "rock" ? 1 : calm;          // the mark gets busy as soon as he rolls
+        period = toward(period, p, 1.2, dt);
+        size = toward(size, s, 1.5, dt);
+        flush = toward(flush, f, 1.2, dt);
+        level = toward(level, b, b > level ? 2.5 : .6, dt);
+        breath = (breath + dt / period) % 1;
+        const inhale = (1 - Math.cos(breath * 2 * Math.PI)) / 2;           // 0 empty, 1 full
+
+        const sx = 1 + .03 * size - .06 * size * inhale, sy = 1 - .03 * size + .07 * size * inhale;
+        body.setAttribute("transform", `translate(50 88) scale(${sx} ${sy}) translate(-50 -88)`);
+        float.setAttribute("transform", `translate(0 ${-7 * Math.min(size, 1.25) * inhale})`);
+        shadow.setAttribute("transform", `translate(50 95) scale(${1 - .2 * inhale} 1) translate(-50 -95)`);
+        shadow.setAttribute("opacity", (.28 - .12 * inhale).toFixed(3));
+        const g = inhale + .8 * flush;                                      // a bigger grin when he's puffing
+        smile.setAttribute("d", `M${43 - g} ${64 - .5 * g} Q50 ${70 + 2 * g} ${57 + g} ${64 - .5 * g}`);
+        // cheeks: soft peach when calm, bright and a touch bigger when he's puffed, glowing a little with each breath
+        const mix = (k) => Math.round(CALM_CHEEK[k] + (HOT_CHEEK[k] - CALM_CHEEK[k]) * flush);
+        for (const c of cheeks) {
+            c.setAttribute("r", (4.5 * (1 + .2 * flush)).toFixed(2));
+            c.style.fill = `rgb(${mix(0)} ${mix(1)} ${mix(2)})`;
+            c.setAttribute("opacity", (.55 + .4 * flush + .05 * inhale).toFixed(3));
+        }
+
+        soon.style.setProperty("--in", inhale.toFixed(3));
+        soon.style.setProperty("--out", (breath > .5 ? (breath - .5) * 2 : 0).toFixed(3));
+        soon.style.setProperty("--glow", `${Math.round(127 + 128 * flush)} ${Math.round(211 - 105 * flush)} ${Math.round(198 - 110 * flush)}`);
+
+        const a = level + .05 * Math.sin(now / 4000 * 2 * Math.PI);
+        busy.setAttribute("d", `M14 50 L20 ${50 + JAG[0] * a} L26 ${50 + JAG[1] * a} L32 ${50 + JAG[2] * a} L38 ${50 + JAG[3] * a} L44 50`);
+        reggie.style.transform = `translateX(${x}px)`;
+        roll.setAttribute("transform", `rotate(${angle} 50 56)`);
+        requestAnimationFrame(frame);
+    }
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        requestAnimationFrame((now) => { start = now; frame(now); });
+    }
+
+    // Tap Reggie while he rests and he hops, then goes back to breathing
+    reggie.addEventListener("click", () => {
+        if (phase !== "rest") return;
+        reggie.classList.remove("hop");
+        void reggie.getBoundingClientRect();
+        reggie.classList.add("hop");
+    });
+    reggie.addEventListener("animationend", (e) => { if (e.animationName === "hop") reggie.classList.remove("hop"); });
+</script>
 </body>
 </html>
