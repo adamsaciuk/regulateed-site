@@ -165,7 +165,7 @@
         const c = comments().find((x) => x.id === id);
         const file = c && c.page === 'demo' ? links().demo : c && c.page === 'manual' ? links().manual : c && sprintOf(c) !== current() ? null : links().current;
         if (file) location.href = file + '?thread=' + encodeURIComponent(id);
-        else RV.say('That thread belongs to an earlier sprint: open it from Sprint 1 history.');
+        else RV.say('That thread belongs to an earlier sprint: open it from its history.');
     };
 
     // ------------------------------------------------------------------ chips
@@ -195,7 +195,7 @@
                     else location.href = (page === links().currentPage ? links().current : links()[page] || links().current || 'index.html') + '?spot=' + encodeURIComponent(arg) + '#' + s.route;
                 });
             }
-            case 'v1': return make('', 'Sprint 1', label || 'As it was', () => { location.href = (links()['workflow@1'] || 'workflow-v1.html') + '#' + arg; });
+            case 'v1': return make('', 'Earlier', label || 'As it was', () => { location.href = (links()['workflow@1'] || 'workflow-v1.html') + '#' + arg; });
             case 'manual': return make('', '', label || 'The review manual', () => { location.href = links().manual || 'manual.html'; });
             case 'chat': return make('', '', label || 'Iris Chat', () => openPanel('iris'));
             case 'tracker': return make('ck-item', '', label || `Sprint ${current()}`, () => openCategory(null));

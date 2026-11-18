@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Earlier comments: everything said before Sprint 1</title>
+<!-- Adam, 2026-11-18: the review starts from scratch at Sprint 1; every earlier comment is kept here,
+     stand-alone, so Jordan can go over them again. The summaries are Iris's; the threads load word for
+     word from the comments service (private/review-comments-earlier.json), behind the review password. -->
+<style>
+    @font-face { font-family: "Open Sans"; font-weight: 400; src: url("../fonts/open-sans-latin-400.woff2") format("woff2"); }
+    @font-face { font-family: "Open Sans"; font-weight: 700; src: url("../fonts/open-sans-latin-700.woff2") format("woff2"); }
+    @font-face { font-family: "Open Sans"; font-weight: 800; src: url("../fonts/open-sans-latin-800.woff2") format("woff2"); }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #FFF8F0; font: 17px/1.55 "Open Sans", system-ui, sans-serif; color: #1F3A4D; }
+    header { position: sticky; top: 0; z-index: 5; background: #1F3A4D; color: #fff; }
+    header .in { max-width: 980px; margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; gap: 16px; min-height: 60px; }
+    header .mark { color: #fff; text-decoration: none; font-weight: 800; font-size: 20px; }
+    header .mark small { display: block; font-size: 10px; letter-spacing: 2px; font-weight: 700; color: #7FD3C6; }
+    main { max-width: 980px; margin: 0 auto; padding: 24px 20px 80px; }
+    .eyebrow { font-size: 13px; font-weight: 800; letter-spacing: 2.4px; text-transform: uppercase; color: #2A9D8F; margin: 0 0 6px; }
+    h1 { font-size: 32px; line-height: 1.15; margin: 0 0 10px; }
+    h2 { font-size: 23px; margin: 34px 0 8px; }
+    .lead { font-size: 18px; color: #3C5566; }
+    .card { background: #fff; border: 1px solid #E9E1D6; border-radius: 16px; padding: 14px 18px; margin: 0 0 12px; }
+    .sum { background: #F7FBFA; border: 1px solid #CBE9E3; border-radius: 14px; padding: 12px 16px; margin-bottom: 12px; font-size: 15.5px; }
+    .sum b.t { display: block; font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #1E7268; margin-bottom: 4px; }
+    details { background: #fff; border: 1px solid #E9E1D6; border-radius: 14px; margin: 0 0 8px; }
+    summary { cursor: pointer; padding: 11px 14px; font-weight: 800; list-style: none; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+    summary::-webkit-details-marker { display: none; }
+    summary::before { content: "▸"; color: #2A9D8F; }
+    details[open] summary::before { content: "▾"; }
+    summary .by { font-weight: 600; font-size: 13px; color: #4A5E6D; }
+    .msgs { padding: 0 14px 12px 30px; display: grid; gap: 8px; }
+    .m { border-radius: 12px; padding: 8px 12px; background: #FFF8F0; border: 1px solid #F1EBE2; font-size: 15px; white-space: pre-wrap; }
+    .m.iris { background: #EEF8F6; border-color: #CBE9E3; }
+    .m .who { font-size: 12px; font-weight: 800; color: #4A5E6D; white-space: normal; }
+    .where { font-size: 13px; }
+    a { color: #2A9D8F; font-weight: 700; }
+    .note { font-size: 14px; color: #4A5E6D; }
+</style>
+<meta name="robots" content="noindex, nofollow">
+<style>html.rv-locked body { visibility: hidden; }</style>
+<script>document.documentElement.classList.add('rv-locked');</script>
+</head>
+<body>
+<header><div class="in"><a class="mark" href="index.html">RegulateED<small>EARLIER COMMENTS</small></a></div></header>
+<main>
+    <p class="eyebrow">Before Sprint 1 · 18 November 2026</p>
+    <h1>Everything said before the clean start.</h1>
+    <p class="lead">On 18 November we cleared the review and began again at Sprint 1. Every comment made before then is kept here, word for word, so nothing is lost. The ideas still matter: bring any of them into Sprint 1 by adding it to a category on the site.</p>
+    <div class="card"><b>How to use this page.</b> Each group starts with Iris's summary of where it stood. Tap a thread to read the whole discussion. "Where it was made" opens the page as it was at the time. Research answers are on <a href="index.html#foundations/research">Research for the team</a>.</div>
+    <div id="groups"><p class="note">Loading the comments…</p></div>
+</main>
+<script>
+(function () {
+    // Iris's summary of each group, as things stood at the clean start.
+    const GROUPS = [
+        { id: 'C2-UI', title: 'UI: how the check-in looks', summary: 'Jordan prefers the face leading and the colour backing it up; the research agrees and adds a word and a fixed position beside each, because colour alone fails for about 1 in 12 boys. Adam wants Reggie as the indicators and asked whether Red, Yellow, Green is best practice: the research says no, use pleasantness and energy as four faces with words.' },
+        { id: 'C2-OT', title: 'OT Science: how children answer and learn to calm down', summary: 'Jordan wants children to tap privately as they walk in, so they are not swayed by each other, with the out-loud class question only as the backup when there is no device. K to G3 learn the calm-down as a class; from G4 they use the app on their own. Ideas still open: points and a semester certificate (research says reward the class, never the colour tapped), the body question in G2 to G4 (an optional teaching step), and which method works best.' },
+        { id: 'C2-DATA', title: 'Data and pilot', summary: 'Jordan sees the pilot as the point: seeing whether specific children benefit, each child before and after an activity. Research says a baseline of check-ins alone first, two to three check-ins a day, and a random ID per child held by the school, reading change mostly across the class. The expectation for an activity comes first from its evidence, then from the class\'s own record.' },
+        { id: 'C2-TECH', title: 'Technology', summary: 'Most US elementary schools give every child a device (87%), mostly Chromebooks kept at school; a class without devices falls back to the whole-class question.' },
+        { id: 'C2-PRIV', title: 'Privacy', summary: 'Each child is counted with nothing kept about them. Jordan also floated parent and teacher portals, which would mean a record for each child with parent consent.' },
+        { id: 'C2-D', title: 'Adam\'s test threads on the demo page', summary: 'Two real ideas made while testing: Reggie as the check-in icons, and whether a traffic light is the best way to capture a child\'s feeling. The research answer is in: a traffic light is not best practice; use two questions, how pleasant and how much energy, as four faces with words. See Research for the team, Is a traffic light the best check-in.' },
+        { id: null, title: 'Adam\'s first notes', summary: 'The insight that leads into activities is the recess results across the whole week; and Reggie belongs in the top bar. Both were acted on in the workflow.' },
+    ];
+    const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    const fileOf = (c) => (c.page === 'data-collection' ? 'data-collection.html' : c.page === 'workflow' && String(c.version || '1') === '1' ? 'workflow-v1.html' : c.page === 'demo' ? 'demo.html' : 'index.html');
+    const when = (iso) => new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    const textOf = (t) => (window.RVX && window.RVX.chips ? window.RVX.chips(t) : [String(t).replace(/\[\[[^\]]*\|([^\]]*)\]\]/g, '$1').replace(/\[\[[^\]]*\]\]/g, '')]);
+    const render = (all) => {
+        const box = document.getElementById('groups');
+        box.innerHTML = '';
+        const roots = all.filter((c) => !c.parent && c.page !== 'chat' && c.page !== 'item');
+        for (const g of GROUPS) {
+            const list = roots.filter((c) => (g.id ? c.category === g.id : !c.category || c.category === '?')).sort((a, b) => a.created.localeCompare(b.created));
+            if (!list.length) continue;
+            const sec = document.createElement('section');
+            sec.innerHTML = `<h2>${esc(g.title)}</h2><div class="sum"><b class="t">Where it stood</b>${esc(g.summary)}</div>`;
+            for (const c of list) {
+                const d = document.createElement('details');
+                const replies = all.filter((r) => r.parent === c.id).sort((a, b) => a.created.localeCompare(b.created));
+                d.innerHTML = `<summary>${esc(c.title || c.text.slice(0, 60))}<span class="by">${esc(c.name)} · ${replies.length} repl${replies.length === 1 ? 'y' : 'ies'}${c.resolved ? ' · closed' : ''}</span></summary>`;
+                const msgs = document.createElement('div');
+                msgs.className = 'msgs';
+                for (const m of [c, ...replies]) {
+                    const el = document.createElement('div');
+                    el.className = 'm' + (m.role === 'iris' ? ' iris' : '');
+                    el.innerHTML = `<div class="who">${esc(m.role === 'iris' ? 'Iris' : m.name)} · ${esc(when(m.created))}</div>`;
+                    el.append(...textOf(m.text));
+                    if (m.image && window.RV && window.RV.shotOf) el.append(window.RV.shotOf(m.image));
+                    msgs.append(el);
+                }
+                const where = document.createElement('div');
+                where.className = 'where';
+                where.innerHTML = `<a href="${fileOf(c)}#${esc(c.route)}">Where it was made →</a>`;
+                msgs.append(where);
+                d.append(msgs);
+                sec.append(d);
+            }
+            box.append(sec);
+        }
+    };
+    // Wait for the review layer (the password and the service address), then load the earlier comments.
+    const start = async () => {
+        const cfg = window.REVIEW || {};
+        const pass = localStorage.getItem('rv-pass');
+        if (!cfg.api || !pass || document.documentElement.classList.contains('rv-locked')) { setTimeout(start, 400); return; }
+        try {
+            const r = await fetch(cfg.api + '/api/review/earlier', { headers: { 'X-Review-Pass': pass } });
+            render((await r.json()).comments || []);
+        } catch {
+            document.getElementById('groups').innerHTML = '<p class="note">The comments service cannot be reached right now. Please try again in a little while.</p>';
+        }
+    };
+    addEventListener('load', () => setTimeout(start, 300));
+})();
+</script>
+<script>window.REVIEW = {"page":"earlier","version":"1","file":"earlier-comments.html","links":{"current":"index.html","currentPage":"workflow","data-collection@1":"data-collection.html","workflow@1":"workflow-v1.html","manual":"manual.html","demo":"demo.html","earlier":"earlier-comments.html"},"title":"Earlier comments: everything said before Sprint 1","api":"https://regulateed-review.sashook.com","passHash":"1a55f65e93387e97bce9768422378405e8daf8cdd3e270528c7ccc76f24e32a3","sources":[],"nav":{"top":{"label":"← Workflow","href":"index.html"},"bottom":{"label":"← Workflow","href":"index.html"}}};</script>
+<script src="review.js?v=73ab451165"></script>
+<script src="rounds.js?v=73ab451165"></script>
+</body>
+</html>
