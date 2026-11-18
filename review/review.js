@@ -94,6 +94,8 @@
         .rv-closed { margin-top: 8px; font-size: 12px; font-weight: 800; color: #2A9D8F; text-transform: uppercase; letter-spacing: 1px; }
         .rv-new { display: inline-block; margin-left: 8px; background: #F2845C; color: #fff; border-radius: 20px; padding: 1px 8px; font-size: 12px; font-weight: 800; }
         .rv-pin.unread::after { content: ""; position: absolute; top: -5px; right: -5px; width: 12px; height: 12px; border-radius: 50%; background: #E0524B; border: 2px solid #fff; }
+        #rv-panel .hideclosed { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; margin: 2px 2px 8px; cursor: pointer; }
+        #rv-panel .hideclosed input { width: 18px; height: 18px; accent-color: #2A9D8F; }
         #rv-panel .who { font-size: 13px; color: #4A5E6D; margin: 4px 2px 6px; }
         #rv-panel .who button { font: inherit; font-weight: 700; color: #2A9D8F; background: none; border: 0; cursor: pointer; padding: 0 4px; }
         .rv-pin.carried { background: #fff; color: #E0703F; border: 2px solid #F2845C; font-size: 11px; }
@@ -544,7 +546,17 @@
             });
             panelBody.append(h('p', { class: 'who' }, `Commenting as ${name}`, change));
         }
-        if (!items.length) { panelBody.append(h('p', { class: 'empty' }, 'No comments yet. Tap Add comment, then tap anywhere on the page.')); return; }
+        // Hide closed threads (Adam): remembered on this device.
+        const closedCount = items.filter((x) => x.c.resolved).length;
+        if (closedCount) {
+            const hiding = localStorage.getItem('rv-hide-closed') === '1';
+            const box = h('input', { type: 'checkbox' });
+            box.checked = hiding;
+            box.addEventListener('change', () => { localStorage.setItem('rv-hide-closed', box.checked ? '1' : '0'); render(); });
+            panelBody.append(h('label', { class: 'hideclosed' }, box, ` Hide closed (${closedCount})`));
+            if (hiding) items = items.filter((x) => !x.c.resolved);
+        }
+        if (!items.length) { panelBody.append(h('p', { class: 'empty' }, closedCount ? 'Every thread here is closed. Untick Hide closed to see them.' : 'No comments yet. Tap Add comment, then tap anywhere on the page.')); return; }
         const groups = new Map();
         for (const item of items) {
             if (!groups.has(item.where)) groups.set(item.where, []);
@@ -562,8 +574,10 @@
                         const pin = pins.querySelector(`[data-id="${c.id}"]`);
                         const p = pointOf(anchor);
                         if (p) scrollTo({ top: Math.max(0, p.y - innerHeight / 3), behavior: 'smooth' });
+                        // A closed thread has no pin on the page; open it at its spot (or the top) all the same.
                         if (pin) { pin.classList.add('flash'); setTimeout(() => pin.click(), 700); }
-                        else thread(c, scrollX + innerWidth / 2 - 170, scrollY + 90, from, true);
+                        else if (p) setTimeout(() => thread(c, p.x, p.y, from, p.approx), 500);
+                        else thread(c, scrollX + Math.max(8, innerWidth / 2 - 170), scrollY + 90, from, !!from);
                     }, 80);
                 },
             }, h('span', { class: 'n' }, label), h('b', {}, c.name), ` ${c.resolved ? '(closed) ' : ''}`,
