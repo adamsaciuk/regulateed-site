@@ -88,6 +88,25 @@
     .opt.best { border: .15em solid var(--teal); }
     .tile { text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; cursor: pointer; }
     .tile:hover { border-color: var(--teal); }
+    /* Research as a tree (Adam), the same look as the review's sprint tree: one line a row, levels indented. */
+    .rtree { max-width: 720px; margin: 6px 0 14px; }
+    .rt-row { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; font: inherit; font-size: 15px; color: var(--slate); background: none; border: 0; border-radius: 8px; padding: 5px 8px; cursor: pointer; white-space: nowrap; }
+    .rt-row:hover { background: #EEF8F6; }
+    .rt-d0 { font-weight: 800; font-size: 16px; background: #fff; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 4px; padding: 5px 10px 5px 5px; }
+    .rt-d0:hover, .rt-d0.open { border-color: var(--teal); background: #fff; }
+    .rt-d1 { font-weight: 800; }
+    .rt-tw { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; background: #DDF1EC; color: #1E7268; font-size: 11px; transition: transform .15s; }
+    .rt-row.open .rt-tw { transform: rotate(90deg); }
+    .rt-d2 .rt-tw { width: 18px; height: 18px; font-size: 9px; }
+    .rt-lbl { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    .rt-n { flex: none; font-size: 12px; font-weight: 800; background: #F1EBE2; border-radius: 10px; padding: 1px 7px; }
+    .rt-in { margin: 2px 0 6px 15px; padding-left: 8px; border-left: 2px solid #E3DACD; }
+    .rt-dot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: #A3AEB6; }
+    .rt-dot.strong { background: #2A9D8F; } .rt-dot.moderate { background: #7FD3C6; } .rt-dot.emerging { background: #F2C14E; } .rt-dot.weak { background: #F2845C; }
+    .rt-g { flex: none; font-size: 12px; color: #4A5E6D; }
+    .rt-go { flex: none; color: var(--teal); font-weight: 800; font-size: 17px; line-height: 1; }
+    .rt-how summary { cursor: pointer; font-weight: 800; color: var(--teal); }
+    .rt-path { font-size: 13px; font-weight: 700; color: #4A5E6D; margin-bottom: 6px; }
     .tile b { display: block; font-size: 17px; margin-bottom: 4px; }
     .tile span { font-size: 14px; opacity: .75; }
     .tile.hero { background: var(--slate); color: #fff; border-color: var(--slate); }
@@ -525,11 +544,10 @@
 <section class="page" id="p-foundations-research" data-crumb="Research for the team">
     <p class="eyebrow">Foundations</p>
     <h2>Research for the team: answers to the questions asked in review.</h2>
-    <p class="lead">When a comment asks what the research says, the answer comes here, in one shape every time: the question in your words, the short answer, how strong the evidence is, what it means for RegulateED, and the sources. Each answer links to its tracker item, and the item links back.</p>
+    <p class="lead">Every research answer, filed under the sprint, category and thread that asked for it.</p>
     <div class="quote"><b>Jordan's rule for research</b>"if you find reserach please make it schoarly within the last 10 years"</div>
-    <div class="tiles" id="research-list"></div>
-    <p class="note" style="margin-top:14px">Sources from 2016 or later come first. An older study appears only when it is the founding work, and is marked so. Every source, with who asked and how it was found, is in the <a href="#foundations/sources" style="color:var(--teal);font-weight:800">sources register</a>.</p>
-    <div class="card"><div class="tag">How a research request works</div><ol style="margin:4px 0 0"><li>Tick <b>This is a research request</b> when you start a thread, or ask in a thread or in Iris Chat.</li><li>The thread shows <b>Research requested</b>, then <b>Research in progress</b>.</li><li>The answer comes back in the same thread, as a short reply with a link to its page here, and its findings roll up into the thread's category.</li><li>Every source goes in the sources register, credited to who asked and how it was found.</li></ol></div>
+    <div class="rtree" id="research-list"></div>
+    <details class="card rt-how"><summary>How research works</summary><p class="note" style="margin:8px 0">Sources from 2016 or later come first. An older study appears only when it is the founding work, and is marked so. Every source, with who asked and how it was found, is in the <a href="#foundations/sources" style="color:var(--teal);font-weight:800">sources register</a>.</p><ol style="margin:4px 0 0"><li>Tick <b>This is a research request</b> when you start a thread, or ask in a thread or in Iris Chat.</li><li>The thread shows <b>Research requested</b>, then <b>Research in progress</b>.</li><li>The answer comes back in the same thread, as a short reply with a link to its page here, and its findings roll up into the thread's category.</li><li>Every source goes in the sources register, credited to who asked and how it was found.</li></ol></details>
 </section>
 
 <section class="page" id="p-foundations-sources" data-crumb="Sources register">
@@ -1261,12 +1279,67 @@
     const FOUND_OF = { colors: 'batch3', faces: 'batch1', together: 'batch1', devices: 'batch1', body: 'batch2', rewards: 'batch2', pilot: 'batch2', timing: 'batch2', perchild: 'batch2' };
     window.reviewResearch = Object.fromEntries(RESEARCH.map((r) => [r.id, r.title]));
     const itemBtn = (id) => `<button class="rchip" onclick="window.RVX && RVX.openItem('${id}')">${id} on the tracker</button>`;
-    document.getElementById('research-list').innerHTML = RESEARCH.map((r) => `<button class="tile${r.status === 'ready' ? '' : ' soon'}" onclick="go('foundations/research/${r.id}')"><b>${esc(r.title)}</b><span>${r.status === 'ready' ? GRADE[r.grade] + ' evidence' : 'Being researched'}</span></button>`).join('');
+    // Where each research request came from (Adam: nested exactly as the threads): sprint ('0' is before
+    // Sprint 1), category, the thread that asked, and who asked. Iris adds a line here as she files each answer.
+    const FROM = {
+        colors: ['1', 'UI and brand', 'Red, Yellow, Green indicators', 'Adam'],
+        faces: ['0', 'UI and brand', 'Emoji, emotion or color', 'Jordan'],
+        together: ['0', 'OT Science', 'Learning together or alone', 'Jordan'],
+        body: ['0', 'OT Science', 'Three buttons, and the body question', 'Jordan'],
+        rewards: ['0', 'OT Science', 'Points and a certificate for calming down', 'Jordan'],
+        devices: ['0', 'Data collection', 'Devices in grades 2 to 4', 'Jordan'],
+        perchild: ['0', 'Insights, trends and pilot', 'Before and after for each child', 'Jordan'],
+        pilot: ['0', 'Insights, trends and pilot', 'A baseline before we start', 'Jordan'],
+        timing: ['0', 'Insights, trends and pilot', 'When in the day to check in', 'Jordan'],
+    };
+    const SPRINT_NAME = (sp) => (sp === '0' ? 'Before Sprint 1' : `Sprint ${sp}`);
+    const fromOf = (r) => FROM[r.id] || ['1', 'Not filed yet', r.title, r.asked[0]];
+    const rOpen = new Set(['s1']);
+    const paintResearch = () => {
+        const tree = new Map();
+        for (const r of RESEARCH) {
+            const [sp, cat, thread, by] = fromOf(r);
+            if (!tree.has(sp)) tree.set(sp, new Map());
+            const cats = tree.get(sp);
+            if (!cats.has(cat)) cats.set(cat, new Map());
+            const threads = cats.get(cat);
+            if (!threads.has(thread)) threads.set(thread, { by, list: [] });
+            threads.get(thread).list.push(r);
+        }
+        const row = (key, depth, label, count, tip) => `<button class="rt-row rt-d${depth}${rOpen.has(key) ? ' open' : ''}" type="button" onclick="rToggle('${key}')"${tip ? ` title="${esc(tip)}"` : ''}><span class="rt-tw">▶</span><span class="rt-lbl">${esc(label)}</span><span class="rt-n">${count}</span></button>`;
+        const leaf = (r) => `<button class="rt-row" type="button" onclick="go('foundations/research/${r.id}')"><span class="rt-dot ${r.status === 'ready' ? r.grade : ''}"></span><span class="rt-lbl">${esc(r.title)}</span><span class="rt-g">${r.status === 'ready' ? GRADE[r.grade] : 'Being researched'}</span><span class="rt-go">›</span></button>`;
+        const sprints = [...tree.keys()].sort((a, b) => Number(b) - Number(a));
+        let out = '';
+        for (const sp of sprints) {
+            const sk = 's' + sp;
+            const cats = tree.get(sp);
+            out += row(sk, 0, SPRINT_NAME(sp), [...cats.values()].reduce((n, t) => n + [...t.values()].reduce((m, x) => m + x.list.length, 0), 0));
+            if (!rOpen.has(sk)) continue;
+            out += '<div class="rt-in">';
+            [...cats.entries()].forEach(([cat, threads], ci) => {
+                const ck = `${sk}c${ci}`;
+                out += row(ck, 1, cat, [...threads.values()].reduce((m, x) => m + x.list.length, 0));
+                if (!rOpen.has(ck)) return;
+                out += '<div class="rt-in">';
+                [...threads.entries()].forEach(([thread, t], ti) => {
+                    const tk = `${ck}t${ti}`;
+                    out += row(tk, 2, thread, t.list.length, `Asked by ${t.by}`);
+                    if (rOpen.has(tk)) out += '<div class="rt-in">' + t.list.map(leaf).join('') + '</div>';
+                });
+                out += '</div>';
+            });
+            out += '</div>';
+        }
+        document.getElementById('research-list').innerHTML = out;
+    };
+    window.rToggle = (k) => { if (rOpen.has(k)) rOpen.delete(k); else rOpen.add(k); paintResearch(); };
+    paintResearch();
     for (const r of RESEARCH) {
         const srcs = (r.sources || []).slice().sort((a, b) => (b[2] >= 2016) - (a[2] >= 2016) || b[2] - a[2]);
         gen.appendChild(el(`<section class="page" id="p-foundations-research-${r.id}" data-crumb="${esc(r.title)}">
             <p class="eyebrow">Research for the team</p>
             <h2>${esc(r.title)}</h2>
+            <div class="rt-path">${[SPRINT_NAME(fromOf(r)[0]), fromOf(r)[1], fromOf(r)[2]].map(esc).join(' › ')}</div>
             <div class="quote"><b>${esc(r.asked[0])} asked, 18 November</b>"${esc(r.asked[1])}"</div>
             ${r.status !== 'ready' ? '<div class="card"><div class="tag">Being researched</div><p>Iris is gathering the scholarly evidence from the last 10 years. The answer appears here, and Iris says so in the item\'s chat.</p></div>' : `
             <div class="card"><div class="tag">The short answer</div><p style="margin-bottom:8px">${badge(r.grade)}</p><p>${esc(r.short)}</p></div>
