@@ -8,14 +8,22 @@
 <meta name="theme-color" content="#1F3A4D">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preload" href="fonts/open-sans-latin-800.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/open-sans-latin-400.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+    /* the page ships its own font (Open Sans, SIL Open Font License, fonts/OFL.txt) so every device shows the
+       same letters and the same mark; never fall back to a device's own font for the brand */
+    @font-face { font-family: "RegulateED Open Sans"; font-weight: 400; font-display: block; src: url("fonts/open-sans-latin-400.woff2") format("woff2"); }
+    @font-face { font-family: "RegulateED Open Sans"; font-weight: 600; font-display: block; src: url("fonts/open-sans-latin-600.woff2") format("woff2"); }
+    @font-face { font-family: "RegulateED Open Sans"; font-weight: 700; font-display: block; src: url("fonts/open-sans-latin-700.woff2") format("woff2"); }
+    @font-face { font-family: "RegulateED Open Sans"; font-weight: 800; font-display: block; src: url("fonts/open-sans-latin-800.woff2") format("woff2"); }
     :root { --teal: #2A9D8F; --coral: #F2845C; --slate: #1F3A4D; --paper: #FFF8F0; --mint: #7FD3C6; }
     * { box-sizing: border-box; }
     /* one fixed screen: no scrolling, no bounce; every size also follows the screen's height so it all fits.
        If a window is too short even so, the script adds .scrolls and the page scrolls rather than cut anything off */
     html, body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none; }
     body {
-        font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+        font-family: "RegulateED Open Sans", "Open Sans", sans-serif;
         background: var(--slate); color: #fff; position: fixed; inset: 0; display: flex; flex-direction: column;
         --a: #F7A27F; --b: var(--mint); --ink: #fff; --k: var(--slate); --ring: rgba(255,255,255,.22);
     }
@@ -81,8 +89,8 @@
         <!-- the busy half follows Reggie: jagged while he rolls and puffs, smooth as he calms -->
         <path id="busy" d="M14 50 L20 37 L26 62 L32 40 L38 58 L44 50" fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--a)"/>
         <path d="M44 50 C51 37 58 37 65 50 S79 63 86 50" fill="none" stroke-width="7" stroke-linecap="round" style="stroke:var(--b)"/>
-        <text x="114" y="60" style="font:800 40px 'Segoe UI',system-ui,-apple-system,'Helvetica Neue',sans-serif;letter-spacing:-.5px;fill:var(--ink)">RegulateED</text>
-        <text x="116" y="82" style="font:600 10.5px 'Segoe UI',system-ui,-apple-system,'Helvetica Neue',sans-serif;letter-spacing:2.2px;fill:var(--ink);opacity:.65">CLASSROOM SELF-REGULATION</text>
+        <text x="114" y="60" style="font:800 40px 'RegulateED Open Sans',sans-serif;letter-spacing:-.5px;fill:var(--ink)">RegulateED</text>
+        <text x="116" y="82" style="font:600 10.5px 'RegulateED Open Sans',sans-serif;letter-spacing:2.2px;fill:var(--ink);opacity:.65">CLASSROOM SELF-REGULATION</text>
     </svg>
     <h1>Calm in two minutes.<br>Ready to learn.</h1>
     <p>A classroom self-regulation app and pediatric occupational therapy program for grades K to 5. Children check in with their body, take a 2&#8209;minute reset at their desk, and get back to learning.</p>
