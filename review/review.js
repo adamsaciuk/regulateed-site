@@ -582,17 +582,8 @@
         // Unread counts all threads this reader started or joined, on every page and version.
         const fresh = comments.filter((x) => !x.parent).reduce((n, x) => n + unreadIn(x), 0);
         listBtn.replaceChildren(`Comments ${open}`, fresh ? h('span', { class: 'rv-new' }, `${fresh}`, h('span', { class: 'lg' }, ' new')) : '');
-        // On arrival, say it in words, once per visit: a badge alone is easy to miss.
-        if (fresh && !greeted && online) {
-            greeted = true;
-            const who = localStorage.getItem(NAME_KEY) || '';
-            const note = h('div', { id: 'rv-hello', class: 'rv-ui' },
-                h('span', { class: 'rv-avatar', html: AVATAR }),
-                h('span', {}, `${who ? who.charAt(0).toUpperCase() + who.slice(1) + ', y' : 'Y'}ou have ${fresh} new repl${fresh === 1 ? 'y' : 'ies'} in your comments.`),
-                h('button', { class: 'go', onclick: () => { note.remove(); closePop(); panel.classList.add('open'); } }, 'Show me'),
-                h('button', { class: 'x', 'aria-label': 'Dismiss', onclick: () => note.remove() }, '×'));
-            document.body.append(note);
-        }
+        // No arrival popup (Adam: "i said remove this"): new replies show as the pill on the sprint button and in the list.
+        void greeted;
         renderPanel(items);
         if (RVX().render) RVX().render();
     };

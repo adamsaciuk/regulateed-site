@@ -111,6 +111,15 @@
         .rv-talk { padding: 2px 6px 8px 18px; display: flex; flex-direction: column; gap: 6px; }
         .rv-talk .rv-msg { max-width: 100%; } .rv-talk .rv-shot { width: 100%; border-radius: 8px; margin-top: 6px; cursor: zoom-in; }
         .rv-state.ok { background: #DDF1EC; }
+        #rv-detail { position: fixed; top: 0; right: min(460px, 96vw); bottom: calc(var(--rv-bar-h, 50px) + 34px); width: min(460px, calc(100vw - 480px)); z-index: 9049; background: #FFF8F0; border-left: 1px solid #E9E1D6; border-bottom: 1px solid #E9E1D6; border-bottom-left-radius: 16px; box-shadow: -10px 0 30px rgba(31,58,77,.16); display: none; flex-direction: column; }
+        #rv-detail.open { display: flex; }
+        #rv-detail header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 12px 14px; background: #2A9D8F; color: #fff; }
+        #rv-detail header .cat { font-size: 11px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; opacity: .85; }
+        #rv-detail header b { font-size: 17px; } #rv-detail header .x { font: inherit; font-size: 24px; line-height: 1; background: none; border: 0; color: #fff; cursor: pointer; }
+        #rv-detail .rv-dbody { overflow: auto; flex: 1; padding: 10px 14px; } #rv-detail .rv-talk { padding: 0; }
+        #rv-detail .rv-dfoot { padding: 6px 14px 12px; border-top: 1px solid #E9E1D6; } #rv-detail .rv-compose { margin-top: 6px; }
+        .rv-tn.sel { border-left-color: #2A9D8F; background: #EEF8F6; border-radius: 0 8px 8px 0; }
+        @media (max-width: 900px) { #rv-detail { right: 8px; left: 8px; width: auto; z-index: 9060; border-radius: 0 0 16px 16px; } }
         .rv-hist { font: inherit; font-weight: 800; font-size: 14px; color: #4A5E6D; background: #F7F1E8; border: 1px solid #E9E1D6; border-radius: 12px; padding: 9px 12px; width: 100%; text-align: left; cursor: pointer; margin-top: 14px; }
     `;
 
@@ -272,6 +281,7 @@
         sprintBtn.replaceChildren(`Sprint ${current()}`, mineFresh ? h('span', { class: 'rv-new' }, `${mineFresh}`, h('span', { class: 'lg' }, ' new')) : '');
         if (tab === 'sprint') paintSprint();
         if (tab === 'iris') paintIris();
+        paintDetail();
     };
     const counts = (list) => {
         const n = { open: 0, res: 0, na: 0, rq: 0 };
@@ -293,7 +303,6 @@
     // category's titled threads, then the thread's discussion and answers, all in one tree. A pin on the
     // page opens its thread here, under its category.
     const openCats = new Set();
-    const openThreads = new Set();
     let focusId = null;
     const titleOf = (c) => c.title || plain(c.text).split(/[.?!\n]/)[0].slice(0, 60) || 'Untitled thread';
     const endThread = (c, resolved, outcome) => async () => {
@@ -301,17 +310,39 @@
         await RV.sync();
     };
     const canWrite = (c) => !RV.isPaused() || c.page === 'demo';
+    // Two windows (Adam): the sprint list on the right shows only the hierarchy, each thread a row with its
+    // state and an unread pill; selecting a thread opens it in a second window beside the list, and
+    // closing the thread collapses that window.
+    let detailId = null;
+    let detailSig = '';
+    let detailEl = null;
+    const drafts = {};
     const threadNode = (c) => {
         const [st, k] = stateOf(c);
         const fresh = RV.unreadIn(c);
-        const open = openThreads.has(c.id);
-        const node = h('div', { class: 'rv-tn' + (open ? ' open' : ''), 'data-thread': c.id });
-        const head = h('button', { class: 'rv-tnh', type: 'button' }, h('span', { class: 'tw' }, open ? '▾' : '▸'), h('b', {}, titleOf(c)),
+        const node = h('div', { class: 'rv-tn' + (detailId === c.id ? ' sel' : ''), 'data-thread': c.id });
+        const head = h('button', { class: 'rv-tnh', type: 'button' }, h('span', { class: 'tw' }, '•'), h('b', {}, titleOf(c)),
             h('span', { class: 'rv-n ' + k }, st), fresh ? h('span', { class: 'rv-new' }, `${fresh} new`) : null,
             h('span', { class: 'by' }, `${c.name} · ${RV.repliesOf(c).length} repl${RV.repliesOf(c).length === 1 ? 'y' : 'ies'}`));
-        head.addEventListener('click', () => { if (open) openThreads.delete(c.id); else { openThreads.add(c.id); RV.markSeen(c.id); } paint(); });
+        head.addEventListener('click', () => { if (detailId === c.id) closeDetail(); else showDetail(c.id); });
         node.append(head);
-        if (!open) return node;
+        return node;
+    };
+    const showDetail = (id) => { detailId = id; detailSig = ''; RV.markSeen(id); paint(); };
+    const closeDetail = () => { detailId = null; detailSig = ''; paint(); };
+    const paintDetail = () => {
+        const c = detailId && comments().find((x) => x.id === detailId);
+        const open = !!c && RV.panel.classList.contains('open') && tab === 'sprint';
+        detailEl.classList.toggle('open', open);
+        if (!open) return;
+        // Repaint only when the thread changed, so a reply being typed is never wiped by the refresh.
+        const sig = [c.id, RV.repliesOf(c).length, c.resolved, c.outcome, c.research && c.research.state, RV.isPaused()].join('|');
+        if (sig === detailSig) return;
+        detailSig = sig;
+        const [st, k] = stateOf(c);
+        const ct = filed(c) ? catById(c.category) : null;
+        const close = h('button', { class: 'x', type: 'button', 'aria-label': 'Close the thread' }, '×');
+        close.addEventListener('click', closeDetail);
         const talk = h('div', { class: 'rv-talk' });
         for (const m of [c, ...RV.repliesOf(c)]) {
             talk.append(h('div', { class: 'rv-msg' + (m.role === 'iris' ? ' iris' : RV.mine(m) ? ' me' : '') },
@@ -320,27 +351,33 @@
         if (c.research) talk.append(h('div', { class: 'rv-state' }, h('b', {}, 'Research request: '), c.research.state === 'answered' && c.research.slug ? chipFor('research', c.research.slug) : c.research.state === 'progress' ? 'Iris is working on it; the answer comes back here.' : 'Iris will research it and answer here.'));
         if (c.resolved) talk.append(h('div', { class: 'rv-state' + (c.outcome === 'noaction' ? '' : ' ok') }, h('b', {}, c.outcome === 'noaction' ? 'Closed with no action' : 'Resolved'), c.note ? ': ' + plain(c.note).slice(0, 240) : ''));
         const where = h('button', { class: 'rv-chip', type: 'button' }, h('span', { class: 'k' }, 'Evidence'), 'Show it on the page');
-        where.addEventListener('click', (ev) => { ev.stopPropagation(); RV.panel.classList.remove('open'); if (!RV.openThread(c.id)) openThreadAnywhere(c.id); });
+        where.addEventListener('click', (ev) => { ev.stopPropagation(); if (!RV.openThread(c.id)) openThreadAnywhere(c.id); });
         talk.append(h('div', { style: 'margin:6px 0' }, where));
+        const foot = h('div', { class: 'rv-dfoot' });
         if (canWrite(c)) {
             const area = h('textarea', { placeholder: 'Reply in this thread', maxlength: '4000' });
+            area.value = drafts[c.id] || '';
+            area.addEventListener('input', () => { drafts[c.id] = area.value; });
             const send = h('button', { class: 'main', type: 'button' }, 'Reply');
             send.addEventListener('click', async () => {
                 const name = myName();
                 if (!name) { RV.say('Choose who you are first: add one tag and pick your name.'); setTimeout(() => RV.say(''), 3000); return; }
                 if (!area.value.trim()) { area.focus(); return; }
                 send.disabled = true;
-                try { await RV.api('POST', '/api/review/comments', { page: c.page, version: c.version || '1', route: c.route, anchor: null, parent: c.id, name, text: area.value.trim() }); }
+                try { await RV.api('POST', '/api/review/comments', { page: c.page, version: c.version || '1', route: c.route, anchor: null, parent: c.id, name, text: area.value.trim() }); delete drafts[c.id]; }
                 catch { RV.say('That did not send; please try again shortly.'); }
                 await RV.sync();
             });
             const ends = c.resolved
                 ? [h('button', { type: 'button', onclick: endThread(c, false) }, 'Reopen')]
                 : [h('button', { type: 'button', onclick: endThread(c, true, 'resolved'), title: 'Agreed: something changes' }, 'Resolved'), h('button', { type: 'button', onclick: endThread(c, true, 'noaction'), title: 'Discussed: nothing changes' }, 'No action')];
-            talk.append(h('div', { class: 'rv-compose' }, area, h('div', { class: 'row' }, h('span', { style: 'display:flex;gap:6px' }, ...ends), send)));
+            foot.append(h('div', { class: 'rv-compose' }, area, h('div', { class: 'row' }, h('span', { style: 'display:flex;gap:6px' }, ...ends), send)));
         }
-        node.append(talk);
-        return node;
+        detailEl.replaceChildren(
+            h('header', {}, h('div', {}, h('div', { class: 'cat' }, ct ? ct.title : 'Not filed yet'), h('b', {}, titleOf(c)), h('span', { class: 'rv-n ' + k, style: 'margin-left:8px' }, st)), close),
+            h('div', { class: 'rv-dbody' }, talk), foot);
+        const scroller = detailEl.querySelector('.rv-dbody');
+        setTimeout(() => { scroller.scrollTop = scroller.scrollHeight; }, 0);
     };
     const categoryNode = (ct, list) => {
         const n = counts(list);
@@ -395,7 +432,8 @@
         if (!c) return;
         openCats.add(filed(c) ? c.category : '_loose');
         if (sprintOf(c) !== current()) showHistory = true;
-        openThreads.add(id);
+        detailId = id;
+        detailSig = '';
         RV.markSeen(id);
         focusId = id;
         openPanel('sprint');
@@ -501,6 +539,10 @@
             RV = window.RV;
             document.head.append(h('style', {}, css));
             body = h('div', { class: 'rv-rbody' });
+            detailEl = h('aside', { id: 'rv-detail', class: 'rv-ui' });
+            document.body.append(detailEl);
+            // Closing the list closes the thread window with it.
+            new MutationObserver(() => paintDetail()).observe(RV.panel, { attributes: true, attributeFilter: ['class'] });
             tabsEl = h('div', { class: 'rv-tabs' });
             irisBtn = h('button', { class: 'iris', title: 'Iris Chat' });
             const header = RV.panel.querySelector('header');
