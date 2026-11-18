@@ -676,7 +676,7 @@
     });
 
     // A serialised SVG cannot see the page's <symbol>s or CSS variables, so the copy being
-    // photographed gets each <use> replaced by the shapes it points at, colours baked in.
+    // photographed gets each <use> replaced by the shapes it points at, colors baked in.
     const flattenSvg = (doc) => {
         const NS = 'http://www.w3.org/2000/svg';
         // The copy must show the page at rest: a fade-in restarting here would wash the picture out.
@@ -774,7 +774,7 @@
         canvas.addEventListener('pointercancel', lift);
 
         const swatches = PENS.map((c) => {
-            const b = h('button', { class: 'sw' + (c === pen ? ' on' : ''), style: `background:${c}`, 'aria-label': 'Pen colour' });
+            const b = h('button', { class: 'sw' + (c === pen ? ' on' : ''), style: `background:${c}`, 'aria-label': 'Pen color' });
             b.addEventListener('click', () => { pen = c; swatches.forEach((x) => x.classList.toggle('on', x === b)); });
             return b;
         });
