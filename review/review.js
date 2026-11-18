@@ -81,6 +81,21 @@
         #rv-bar .add.on { background: #1F3A4D; }
         #rv-bar .list { background: #fff; color: #1F3A4D; }
         #rv-bar .lock { background: #fff; color: #1F3A4D; }
+        #rv-bar .draw { background: #2A9D8F; color: #fff; }
+        html.rv-drawing, html.rv-drawing body { overflow: hidden; overscroll-behavior: none; }
+        html.rv-drawing #rv-bar, html.rv-drawing #rv-pins { display: none; }
+        #rv-canvas { position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 9300; touch-action: none; cursor: crosshair; background: rgba(31,58,77,.04); }
+        #rv-drawbar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 9400; display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #E9E1D6; border-radius: 40px; padding: 8px 10px; box-shadow: 0 10px 28px rgba(31,58,77,.28); max-width: calc(100vw - 16px); }
+        #rv-drawbar .sw { width: 30px; height: 30px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1px #E9E1D6; cursor: pointer; padding: 0; flex: none; }
+        #rv-drawbar .sw.on { box-shadow: 0 0 0 3px #1F3A4D; }
+        #rv-drawbar .gap { width: 4px; }
+        #rv-drawbar button:not(.sw) { font: inherit; font-weight: 700; font-size: 14px; border: 1px solid #E9E1D6; background: #fff; border-radius: 30px; padding: 8px 13px; cursor: pointer; white-space: nowrap; }
+        #rv-drawbar button.main { background: #1F3A4D; border-color: #1F3A4D; color: #fff; }
+        .rv-pop .rv-shot, .rv-c .rv-shot { display: block; width: 100%; border-radius: 10px; border: 1px solid #E9E1D6; margin: 0 0 10px; cursor: zoom-in; }
+        .rv-c .rv-shot { margin: 8px 0 0; }
+        #rv-lightbox { position: fixed; inset: 0; z-index: 9600; background: rgba(15,28,38,.88); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; cursor: zoom-out; }
+        #rv-lightbox img { max-width: 100%; max-height: calc(100vh - 70px); border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
+        #rv-lightbox span { color: rgba(255,255,255,.75); font-size: 14px; font-weight: 700; }
         .rv-toplink { flex: none; font-weight: 800; font-size: 14px; text-decoration: none; color: #1F3A4D !important; background: #FFF8F0; border-radius: 40px; padding: 8px 14px; white-space: nowrap; }
         .rv-toplink:hover { background: #fff; }
         @media (max-width: 640px) { .rv-toplink { font-size: 13px; padding: 7px 10px; } }
@@ -231,7 +246,8 @@
     const listBtn = h('button', { class: 'list' }, 'Comments');
     // Every review page leads back to the list of review pages.
     const allBtn = h('a', { class: 'all', href: './', title: 'All review pages' }, '← All pages');
-    const bar = h('div', { id: 'rv-bar', class: 'rv-ui' }, allBtn, addBtn, listBtn, lockBtn);
+    const drawBtn = h('button', { class: 'draw' }, 'Draw');
+    const bar = h('div', { id: 'rv-bar', class: 'rv-ui' }, allBtn, addBtn, drawBtn, listBtn, lockBtn);
     let pop = null;
 
     const route = () => location.hash.replace(/^#\/?/, '');
@@ -310,24 +326,25 @@
         return input;
     };
 
-    const editor = (x, y, anchor, parent) => {
+    const editor = (x, y, anchor, parent, image) => {
         closePop();
         const box = h('div', { class: 'rv-pop' });
+        if (image) box.append(h('img', { class: 'rv-shot', src: image, alt: 'Your drawing' }));
         const nameInput = needName(box);
-        const area = h('textarea', { placeholder: parent ? 'Reply' : 'Your comment', maxlength: '4000' });
+        const area = h('textarea', { placeholder: parent ? 'Reply' : image ? 'What does your drawing point at? (optional)' : 'Your comment', maxlength: '4000' });
         const save = h('button', { class: 'main' }, parent ? 'Reply' : 'Save');
         box.append(area, h('div', { class: 'row' }, h('button', { onclick: closePop }, 'Cancel'), save));
         save.addEventListener('click', async () => {
             const name = nameInput ? nameInput.value.trim() : localStorage.getItem(NAME_KEY);
             if (!name) { nameInput.focus(); return; }
-            if (!area.value.trim()) { area.focus(); return; }
+            if (!area.value.trim() && !image) { area.focus(); return; }
             localStorage.setItem(NAME_KEY, name);
-            const item = { page: CFG.page, route: route(), anchor, parent, name, text: area.value.trim() };
+            const item = { page: CFG.page, route: route(), anchor, parent, name, text: area.value.trim(), image: image || null };
             save.disabled = true;
             try {
                 await api('POST', '/api/review/comments', item);
             } catch {
-                setQueue([...queue(), item]);
+                try { setQueue([...queue(), item]); } catch { say('This device has no room to keep the drawing until the review service is back. Please try again later.', true); }
                 online = false;
             }
             closePop();
@@ -346,7 +363,7 @@
         for (const one of [c, ...replies]) {
             box.append(h('div', { class: 'rv-c' + (one.parent ? ' reply' : '') },
                 h('b', {}, one.name), h('time', {}, new Date(one.created).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })),
-                h('p', {}, one.text)));
+                h('p', {}, one.text), one.image ? shotOf(one.image) : null));
         }
         const resolve = h('button', {}, c.resolved ? 'Reopen' : 'Resolve');
         resolve.addEventListener('click', async () => {
@@ -419,6 +436,196 @@
         }
     };
 
+    // ------------------------------------------------------------------ draw
+    // Draw on the screen, then a screen grab with the drawing on it goes into a new comment.
+    // Browsers cannot photograph a page themselves, so html2canvas (MIT, vendor/) redraws it.
+    const PENS = ['#F2845C', '#E0524B', '#1F3A4D', '#2A9D8F'];
+    const loadGrabber = () => window.html2canvas ? Promise.resolve() : new Promise((ok, fail) => {
+        const s = document.createElement('script');
+        s.src = 'vendor/html2canvas.min.js?v=1.4.1';
+        s.onload = ok;
+        s.onerror = fail;
+        document.head.append(s);
+    });
+
+    // A serialised SVG cannot see the page's <symbol>s or CSS variables, so the copy being
+    // photographed gets each <use> replaced by the shapes it points at, colours baked in.
+    const flattenSvg = (doc) => {
+        const NS = 'http://www.w3.org/2000/svg';
+        // The copy must show the page at rest: a fade-in restarting here would wash the picture out.
+        const still = doc.createElement('style');
+        still.textContent = '*, *::before, *::after { animation: none !important; transition: none !important; }';
+        doc.head.append(still);
+        // A serialised SVG has no web fonts: give its text a system face so words still show.
+        for (const t of doc.querySelectorAll('svg text')) {
+            const st = t.getAttribute('style') || '';
+            t.setAttribute('style', st.replace(/'?(RegulateED )?Open Sans'?\s*,/g, "'Segoe UI', Arial, Helvetica,"));
+        }
+        for (let pass = 0; pass < 4; pass++) {
+            const uses = [...doc.querySelectorAll('svg use')];
+            if (!uses.length) break;
+            for (const u of uses) {
+                const ref = (u.getAttribute('href') || u.getAttribute('xlink:href') || '').replace(/^#/, '');
+                const sym = ref && doc.getElementById(ref);
+                if (!sym) { u.remove(); continue; }
+                const g = doc.createElementNS(NS, 'g');
+                const vb = (sym.getAttribute('viewBox') || '').split(/[\s,]+/).map(Number);
+                const w = parseFloat(u.getAttribute('width'));
+                const hgt = parseFloat(u.getAttribute('height'));
+                let t = `translate(${parseFloat(u.getAttribute('x') || '0')} ${parseFloat(u.getAttribute('y') || '0')})`;
+                if (vb.length === 4 && w && hgt) t += ` scale(${w / vb[2]} ${hgt / vb[3]}) translate(${-vb[0]} ${-vb[1]})`;
+                g.setAttribute('transform', t);
+                for (const kid of sym.childNodes) g.appendChild(kid.cloneNode(true));
+                u.replaceWith(g);
+            }
+        }
+        for (const e of doc.querySelectorAll('svg *')) {
+            const st = e.getAttribute('style');
+            if (!st || !st.includes('var(')) continue;
+            const cs = doc.defaultView.getComputedStyle(e);
+            e.setAttribute('style', st.replace(/fill:\s*var\([^)]*\)/g, `fill:${cs.fill}`).replace(/stroke:\s*var\([^)]*\)/g, `stroke:${cs.stroke}`));
+        }
+    };
+
+    const toJpeg = (canvas) => {
+        let src = canvas;
+        if (canvas.width > 1600) {
+            src = document.createElement('canvas');
+            src.width = 1600;
+            src.height = Math.round(canvas.height * 1600 / canvas.width);
+            src.getContext('2d').drawImage(canvas, 0, 0, src.width, src.height);
+        }
+        let q = 0.85;
+        let url = src.toDataURL('image/jpeg', q);
+        while (url.length > 3_600_000 && q > 0.4) { q -= 0.1; url = src.toDataURL('image/jpeg', q); }
+        return url;
+    };
+
+    const startDraw = () => {
+        closePop();
+        setPlacing(false);
+        panel.classList.remove('open');
+        loadGrabber().catch(() => {});
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const canvas = h('canvas', { id: 'rv-canvas', class: 'rv-ui' });
+        canvas.width = Math.round(innerWidth * dpr);
+        canvas.height = Math.round(innerHeight * dpr);
+        const ctx = canvas.getContext('2d');
+        const strokes = [];
+        let pen = PENS[0];
+        let live = null;
+
+        const paint = () => {
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            for (const s of strokes) {
+                ctx.strokeStyle = s.pen;
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.moveTo(s.pts[0][0], s.pts[0][1]);
+                if (s.pts.length === 1) ctx.lineTo(s.pts[0][0] + 0.1, s.pts[0][1]);
+                for (let i = 1; i < s.pts.length - 1; i++) {
+                    const [x0, y0] = s.pts[i];
+                    const [x1, y1] = s.pts[i + 1];
+                    ctx.quadraticCurveTo(x0, y0, (x0 + x1) / 2, (y0 + y1) / 2);
+                }
+                if (s.pts.length > 1) ctx.lineTo(...s.pts[s.pts.length - 1]);
+                ctx.stroke();
+            }
+        };
+        canvas.addEventListener('pointerdown', (ev) => {
+            canvas.setPointerCapture(ev.pointerId);
+            live = { pen, pts: [[ev.clientX, ev.clientY]] };
+            strokes.push(live);
+            paint();
+        });
+        canvas.addEventListener('pointermove', (ev) => { if (live) { live.pts.push([ev.clientX, ev.clientY]); paint(); } });
+        const lift = () => { live = null; };
+        canvas.addEventListener('pointerup', lift);
+        canvas.addEventListener('pointercancel', lift);
+
+        const swatches = PENS.map((c) => {
+            const b = h('button', { class: 'sw' + (c === pen ? ' on' : ''), style: `background:${c}`, 'aria-label': 'Pen colour' });
+            b.addEventListener('click', () => { pen = c; swatches.forEach((x) => x.classList.toggle('on', x === b)); });
+            return b;
+        });
+        const end = () => { canvas.remove(); tools.remove(); html.classList.remove('rv-drawing'); offlineNote(); };
+        const done = h('button', { class: 'main' }, 'Done');
+        const tools = h('div', { id: 'rv-drawbar', class: 'rv-ui' }, ...swatches,
+            h('span', { class: 'gap' }),
+            h('button', { onclick: () => { strokes.pop(); paint(); } }, 'Undo'),
+            h('button', { onclick: () => { strokes.length = 0; paint(); } }, 'Clear'),
+            h('button', { onclick: end }, 'Cancel'), done);
+
+        done.addEventListener('click', async () => {
+            if (!strokes.length) { end(); return; }
+            const xs = strokes.flatMap((s) => s.pts.map((p) => p[0]));
+            const ys = strokes.flatMap((s) => s.pts.map((p) => p[1]));
+            const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+            const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+            tools.style.visibility = 'hidden';
+            canvas.style.pointerEvents = 'none';
+            say('Saving a picture of the screen with your drawing…');
+            // Pin the comment to whatever sits under the middle of the drawing.
+            const under = document.elementFromPoint(cx, cy);
+            let anchor = null;
+            if (under && !isUi(under)) {
+                const r = under.getBoundingClientRect();
+                anchor = { path: pathOf(under), fx: r.width ? Math.min(1, Math.max(0, (cx - r.left) / r.width)) : 0, fy: r.height ? Math.min(1, Math.max(0, (cy - r.top) / r.height)) : 0 };
+            }
+            let image;
+            try {
+                await loadGrabber();
+                const grab = await window.html2canvas(document.body, {
+                    x: scrollX, y: scrollY, width: innerWidth, height: innerHeight,
+                    windowWidth: innerWidth, windowHeight: innerHeight, scale: dpr,
+                    backgroundColor: getComputedStyle(document.body).backgroundColor || '#FFF8F0',
+                    logging: false, onclone: flattenSvg,
+                    ignoreElements: (e) => e.id === 'rv-pins' || e.id === 'rv-canvas' || (e.classList && (e.classList.contains('rv-ui') || e.classList.contains('rv-pop'))),
+                });
+                const out = document.createElement('canvas');
+                out.width = grab.width;
+                out.height = grab.height;
+                const o = out.getContext('2d');
+                o.drawImage(grab, 0, 0);
+                o.drawImage(canvas, 0, 0, out.width, out.height);
+                image = toJpeg(out);
+            } catch {
+                // No picture of the page: keep the drawing itself on paper so nothing is lost.
+                const out = document.createElement('canvas');
+                out.width = canvas.width;
+                out.height = canvas.height;
+                const o = out.getContext('2d');
+                o.fillStyle = '#FFF8F0';
+                o.fillRect(0, 0, out.width, out.height);
+                o.drawImage(canvas, 0, 0);
+                image = toJpeg(out);
+            }
+            end();
+            editor(cx + scrollX, cy + scrollY, anchor, null, image);
+        });
+
+        html.classList.add('rv-drawing');
+        document.body.append(canvas, tools);
+        say('Draw on anything, then tap Done.');
+    };
+
+    // A drawing in a thread: fetched with the password, opened large with a tap.
+    const shotOf = (file) => {
+        const img = h('img', { class: 'rv-shot', alt: 'Drawing' });
+        fetch(`${CFG.api}/api/review/images/${encodeURIComponent(file)}`, { headers: { 'X-Review-Pass': localStorage.getItem(PASS_KEY) || '' } })
+            .then((r) => (r.ok ? r.blob() : Promise.reject(new Error('no image'))))
+            .then((b) => { img.src = URL.createObjectURL(b); })
+            .catch(() => { img.replaceWith(h('p', { class: 'note' }, 'The drawing cannot be loaded right now.')); });
+        img.addEventListener('click', () => {
+            const big = h('div', { id: 'rv-lightbox', class: 'rv-ui', onclick: () => big.remove() }, h('img', { src: img.src, alt: 'Drawing' }), h('span', {}, 'Tap anywhere to close'));
+            document.body.append(big);
+        });
+        return img;
+    };
+
     const setPlacing = (on) => {
         placing = on;
         html.classList.toggle('rv-placing', on);
@@ -431,6 +638,7 @@
         document.body.append(pins, banner, panel, bar);
         addBtn.addEventListener('click', () => setPlacing(!placing));
         listBtn.addEventListener('click', () => { closePop(); panel.classList.toggle('open'); });
+        drawBtn.addEventListener('click', startDraw);
         // Capture phase, so a tap while placing never also follows a link or button on the page.
         document.addEventListener('click', (ev) => {
             if (!placing || isUi(ev.target)) return;
