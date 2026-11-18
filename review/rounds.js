@@ -367,6 +367,9 @@
         body.replaceChildren();
         const sp = (tracker.sprints || []).find((x) => String(x.n) === current()) || { title: `Sprint ${current()}`, note: '' };
         body.append(h('div', { class: 'rv-sp' }, h('b', {}, sp.title), h('span', { class: 'rv-pill ok' }, 'Open')), h('p', { class: 'rv-hint' }, sp.note || '', ' ', chipFor('manual', '', 'How this works')));
+        // The sprint can only close when every thread is Resolved or No action (Adam).
+        const stillOpen = threadsIn(current()).filter((c) => !c.resolved).length;
+        body.append(h('div', { class: 'rv-state' + (stillOpen ? ' asked' : ' ok') }, stillOpen ? `${stillOpen} thread${stillOpen === 1 ? '' : 's'} still open. The sprint closes when every thread is Resolved or No action; anyone can reply in any thread.` : 'Every thread is ended: the sprint is ready to close.'));
         for (const ct of liveCats()) body.append(categoryNode(ct, threadsIn(current(), ct.id)));
         const loose = threadsIn(current(), null);
         if (loose.length) body.append(categoryNode({ id: '_loose', title: 'Not filed yet', purpose: 'Iris attaches each of these to a category.' }, loose));
