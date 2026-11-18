@@ -3,28 +3,112 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RegulateED review</title>
+<title>RegulateED team review</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
 <meta name="robots" content="noindex, nofollow">
 <style>html.rv-locked body { visibility: hidden; }</style>
 <script>document.documentElement.classList.add('rv-locked');</script>
 <style>
-    @font-face { font-family: "Open Sans"; font-weight: 400; src: url("../fonts/open-sans-latin-400.woff2") format("woff2"); }
-    @font-face { font-family: "Open Sans"; font-weight: 800; src: url("../fonts/open-sans-latin-800.woff2") format("woff2"); }
-    body { margin: 0; font: 17px/1.5 "Open Sans", system-ui, sans-serif; background: #1F3A4D; color: #fff; }
-    main { max-width: 640px; margin: 0 auto; padding: 48px 24px; }
-    h1 { font-size: 32px; margin: 0 0 4px; font-weight: 800; }
-    p { opacity: .75; margin: 0 0 28px; }
-    a { display: block; background: #FFF8F0; color: #1F3A4D; text-decoration: none; border-radius: 14px; padding: 18px 20px; margin: 0 0 12px; font-weight: 800; font-size: 19px; }
-    a span { display: block; font-weight: 400; font-size: 14px; opacity: .7; }
+    @font-face { font-family: "RegulateED Open Sans"; font-weight: 400; src: url("../fonts/open-sans-latin-400.woff2") format("woff2"); }
+    @font-face { font-family: "RegulateED Open Sans"; font-weight: 600; src: url("../fonts/open-sans-latin-600.woff2") format("woff2"); }
+    @font-face { font-family: "RegulateED Open Sans"; font-weight: 700; src: url("../fonts/open-sans-latin-700.woff2") format("woff2"); }
+    @font-face { font-family: "RegulateED Open Sans"; font-weight: 800; src: url("../fonts/open-sans-latin-800.woff2") format("woff2"); }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; font: 17px/1.55 "RegulateED Open Sans", system-ui, sans-serif; background: #FFF8F0; color: #1F3A4D; }
+    .top { background: #1F3A4D; }
+    .top .in { max-width: 980px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .top svg { width: 190px; display: block; }
+    .pill { font-size: 12px; font-weight: 800; letter-spacing: 2.2px; text-transform: uppercase; color: #1F3A4D; background: #7FD3C6; border-radius: 30px; padding: 6px 14px; white-space: nowrap; }
+    .hero { background: linear-gradient(180deg, #1F3A4D 0, #1F3A4D 62%, #FFF8F0 62%); }
+    .hero .in { max-width: 980px; margin: 0 auto; padding: 34px 24px 0; display: grid; grid-template-columns: 1fr 170px; gap: 24px; align-items: end; }
+    .panel { background: #fff; border: 1px solid #E9E1D6; border-radius: 22px; padding: 30px 32px; box-shadow: 0 18px 44px rgba(31,58,77,.16); }
+    .eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 2.6px; text-transform: uppercase; color: #2A9D8F; margin: 0 0 6px; }
+    h1 { font-size: clamp(28px, 4vw, 38px); line-height: 1.12; margin: 0 0 10px; font-weight: 800; letter-spacing: -.4px; }
+    .lede { margin: 0 0 20px; color: #4A5E6D; max-width: 560px; }
+    .how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .how div { background: #FFF8F0; border-radius: 14px; padding: 12px 14px; font-size: 14px; line-height: 1.4; color: #4A5E6D; }
+    .how b { display: flex; align-items: center; gap: 8px; color: #1F3A4D; font-size: 15px; margin-bottom: 2px; }
+    .how i { font-style: normal; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #F2845C; color: #fff; font-size: 12px; font-weight: 800; }
+    .reggie { width: 160px; overflow: visible; display: block; margin-bottom: 26px; }
+    .reggie * { transform-box: view-box; }
+    .reggie .float { animation: breathe 4s ease-in-out infinite; transform-origin: 50px 88px; }
+    .reggie .shadow { animation: shadow 4s ease-in-out infinite; transform-origin: 50px 95px; }
+    .reggie .sprout { animation: sway 3s ease-in-out infinite; transform-origin: 50px 18px; }
+    main { flex: 1; width: 100%; max-width: 980px; margin: 0 auto; padding: 34px 24px 48px; }
+    .label { font-size: 12px; font-weight: 800; letter-spacing: 2.6px; text-transform: uppercase; color: #2A9D8F; margin: 0 0 12px; }
+    .pages { display: grid; gap: 14px; }
+    .page { display: grid; grid-template-columns: 56px 1fr auto; gap: 18px; align-items: center; background: #fff; border: 1px solid #E9E1D6; border-radius: 18px; padding: 18px 22px; color: inherit; text-decoration: none; transition: border-color .15s, box-shadow .15s, transform .15s; }
+    .page:hover { border-color: #2A9D8F; box-shadow: 0 10px 26px rgba(31,58,77,.12); transform: translateY(-1px); }
+    .page .n { width: 56px; height: 56px; border-radius: 16px; background: #1F3A4D; color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 20px; }
+    .page b { display: block; font-size: 19px; line-height: 1.25; }
+    .page span { display: block; font-size: 15px; color: #4A5E6D; margin-top: 2px; }
+    .page em { font-style: normal; font-weight: 800; color: #2A9D8F; white-space: nowrap; }
+    footer { background: #1F3A4D; color: rgba(255,255,255,.72); font-size: 13px; }
+    footer .in { max-width: 980px; margin: 0 auto; padding: 20px 24px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    footer b { color: #fff; font-weight: 700; }
+    @keyframes breathe { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-6px) scale(1.03, .98); } }
+    @keyframes shadow { 0%, 100% { transform: scale(1); opacity: .28; } 50% { transform: scale(.85); opacity: .18; } }
+    @keyframes sway { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+    @media (prefers-reduced-motion: reduce) { .reggie * { animation: none !important; } }
+    @media (max-width: 720px) {
+        .hero .in { grid-template-columns: 1fr; }
+        .reggie { display: none; }
+        .how { grid-template-columns: 1fr; }
+        .panel { padding: 24px 22px; }
+        .page { grid-template-columns: 44px 1fr; }
+        .page .n { width: 44px; height: 44px; font-size: 17px; border-radius: 12px; }
+        .page em { display: none; }
+    }
 </style>
 </head>
 <body>
+<header class="top"><div class="in">
+    <svg viewBox="0 0 360 100" role="img" aria-label="RegulateED, classroom self-regulation">
+        <circle cx="50" cy="50" r="44" fill="none" stroke-width="4" stroke="rgba(255,255,255,.22)"/>
+        <path d="M14 50 L20 37 L26 62 L32 40 L38 58 L44 50" fill="none" stroke="#F7A27F" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M44 50 C51 37 58 37 65 50 S79 63 86 50" fill="none" stroke="#7FD3C6" stroke-width="7" stroke-linecap="round"/>
+        <text x="114" y="60" style="font:800 40px 'RegulateED Open Sans',sans-serif;letter-spacing:-.5px;fill:#fff">RegulateED</text>
+        <text x="116" y="82" style="font:600 10.5px 'RegulateED Open Sans',sans-serif;letter-spacing:2.2px;fill:#fff;opacity:.65">CLASSROOM SELF-REGULATION</text>
+    </svg>
+    <span class="pill">Team review</span>
+</div></header>
+
+<section class="hero"><div class="in">
+    <div class="panel">
+        <p class="eyebrow">Private preview</p>
+        <h1>The RegulateED team review</h1>
+        <p class="lede">Pages to read, mark up and discuss together. Every comment you leave comes straight back to the RegulateED team.</p>
+        <div class="how">
+            <div><b><i>1</i>Open a page</b>Read it the way a teacher or an OT would.</div>
+            <div><b><i>2</i>Add comment</b>Tap the button, then tap the spot you mean.</div>
+            <div><b><i>3</i>Discuss</b>Reply to a pin, or resolve it when it is settled.</div>
+        </div>
+    </div>
+    <svg class="reggie" viewBox="0 0 100 100" role="img" aria-label="Reggie">
+        <ellipse class="shadow" cx="50" cy="95" rx="24" ry="3.5" fill="#1F3A4D" opacity=".28"/>
+        <g class="float">
+            <g class="sprout"><path d="M50 18 C50 11 54 7 60 6" fill="none" stroke="#2A9D8F" stroke-width="4" stroke-linecap="round"/><circle cx="61" cy="6" r="3.5" fill="#F2845C"/></g>
+            <path d="M50 18 C73 18 86 34 86 56 C86 77 70 88 50 88 C30 88 14 77 14 56 C14 34 27 18 50 18 Z" fill="#2A9D8F"/>
+            <path d="M33 52 Q39 46 45 52 M55 52 Q61 46 67 52" fill="none" stroke="#1F3A4D" stroke-width="4" stroke-linecap="round"/>
+            <path d="M43 64 Q50 70 57 64" fill="none" stroke="#1F3A4D" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="33" cy="62" r="4.5" fill="#F2845C" opacity=".85"/><circle cx="67" cy="62" r="4.5" fill="#F2845C" opacity=".85"/>
+        </g>
+    </svg>
+</div></section>
+
 <main>
-    <h1>RegulateED review</h1>
-    <p>Pages for the team to read and comment on. Tap Add comment on any page, then tap the spot.</p>
-    <a href="data-collection.html">Data collection, K to 5<span>The method matrix, a page per grade and per method, and each child's own iPad</span></a>
+    <p class="label">Pages for review</p>
+    <div class="pages">
+        <a class="page" href="data-collection.html"><span class="n">1</span><div><b>Data collection, K to 5</b><span>The method matrix, a page per grade and per method, and each child's own iPad</span></div><em>Open &rarr;</em></a>
+    </div>
 </main>
-<script>window.REVIEW = {"page":null,"title":"RegulateED review","api":"https://regulateed-review.sashook.com","passHash":"1a55f65e93387e97bce9768422378405e8daf8cdd3e270528c7ccc76f24e32a3"};</script>
+
+<footer><div class="in">
+    <span><b>Calm in two minutes. Ready to learn.</b></span>
+    <span>&copy; 2026 RegulateED &middot; Please keep this link within the team.</span>
+</div></footer>
+<script>window.REVIEW = {"page":null,"title":"RegulateED team review","api":"https://regulateed-review.sashook.com","passHash":"1a55f65e93387e97bce9768422378405e8daf8cdd3e270528c7ccc76f24e32a3"};</script>
 <script src="review.js"></script>
 </body>
 </html>

@@ -14,6 +14,7 @@
         const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
         return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
     };
+    const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
     const h = (tag, attrs, ...kids) => {
         const e = document.createElement(tag);
         for (const [k, v] of Object.entries(attrs || {})) {
@@ -27,13 +28,52 @@
 
     // ---------------------------------------------------------------- styles
     document.head.append(h('style', {}, `
-        #rv-gate { position: fixed; inset: 0; z-index: 9999; background: #1F3A4D; display: grid; place-items: center; visibility: visible; font-family: "Open Sans", system-ui, sans-serif; }
-        #rv-gate form { background: #FFF8F0; color: #1F3A4D; border-radius: 20px; padding: 28px 26px; width: min(380px, 90vw); text-align: center; }
-        #rv-gate h1 { font-size: 24px; margin: 0 0 6px; }
-        #rv-gate p { margin: 0 0 16px; opacity: .75; }
-        #rv-gate input { width: 100%; font: inherit; font-size: 18px; padding: 12px 14px; border: 2px solid #E9E1D6; border-radius: 12px; margin-bottom: 12px; }
-        #rv-gate button { width: 100%; font: inherit; font-weight: 800; font-size: 17px; padding: 12px; border: 0; border-radius: 40px; background: #2A9D8F; color: #fff; cursor: pointer; }
-        #rv-gate .err { color: #C0392B; font-weight: 700; min-height: 1.4em; margin: 8px 0 0; opacity: 1; }
+        @font-face { font-family: "RegulateED Open Sans"; font-weight: 400; src: url("../fonts/open-sans-latin-400.woff2") format("woff2"); }
+        @font-face { font-family: "RegulateED Open Sans"; font-weight: 600; src: url("../fonts/open-sans-latin-600.woff2") format("woff2"); }
+        @font-face { font-family: "RegulateED Open Sans"; font-weight: 700; src: url("../fonts/open-sans-latin-700.woff2") format("woff2"); }
+        @font-face { font-family: "RegulateED Open Sans"; font-weight: 800; src: url("../fonts/open-sans-latin-800.woff2") format("woff2"); }
+        #rv-gate { position: fixed; inset: 0; z-index: 9999; visibility: visible; overflow: auto; font-family: "RegulateED Open Sans", "Open Sans", system-ui, sans-serif; color: #1F3A4D;
+            background: radial-gradient(1200px 700px at 12% -10%, rgba(127,211,198,.20), transparent 60%), radial-gradient(900px 600px at 105% 110%, rgba(242,132,92,.18), transparent 60%), #1F3A4D; }
+        #rv-gate * { box-sizing: border-box; }
+        #rv-gate { overflow-x: hidden; }
+        #rv-gate .rv-watermark path, #rv-gate .rv-watermark circle { stroke: #7FD3C6; }
+        #rv-gate .rv-watermark { position: absolute; right: -14vmin; bottom: -18vmin; width: 70vmin; opacity: .07; pointer-events: none; }
+        #rv-gate .rv-stage { position: relative; min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px 24px; }
+        #rv-gate .rv-hero { width: 104px; margin-bottom: -26px; position: relative; z-index: 1; }
+        #rv-gate .rv-reggie { display: block; width: 100%; overflow: visible; }
+        #rv-gate .rv-reggie * { transform-box: view-box; }
+        #rv-gate .rv-float { animation: rvbreathe 4s ease-in-out infinite; transform-origin: 50px 88px; }
+        #rv-gate .rv-shadow { animation: rvshadow 4s ease-in-out infinite; transform-origin: 50px 95px; }
+        #rv-gate .rv-sprout { animation: rvsway 3s ease-in-out infinite; transform-origin: 50px 18px; }
+        #rv-gate.rv-open .rv-float { animation: rvhop .5s cubic-bezier(.3,.7,.4,1) 1; }
+        #rv-gate.rv-open { animation: rvfade .52s ease-in forwards; }
+        #rv-gate .rv-card { width: min(420px, 100%); background: #FFF8F0; border-radius: 24px; padding: 40px 34px 26px; box-shadow: 0 24px 60px rgba(0,0,0,.28), 0 2px 0 rgba(255,255,255,.6) inset; text-align: left; }
+        #rv-gate .rv-card.rv-bad { animation: rvshake .4s ease-in-out 1; }
+        #rv-gate .rv-lockup { display: block; width: 220px; margin: 0 auto; }
+        #rv-gate .rv-rule { height: 1px; background: #E9E1D6; margin: 20px 0 18px; }
+        #rv-gate .rv-eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 2.6px; text-transform: uppercase; color: #2A9D8F; margin: 0 0 4px; }
+        #rv-gate h1 { font-size: 24px; line-height: 1.2; font-weight: 800; margin: 0 0 8px; letter-spacing: -.2px; }
+        #rv-gate .rv-lede { font-size: 15px; line-height: 1.5; margin: 0 0 20px; color: #4A5E6D; }
+        #rv-gate label { display: block; font-size: 13px; font-weight: 700; margin: 0 0 6px; }
+        #rv-gate .rv-field { display: flex; align-items: center; width: 100%; background: #fff; border: 2px solid #E9E1D6; border-radius: 14px; transition: border-color .15s, box-shadow .15s; }
+        #rv-gate .rv-field:focus-within { border-color: #2A9D8F; box-shadow: 0 0 0 4px rgba(42,157,143,.16); }
+        #rv-gate .rv-bad .rv-field { border-color: #D9534F; box-shadow: 0 0 0 4px rgba(217,83,79,.14); }
+        #rv-gate input { flex: 1; min-width: 0; width: 100%; font: inherit; font-size: 17px; color: #1F3A4D; background: transparent; border: 0; outline: 0; padding: 13px 14px; }
+        #rv-gate .rv-show { flex: none; font: inherit; font-size: 13px; font-weight: 700; color: #2A9D8F; background: none; border: 0; padding: 8px 14px; cursor: pointer; }
+        #rv-gate .rv-go { display: block; width: 100%; margin-top: 14px; font: inherit; font-weight: 800; font-size: 16px; letter-spacing: .2px; padding: 14px; border: 0; border-radius: 40px; background: #2A9D8F; color: #fff; cursor: pointer; box-shadow: 0 8px 18px rgba(42,157,143,.32); transition: transform .12s, background .15s; }
+        #rv-gate .rv-go:hover { background: #24897D; }
+        #rv-gate .rv-go:active { transform: translateY(1px); }
+        #rv-gate .rv-err { min-height: 22px; margin: 10px 0 0; font-size: 14px; font-weight: 700; color: #C0392B; text-align: center; }
+        #rv-gate footer { background: none; padding: 0; margin-top: 22px; max-width: 420px; text-align: center; color: rgba(255,255,255,.72); font-size: 13px; line-height: 1.6; }
+        #rv-gate footer b { display: block; color: #fff; font-size: 15px; font-weight: 700; }
+        @keyframes rvbreathe { 0%, 100% { transform: translateY(0) scale(1, 1); } 50% { transform: translateY(-5px) scale(1.03, .98); } }
+        @keyframes rvshadow { 0%, 100% { transform: scale(1); opacity: .3; } 50% { transform: scale(.85); opacity: .2; } }
+        @keyframes rvsway { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+        @keyframes rvhop { 0% { transform: translateY(0); } 40% { transform: translateY(-20px); } 100% { transform: translateY(0); } }
+        @keyframes rvfade { 60% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes rvshake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+        @media (prefers-reduced-motion: reduce) { #rv-gate *, #rv-gate { animation: none !important; } }
+        @media (max-width: 420px) { #rv-gate .rv-card { padding: 34px 22px 22px; } #rv-gate .rv-lockup { width: 190px; } }
         .rv-ui { font-family: "Open Sans", system-ui, sans-serif; color: #1F3A4D; }
         #rv-bar { position: fixed; right: 18px; bottom: 18px; z-index: 9000; display: flex; gap: 8px; }
         #rv-bar button { font: inherit; font-weight: 800; border: 0; border-radius: 40px; padding: 12px 18px; cursor: pointer; box-shadow: 0 6px 18px rgba(31,58,77,.25); }
@@ -75,6 +115,23 @@
     `));
 
     // ------------------------------------------------------------------ gate
+    // The brand's own artwork, as on the holding page: the reset wave lockup and Reggie.
+    const WAVE = '<circle cx="50" cy="50" r="44" fill="none" stroke-width="4" stroke="rgba(42,157,143,.28)"/>'
+        + '<path d="M14 50 L20 37 L26 62 L32 40 L38 58 L44 50" fill="none" stroke="#F2845C" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>'
+        + '<path d="M44 50 C51 37 58 37 65 50 S79 63 86 50" fill="none" stroke="#2A9D8F" stroke-width="7" stroke-linecap="round"/>';
+    const LOCKUP = `<svg class="rv-lockup" viewBox="0 0 360 100" role="img" aria-label="RegulateED, classroom self-regulation">${WAVE}`
+        + '<text x="114" y="60" style="font:800 40px \'RegulateED Open Sans\',sans-serif;letter-spacing:-.5px;fill:#1F3A4D">RegulateED</text>'
+        + '<text x="116" y="82" style="font:600 10.5px \'RegulateED Open Sans\',sans-serif;letter-spacing:2.2px;fill:#1F3A4D;opacity:.65">CLASSROOM SELF-REGULATION</text></svg>';
+    const REGGIE = '<svg class="rv-reggie" viewBox="0 0 100 100" role="img" aria-label="Reggie">'
+        + '<ellipse class="rv-shadow" cx="50" cy="95" rx="24" ry="3.5" fill="#000" opacity=".3"/>'
+        + '<g class="rv-float"><g class="rv-body">'
+        + '<g class="rv-sprout"><path d="M50 18 C50 11 54 7 60 6" fill="none" stroke="#7FD3C6" stroke-width="4" stroke-linecap="round"/><circle cx="61" cy="6" r="3.5" fill="#F7A27F"/></g>'
+        + '<path d="M50 18 C73 18 86 34 86 56 C86 77 70 88 50 88 C30 88 14 77 14 56 C14 34 27 18 50 18 Z" fill="#7FD3C6"/>'
+        + '<path d="M33 52 Q39 46 45 52 M55 52 Q61 46 67 52" fill="none" stroke="#1F3A4D" stroke-width="4" stroke-linecap="round"/>'
+        + '<path d="M43 64 Q50 70 57 64" fill="none" stroke="#1F3A4D" stroke-width="4" stroke-linecap="round"/>'
+        + '<circle cx="33" cy="62" r="4.5" fill="#F7A27F" opacity=".85"/><circle cx="67" cy="62" r="4.5" fill="#F7A27F" opacity=".85"/>'
+        + '</g></g></svg>';
+
     const unlock = () => {
         html.classList.remove('rv-locked');
         document.getElementById('rv-gate')?.remove();
@@ -83,15 +140,53 @@
     const gate = async () => {
         const saved = localStorage.getItem(PASS_KEY);
         if (saved && await sha256(saved) === CFG.passHash) { unlock(); return; }
-        const err = h('p', { class: 'err' });
-        const input = h('input', { type: 'password', placeholder: 'Password', autocomplete: 'current-password' });
-        const form = h('form', {}, h('h1', {}, 'RegulateED review'), h('p', {}, 'For the team only. Enter the review password.'), input, h('button', { type: 'submit' }, 'Open'), err);
+        const wrap = h('div', { id: 'rv-gate', role: 'dialog', 'aria-label': 'RegulateED team review' });
+        wrap.innerHTML = `
+            <svg class="rv-watermark" viewBox="0 0 100 100" aria-hidden="true">${WAVE}</svg>
+            <div class="rv-stage">
+                <div class="rv-hero">${REGGIE}</div>
+                <form class="rv-card" novalidate>
+                    ${LOCKUP}
+                    <div class="rv-rule"></div>
+                    <div class="rv-eyebrow">Team review</div>
+                    <h1>${CFG.page ? esc(CFG.title || 'RegulateED review') : 'Welcome to the review'}</h1>
+                    <p class="rv-lede">Private preview pages for the RegulateED team. Enter the review password to continue.</p>
+                    <label for="rv-pass">Review password</label>
+                    <div class="rv-field">
+                        <input id="rv-pass" type="password" autocomplete="current-password" spellcheck="false" autocapitalize="off">
+                        <button type="button" class="rv-show" aria-label="Show password">Show</button>
+                    </div>
+                    <button type="submit" class="rv-go">Open review</button>
+                    <p class="rv-err" role="alert"></p>
+                </form>
+                <footer><b>Calm in two minutes. Ready to learn.</b><span>&copy; 2026 RegulateED &middot; Please keep this link within the team.</span></footer>
+            </div>`;
+        document.body.append(wrap);
+        const form = wrap.querySelector('form');
+        const input = wrap.querySelector('#rv-pass');
+        const err = wrap.querySelector('.rv-err');
+        const show = wrap.querySelector('.rv-show');
+        show.addEventListener('click', () => {
+            const hidden = input.type === 'password';
+            input.type = hidden ? 'text' : 'password';
+            show.textContent = hidden ? 'Hide' : 'Show';
+            input.focus();
+        });
+        input.addEventListener('input', () => { err.textContent = ''; form.classList.remove('rv-bad'); });
         form.addEventListener('submit', async (ev) => {
             ev.preventDefault();
-            if (await sha256(input.value) === CFG.passHash) { localStorage.setItem(PASS_KEY, input.value); unlock(); }
-            else { err.textContent = 'That is not the password.'; input.select(); }
+            if (input.value && await sha256(input.value) === CFG.passHash) {
+                localStorage.setItem(PASS_KEY, input.value);
+                wrap.classList.add('rv-open');
+                setTimeout(unlock, 520);
+                return;
+            }
+            err.textContent = input.value ? 'That password is not right. Please try again.' : 'Please enter the review password.';
+            form.classList.remove('rv-bad');
+            void form.offsetWidth;
+            form.classList.add('rv-bad');
+            input.select();
         });
-        document.body.append(h('div', { id: 'rv-gate' }, form));
         input.focus();
     };
 
