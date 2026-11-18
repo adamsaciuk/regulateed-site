@@ -152,8 +152,11 @@
     const threadsIn = (sp, catId) => comments().filter((c) => isThread(c) && sprintOf(c) === sp && (catId === undefined ? true : catId === null ? !filed(c) : c.category === catId));
     const seen = (key) => { try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch { return {}; } };
     const markSeen = (key, id) => { const m = seen(key); m[id] = new Date().toISOString(); localStorage.setItem(key, JSON.stringify(m)); };
-    const chatOf = (who) => comments().filter((c) => c.page === 'chat' && c.route === who).sort((a, b) => a.created.localeCompare(b.created));
-    const irisUnseen = () => { const s = seen(CHAT_SEEN).chat || ''; return chatOf(me()).filter((c) => c.role === 'iris' && c.created > s); };
+    // A reader's Iris Chat holds their own talk with Iris and every message a teammate sent to the team.
+    const chatOf = (who) => comments().filter((c) => c.page === 'chat' && (c.route === who || c.team)).sort((a, b) => a.created.localeCompare(b.created));
+    const fromOthers = (c) => c.role === 'iris' || (c.team && c.route !== me());
+    const irisUnseen = () => { const s = seen(CHAT_SEEN).chat || ''; return chatOf(me()).filter((c) => fromOthers(c) && c.created > s); };
+    const firstName = (n) => { const f = String(n || '').split(' ')[0]; return f.charAt(0).toUpperCase() + f.slice(1); };
     const lastReply = (c) => { const r = RV.repliesOf(c); return r[r.length - 1]; };
     const stateOf = (c) => {
         if (c.resolved) return c.outcome === 'noaction' ? ['No action', 'na'] : ['Resolved', 'res'];
@@ -479,6 +482,9 @@
         area.value = drafts._chat || '';
         area.addEventListener('input', () => { drafts._chat = area.value; });
         const link = h('button', { type: 'button', title: 'Tap a spot on the page to link it here' }, 'Link a spot');
+        // Send to team (Adam): the message goes to Iris as always, and shows in every teammate's Iris Chat.
+        const team = h('button', { type: 'button', class: drafts._team ? 'on' : '', title: 'Also show this message in the team\'s Iris Chat' }, drafts._team ? '✓ Send to team' : 'Send to team');
+        team.addEventListener('click', () => { drafts._team = !drafts._team; team.classList.toggle('on', drafts._team); team.textContent = drafts._team ? '✓ Send to team' : 'Send to team'; });
         const go = h('button', { class: 'main', type: 'button' }, 'Send');
         link.addEventListener('click', () => {
             if (linkTarget === area) { stopLinking(); return; }
@@ -495,12 +501,12 @@
             if (!area.value.trim()) { area.focus(); return; }
             localStorage.setItem(RV.NAME_KEY, name);
             go.disabled = true;
-            try { await send(name, area.value.trim()); area.value = ''; delete drafts._chat; }
+            try { await send(name, area.value.trim(), !!drafts._team); area.value = ''; delete drafts._chat; delete drafts._team; }
             catch { RV.say('That did not send. The review service may be down; please try again in a little while.'); setTimeout(() => RV.say(''), 5000); }
             go.disabled = false;
             await RV.sync();
         });
-        wrap.append(area, h('div', { class: 'row' }, link, go));
+        wrap.append(area, h('div', { class: 'row' }, h('span', { style: 'display:flex;gap:6px' }, link, team), go));
         return wrap;
     };
     const stopLinking = () => {
@@ -519,8 +525,8 @@
         body.dataset.sig = sig;
         body.replaceChildren();
         body.append(h('div', { class: 'rv-msgs' }, ...msgs.map((m) => h('div', { class: 'rv-msg' + (m.role === 'iris' ? ' iris' : RV.mine(m) ? ' me' : '') },
-            h('div', { class: 'who' }, m.role === 'iris' ? 'Iris' : m.name, h('time', {}, when(m.created))), ...chips(m.text)))));
-        body.append(composer('Message Iris', (name, text) => RV.api('POST', '/api/review/comments', { page: 'chat', version: '1', route: name.trim().toLowerCase(), anchor: null, parent: null, name, text })));
+            h('div', { class: 'who' }, m.role === 'iris' ? 'Iris' : m.name, m.team ? ' · to the team' : '', h('time', {}, when(m.created))), ...chips(m.text)))));
+        body.append(composer('Message Iris', (name, text, team) => RV.api('POST', '/api/review/comments', { page: 'chat', version: '1', route: name.trim().toLowerCase(), anchor: null, parent: null, name, text, team })));
         markSeen(CHAT_SEEN, 'chat');
         document.getElementById('rv-card')?.remove();
         setTimeout(() => irisBtn.classList.remove('fresh'), 0);
@@ -537,7 +543,7 @@
         const first = who.split(' ')[0];
         const fresh = comments().filter(isThread).reduce((n, x) => n + RV.unreadIn(x), 0);
         const el = h('div', { id: 'rv-card', class: 'rv-ui', role: 'dialog' },
-            h('div', { class: 'hd', html: RV.AVATAR + `<span>${RV.esc(first ? first.charAt(0).toUpperCase() + first.slice(1) + ', m' : 'M')}essage from IRIS</span>` }),
+            h('div', { class: 'hd', html: RV.AVATAR + `<span>${RV.esc(first ? first.charAt(0).toUpperCase() + first.slice(1) + ', m' : 'M')}essage from ${last.role === 'iris' ? 'IRIS' : RV.esc(firstName(last.name))}</span>` }),
             h('div', { class: 'tx' }, ...chips(last.text)),
             msgs.length > 1 ? h('div', { class: 'also' }, `${msgs.length - 1} earlier message${msgs.length > 2 ? 's' : ''} in Iris Chat.`) : null,
             fresh ? h('div', { class: 'also' }, `You also have ${fresh} new repl${fresh === 1 ? 'y' : 'ies'} in your threads.`) : null,
