@@ -510,7 +510,7 @@
 <section class="page" id="p-foundations-versions" data-crumb="Sprints and comments">
     <p class="eyebrow">Foundations</p>
     <h2>Sprints, and what happens to comments when the map changes.</h2>
-    <p class="lead">We work in sprints. Each sprint: we comment, Iris files every comment on the tracker, we talk it through, Adam decides, and the map is rebuilt for the next sprint. Nothing anyone says is lost.</p>
+    <p class="lead">A sprint is one collaboration session. We go through the whole site commenting, asking and discussing; every thread is attached to a category. To close a sprint, each thread ends resolved (something changes) or with no action. Each category then holds its actions, findings and agreements: the update list Iris builds from before the next sprint opens fresh. Nothing anyone says is lost.</p>
     <div class="grid2">
         <div class="card"><div class="tag">Every comment remembers</div><ul><li>The page, and the sprint it was made in</li><li>The place in the workflow (for example Step 2 › The event)</li><li>The spot: the element tapped, and where in it</li><li>A drawing, if there was one</li></ul></div>
         <div class="card"><div class="tag">Every sprint is kept</div><ul><li>The map as it stood in each sprint is kept at its own address</li><li>A comment can always be opened exactly where it was made</li><li>An earlier sprint's page says so, with a link to the current sprint</li></ul></div>
@@ -530,7 +530,15 @@
     <p class="lead">When a comment asks what the research says, the answer comes here, in one shape every time: the question in your words, the short answer, how strong the evidence is, what it means for RegulateED, and the sources. Each answer links to its tracker item, and the item links back.</p>
     <div class="quote"><b>Jordan's rule, Sprint 1</b>"if you find reserach please make it schoarly within the last 10 years"</div>
     <div class="tiles" id="research-list"></div>
-    <p class="note" style="margin-top:14px">Sources from 2016 or later come first. An older study appears only when it is the founding work, and is marked so.</p>
+    <p class="note" style="margin-top:14px">Sources from 2016 or later come first. An older study appears only when it is the founding work, and is marked so. Every source, with who asked and how it was found, is in the <a href="#foundations/sources" style="color:var(--teal);font-weight:800">sources register</a>.</p>
+    <div class="card"><div class="tag">How a research request works</div><ol style="margin:4px 0 0"><li>Tick <b>This is a research request</b> when you start a thread, or ask in a thread or in Iris Chat.</li><li>The thread shows <b>Research requested</b>, then <b>Research in progress</b>.</li><li>The answer comes back in the same thread, as a short reply with a link to its page here, and its findings roll up into the thread's category.</li><li>Every source goes in the sources register, credited to who asked and how it was found.</li></ol></div>
+</section>
+
+<section class="page" id="p-foundations-sources" data-crumb="Sources register">
+    <p class="eyebrow">Foundations</p>
+    <h2>The sources register: every source we rely on, and where it came from.</h2>
+    <p class="lead">For scientific tracking and credit: each source appears once, with the research answers that use it, who asked the question, and how and when it was found.</p>
+    <div id="sources-reg"></div>
 </section>
 
 <!-- ===================== STEP 1: DATA COLLECTION (from Data collection v1) ===================== -->
@@ -1240,6 +1248,12 @@
             means: ['A random ID per child from the app; the name-to-ID key stays with the school, never with RegulateED.', 'Change read mostly at class level: the share moving Red or Yellow to Green after a reset.', 'Expect mostly Green taps, and add a teacher-observed measure.', 'IRB review, a school data agreement, parent notice or consent and the child\'s agreement before the pilot.', 'Adam\'s call: this changes the rule that K and G1 keep no record of one child.'],
             sources: [['Respondent-generated code for matching adolescent surveys 2017. J Adolescent Health 60(6):751-753', 'https://pubmed.ncbi.nlm.nih.gov/28279541/', 2017], ['Tidd ST, et al. 2021. Educational and Psychological Measurement', 'https://doi.org/10.1177/0013164420938457', 2021], ['Palmer CA, et al. 2020. Evaluation and Program Planning 80', 'https://doi.org/10.1016/j.evalprogplan.2020.101794', 2020], ['Naegeli AN, et al. 2018. J Patient-Reported Outcomes 2:39', 'https://doi.org/10.1186/s41687-018-0051-8', 2018], ['Allen JL, et al. 2017. HIFAMS. Clinical Child Psychology and Psychiatry', 'https://doi.org/10.1177/1359104516687612', 2017], ['Milojevich HM, et al. 2023. PLoS ONE', 'https://doi.org/10.1371/journal.pone.0290148', 2023], ['FERPA, 34 CFR 99', 'https://www.ecfr.gov/current/title-34/subtitle-A/part-99', 2024], ['PPRA, 34 CFR 98', 'https://www.ecfr.gov/current/title-34/subtitle-A/part-98', 2024], ['Common Rule, 45 CFR 46', 'https://www.ecfr.gov/current/title-45/subtitle-A/subchapter-A/part-46', 2024], ['Amended COPPA rule 2025', 'https://www.federalregister.gov/documents/2025/04/22/2025-05904/childrens-online-privacy-protection-rule', 2025], ['Yurek LA, et al. 2008. Evaluation Review', 'https://doi.org/10.1177/0193841X08316676', 2008]] },
     ];
+    // Where each answer's sources were found, for scientific tracking and credit (Adam, Sprint 2).
+    const FOUND = {
+        batch1: { on: '18 November 2026', by: 'a research agent for Iris', via: 'Europe PMC abstracts and publisher pages (PubMed blocked direct fetching), the NCES School Pulse Panel spreadsheet, and K-12 Dive and Education Week reporting' },
+        batch2: { on: '18 November 2026', by: 'a research agent for Iris', via: 'publisher, PubMed and university repository records, each source checked and any it could not verify left out' },
+    };
+    const FOUND_OF = { faces: 'batch1', together: 'batch1', devices: 'batch1', body: 'batch2', rewards: 'batch2', pilot: 'batch2', timing: 'batch2', perchild: 'batch2' };
     window.reviewResearch = Object.fromEntries(RESEARCH.map((r) => [r.id, r.title]));
     const itemBtn = (id) => `<button class="rchip" onclick="window.RVX && RVX.openItem('${id}')">${id} on the tracker</button>`;
     document.getElementById('research-list').innerHTML = RESEARCH.map((r) => `<button class="tile${r.status === 'ready' ? '' : ' soon'}" onclick="go('foundations/research/${r.id}')"><b>${esc(r.title)}</b><span>${r.status === 'ready' ? GRADE[r.grade] + ' evidence' : 'Being researched'} · ${r.items.join(', ')}</span></button>`).join('');
@@ -1256,9 +1270,21 @@
                 <div class="card"><div class="tag">What the evidence shows</div><ul>${r.shows.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>
                 <div class="card"><div class="tag">What it means for RegulateED</div><ul>${r.means.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div>
             </div>
-            <div class="card"><div class="tag">Sources, last 10 years first</div><ol class="sources">${srcs.map(([t, u, y]) => `<li>${esc(t)}${y < 2016 ? ' <i>(older, founding study)</i>' : ''}${u ? ` <a href="${esc(u)}" target="_blank" rel="noopener">${esc(u.replace(/^https?:\/\//, ''))}</a>` : ''}</li>`).join('')}</ol></div>`}
+            <div class="card"><div class="tag">Sources, last 10 years first</div><ol class="sources">${srcs.map(([t, u, y]) => `<li>${esc(t)}${y < 2016 ? ' <i>(older, founding study)</i>' : ''}${u ? ` <a href="${esc(u)}" target="_blank" rel="noopener">${esc(u.replace(/^https?:\/\//, ''))}</a>` : ''}</li>`).join('')}</ol>
+                <p class="note" style="margin:8px 0 0">Asked by ${esc(r.asked[0])}. Found by ${esc(FOUND[FOUND_OF[r.id]].by)} on ${esc(FOUND[FOUND_OF[r.id]].on)}, through ${esc(FOUND[FOUND_OF[r.id]].via)}. Every source is also in the <a href="#foundations/sources" style="color:var(--teal);font-weight:800">sources register</a>.</p></div>`}
         </section>`));
     }
+
+    // The sources register: every source once, with where it was used, who asked and how it was found.
+    const REG = new Map();
+    for (const r of RESEARCH) for (const [t, u, y] of r.sources || []) {
+        const key = (u || t).toLowerCase();
+        if (!REG.has(key)) REG.set(key, { t, u, y, used: [] });
+        REG.get(key).used.push(r);
+    }
+    const regRows = [...REG.values()].sort((a, b) => (b.y >= 2016) - (a.y >= 2016) || a.t.localeCompare(b.t));
+    document.getElementById('sources-reg').innerHTML = `<p class="note">${regRows.length} sources across ${RESEARCH.filter((r) => r.status === 'ready').length} research answers.</p>` + regRows.map((s) => `<div class="card" style="margin-bottom:8px"><b>${esc(s.t)}</b>${s.y < 2016 ? ' <i>(older, founding study)</i>' : ''}${s.u ? `<br><a href="${esc(s.u)}" target="_blank" rel="noopener" style="color:var(--teal)">${esc(s.u.replace(/^https?:\/\//, ''))}</a>` : ''}
+        <p class="note" style="margin:6px 0 0">Used in: ${s.used.map((r) => `<a href="#foundations/research/${r.id}" style="color:var(--teal);font-weight:800">${esc(r.title)}</a>`).join(' · ')}<br>Asked by ${[...new Set(s.used.map((r) => r.asked[0]))].join(', ')} · found by ${esc(FOUND[FOUND_OF[s.used[0].id]].by)} on ${esc(FOUND[FOUND_OF[s.used[0].id]].on)}, through ${esc(FOUND[FOUND_OF[s.used[0].id]].via)}</p></div>`).join('');
 
     document.getElementById('fw').innerHTML = FRAMEWORKS.map((x) => `<div class="card"><div class="famrow"><h3>${esc(x.name)}</h3>${badge(x.grade)}</div><p>${esc(x.status)}</p><p><b>For RegulateED:</b> ${esc(x.forUs)}</p>${src(x.sources)}</div>`).join('');
 
@@ -1312,7 +1338,7 @@
     show();
 </script>
 <script>window.REVIEW = {"page":"workflow","version":"2","file":"index.html","links":{"current":"index.html","currentPage":"workflow","data-collection@1":"data-collection.html","workflow@1":"workflow-v1.html","manual":"manual.html","demo":"demo.html"},"title":"RegulateED product workflow","api":"https://regulateed-review.sashook.com","passHash":"1a55f65e93387e97bce9768422378405e8daf8cdd3e270528c7ccc76f24e32a3","sources":[{"page":"data-collection","version":"1","sprint":"1","tag":"Sprint 1 data collection","file":"data-collection.html","carry":[["","collect"],["grade/","collect/grade/"],["method/","collect/method/"],["concept/own-ipad","collect/own-ipad"],["concept/insights","insights/to-activities"],["concept/event","insights/event"],["concept/split","insights/split"],["concept/privacy","foundations/privacy"]]},{"page":"workflow","version":"1","sprint":"1","tag":"Sprint 1 workflow","file":"workflow-v1.html","carry":[]}],"nav":{"bottom":{"label":"Sprints","href":"#sprints"}}};</script>
-<script src="review.js?v=fb8fc50453"></script>
-<script src="rounds.js?v=fb8fc50453"></script>
+<script src="review.js?v=f7752c6485"></script>
+<script src="rounds.js?v=f7752c6485"></script>
 </body>
 </html>

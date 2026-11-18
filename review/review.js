@@ -401,7 +401,7 @@
         }
         return anchor;
     };
-    const placed = () => comments.filter((c) => !c.parent).map((c) => {
+    const placed = () => comments.filter((c) => !c.parent && c.page !== 'chat' && c.page !== 'item' && (!RVX().visible || RVX().visible(c))).map((c) => {
         if (isNative(c)) return { c, where: c.route, from: null, anchor: c.anchor };
         const s = sourceOf(c);
         return s ? { c, where: carryRoute(s, c.route), from: s, anchor: carryAnchor(s, c.anchor) } : null;
@@ -464,14 +464,18 @@
         if (image) box.append(h('img', { class: 'rv-shot', src: image, alt: 'Your drawing' }));
         const nameInput = needName(box);
         const area = h('textarea', { placeholder: parent ? 'Reply' : image ? 'What does your drawing point at? (optional)' : 'Your comment', maxlength: '4000' });
+        const filing = !parent && RVX().categoryPicker ? RVX().categoryPicker() : null;
+        if (filing) box.append(filing.el);
         const save = h('button', { class: 'main' }, parent ? 'Reply' : 'Save');
         box.append(area, h('div', { class: 'row' }, h('button', { onclick: closePop }, 'Cancel'), save));
         save.addEventListener('click', async () => {
             const name = nameInput ? nameInput.value.trim() : localStorage.getItem(NAME_KEY);
             if (!name) { nameInput.focus(); return; }
             if (!area.value.trim() && !image) { area.focus(); return; }
+            if (filing && !filing.value()) { filing.ask(); return; }
             localStorage.setItem(NAME_KEY, name);
-            const item = { page: CFG.page, version: VERSION, route: route(), anchor, parent, name, text: area.value.trim(), image: image || null };
+            const item = { page: CFG.page, version: VERSION, route: route(), anchor, parent, name, text: area.value.trim(), image: image || null,
+                category: filing ? filing.value() : null, research: filing ? filing.research() : false };
             save.disabled = true;
             try {
                 await api('POST', '/api/review/comments', item);
@@ -512,15 +516,17 @@
                 h('time', {}, new Date(one.created).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })),
                 h('p', {}, ...chipsOf(one.text)), one.image ? shotOf(one.image) : null));
         }
-        if (c.resolved) box.append(h('div', { class: 'rv-closed' }, 'Closed'));
+        if (c.resolved) box.append(h('div', { class: 'rv-closed' }, c.outcome === 'noaction' ? 'Closed with no action' : 'Resolved'));
         markSeen(c.id);
         setTimeout(render, 0);
-        const resolve = h('button', {}, c.resolved ? 'Reopen' : 'Resolve');
-        resolve.addEventListener('click', async () => {
-            try { await api('POST', `/api/review/comments/${c.id}/resolve`, { resolved: !c.resolved }); } catch { /* shown by sync */ }
+        const end = (resolved, outcome) => async () => {
+            try { await api('POST', `/api/review/comments/${c.id}/resolve`, { resolved, outcome }); } catch { /* shown by sync */ }
             closePop();
             await sync();
-        });
+        };
+        const resolve = c.resolved
+            ? h('button', { onclick: end(false) }, 'Reopen')
+            : h('span', { style: 'display:contents' }, h('button', { onclick: end(true, 'resolved'), title: 'Agreed: something changes' }, 'Resolved'), h('button', { onclick: end(true, 'noaction'), title: 'Discussed: nothing changes' }, 'No action'));
         const replyBox = editor(0, 0, null, c.id);
         box.append(replyBox.firstChild ? h('div', { class: 'rv-replybox', style: 'margin-top:10px' }, ...replyBox.childNodes) : null);
         box.querySelector('.row')?.prepend(resolve);
@@ -528,10 +534,10 @@
     };
 
     // Native comments are numbered 1, 2, 3; carried ones wear their sprint (S1).
-    const labelOf = (item, n) => (item.from ? 'S' + (item.from.sprint || String(item.from.tag).replace(/^Sprint (\d+).*$/, '$1')) : String(n));
+    const labelOf = (item, n) => String(n);
     const numberedItems = () => {
         let n = 0;
-        return placed().map((item) => ({ ...item, label: labelOf(item, item.from ? 0 : ++n) }));
+        return placed().map((item) => ({ ...item, label: labelOf(item, ++n) }));
     };
     const render = () => {
         pins.replaceChildren();
