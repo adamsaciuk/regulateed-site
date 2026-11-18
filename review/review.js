@@ -135,6 +135,8 @@
         #rv-banner { position: fixed; left: 50%; top: 72px; transform: translateX(-50%); z-index: 9000; background: #1F3A4D; color: #fff; padding: 10px 18px; border-radius: 40px; font-weight: 700; font-size: 15px; display: none; max-width: 92vw; text-align: center; }
         #rv-banner.show { display: block; }
         #rv-banner.off { background: #C0392B; }
+        #rv-banner.pause { background: #FFF4EC; color: #1F3A4D; border: 2px solid #F2845C; }
+        html.rv-paused #rv-bar .add, html.rv-paused #rv-bar .draw, html.rv-paused .rv-replybox { display: none; }
         html.rv-placing, html.rv-placing * { cursor: crosshair !important; }
         #rv-pins { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 8000; }
         .rv-pin { position: absolute; width: 30px; height: 30px; margin: -30px 0 0 -4px; border-radius: 50% 50% 50% 0; background: #F2845C; color: #fff; font: 800 13px/30px "Open Sans", system-ui, sans-serif; text-align: center; border: 2px solid #fff; box-shadow: 0 3px 10px rgba(31,58,77,.35); cursor: pointer; padding: 0; }
@@ -270,6 +272,7 @@
     let placing = false;
     let greeted = false;
     let online = true;
+    let paused = null;
     const pins = h('div', { id: 'rv-pins', class: 'rv-ui' });
     const banner = h('div', { id: 'rv-banner', class: 'rv-ui' });
     const panelBody = h('div', { class: 'body' });
@@ -296,6 +299,7 @@
     };
     const offlineNote = () => {
         const n = queue().length;
+        if (paused) { banner.textContent = paused; banner.className = 'rv-ui show pause'; return; }
         say(online ? '' : `Comments can't reach the review service right now${n ? `; ${n} of yours kept on this device and sent when it is back` : ''}.`, true);
     };
 
@@ -310,7 +314,12 @@
 
     const sync = async () => {
         try {
-            for (const item of queue()) {
+            // A maintenance pause (Adam): the team reads but cannot add until Iris lifts it; queued comments wait.
+            const st = await api('GET', '/api/review/state').catch(() => ({ paused: false }));
+            paused = st.paused ? (st.note || 'Maintenance pause: comments are closed for a short while.') : null;
+            html.classList.toggle('rv-paused', !!paused);
+            if (paused) { setPlacing(false); }
+            for (const item of paused ? [] : queue()) {
                 await api('POST', '/api/review/comments', item);
                 setQueue(queue().slice(1));
             }
@@ -484,7 +493,7 @@
             await sync();
         });
         const replyBox = editor(0, 0, null, c.id);
-        box.append(replyBox.firstChild ? h('div', { style: 'margin-top:10px' }, ...replyBox.childNodes) : null);
+        box.append(replyBox.firstChild ? h('div', { class: 'rv-replybox', style: 'margin-top:10px' }, ...replyBox.childNodes) : null);
         box.querySelector('.row')?.prepend(resolve);
         place(box, x, y);
     };
