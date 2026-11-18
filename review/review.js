@@ -323,7 +323,7 @@
                 await api('POST', '/api/review/comments', item);
                 setQueue(queue().slice(1));
             }
-            const pages = [...new Set([CFG.page, ...SOURCES.map((s) => s.page)])];
+            const pages = [...new Set([CFG.page, ...SOURCES.map((s) => s.page), 'chat', 'item'])];
             comments = (await api('GET', '/api/review/comments?' + pages.map((p) => 'page=' + encodeURIComponent(p)).join('&'))).comments;
             online = true;
         } catch {
@@ -465,9 +465,15 @@
         return box;
     };
 
+    // Review rounds (rounds.js): links in a comment become chips, and a thread says where it stands.
+    const RVX = () => window.RVX || {};
+    const chipsOf = (t) => (RVX().chips ? RVX().chips(t) : [t]);
+    const plainOf = (t) => (RVX().plain ? RVX().plain(t) : t);
     const thread = (c, x, y, from, approx) => {
         closePop();
         const box = h('div', { class: 'rv-pop' });
+        const head = RVX().threadHead && RVX().threadHead(c);
+        if (head) box.append(head);
         if (from) {
             box.append(h('div', { class: 'rv-from' },
                 h('b', {}, `From ${from.tag}`), approx ? ' · the exact spot has changed, so this pin may have moved. ' : ' ',
@@ -481,7 +487,7 @@
                 one.role === 'iris' ? h('span', { class: 'rv-avatar', html: AVATAR }) : null,
                 h('b', {}, one.role === 'iris' ? 'Iris' : one.name), one.role === 'iris' ? h('span', { class: 'rv-team' }, 'RegulateED team') : null,
                 h('time', {}, new Date(one.created).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })),
-                h('p', {}, one.text), one.image ? shotOf(one.image) : null));
+                h('p', {}, ...chipsOf(one.text)), one.image ? shotOf(one.image) : null));
         }
         if (c.resolved) box.append(h('div', { class: 'rv-closed' }, 'Closed'));
         markSeen(c.id);
@@ -513,7 +519,7 @@
             if (where !== here || c.resolved) continue;
             const p = pointOf(anchor);
             if (!p) continue;
-            const pin = h('button', { class: 'rv-pin' + (from ? ' carried' : '') + (p.approx ? ' moved' : '') + (unreadIn(c) ? ' unread' : ''), 'data-id': c.id, title: `${from ? from.tag + ': ' : ''}${c.name}: ${c.text.slice(0, 80)}` }, h('span', {}, label));
+            const pin = h('button', { class: 'rv-pin' + (from ? ' carried' : '') + (p.approx ? ' moved' : '') + (unreadIn(c) ? ' unread' : ''), 'data-id': c.id, title: `${from ? from.tag + ': ' : ''}${c.name}: ${plainOf(c.text).slice(0, 80)}` }, h('span', {}, label));
             pin.style.left = p.x + 'px';
             pin.style.top = p.y + 'px';
             pin.addEventListener('click', (ev) => { ev.stopPropagation(); thread(c, p.x, p.y, from, p.approx); });
@@ -544,6 +550,28 @@
             document.body.append(note);
         }
         renderPanel(items);
+        if (RVX().render) RVX().render();
+    };
+
+    // Open a thread where it lives: scroll to its pin and open it; a closed thread has no pin, so it opens
+    // at its spot (or the top) all the same. A thread made on another page opens there (rounds.js).
+    const openItem = ({ c, where, from, anchor }) => {
+        panel.classList.remove('open');
+        if (route() !== where) location.hash = where;
+        setTimeout(() => {
+            render();
+            const pin = pins.querySelector(`[data-id="${c.id}"]`);
+            const p = pointOf(anchor);
+            if (p) scrollTo({ top: Math.max(0, p.y - innerHeight / 3), behavior: 'smooth' });
+            if (pin) { pin.classList.add('flash'); setTimeout(() => pin.click(), 700); }
+            else if (p) setTimeout(() => thread(c, p.x, p.y, from, p.approx), 500);
+            else thread(c, scrollX + Math.max(8, innerWidth / 2 - 170), scrollY + 90, from, !!from);
+        }, 80);
+    };
+    const openThread = (id) => {
+        const item = placed().find((x) => x.c.id === id);
+        if (item) { openItem(item); return true; }
+        return false;
     };
 
     const renderPanel = (items) => {
@@ -577,25 +605,13 @@
             const replies = repliesOf(c).length;
             return h('button', {
                 class: 'item' + (c.resolved ? ' done' : '') + (from ? ' carried' : '') + (unreadIn(c) ? ' fresh' : ''),
-                onclick: () => {
-                    panel.classList.remove('open');
-                    if (route() !== where) location.hash = where;
-                    setTimeout(() => {
-                        render();
-                        const pin = pins.querySelector(`[data-id="${c.id}"]`);
-                        const p = pointOf(anchor);
-                        if (p) scrollTo({ top: Math.max(0, p.y - innerHeight / 3), behavior: 'smooth' });
-                        // A closed thread has no pin on the page; open it at its spot (or the top) all the same.
-                        if (pin) { pin.classList.add('flash'); setTimeout(() => pin.click(), 700); }
-                        else if (p) setTimeout(() => thread(c, p.x, p.y, from, p.approx), 500);
-                        else thread(c, scrollX + Math.max(8, innerWidth / 2 - 170), scrollY + 90, from, !!from);
-                    }, 80);
-                },
+                onclick: () => openItem({ c, where, from, anchor }),
             }, h('span', { class: 'n' }, label), h('b', {}, c.name), ` ${c.resolved ? '(closed) ' : ''}`,
             unreadIn(c) ? h('span', { class: 'rv-new' }, `${unreadIn(c)} new`) : null,
             repliesOf(c).some((r) => r.role === 'iris') ? h('span', { class: 'from', style: 'color:#2A9D8F' }, 'Iris replied') : null,
             from ? h('span', { class: 'from' }, `from ${from.tag}`) : null,
-            h('br'), c.text.length > 140 ? c.text.slice(0, 140) + '…' : c.text,
+            RVX().listTag ? RVX().listTag(c) : null,
+            h('br'), plainOf(c.text).length > 140 ? plainOf(c.text).slice(0, 140) + '…' : plainOf(c.text),
             replies ? h('div', { class: 'note', style: 'font-size:12px;opacity:.6;margin-top:4px' }, `${replies} repl${replies === 1 ? 'y' : 'ies'}`) : null);
         };
         // Threads with replies this reader has not seen come first.
@@ -834,6 +850,8 @@
         addEventListener('keydown', (ev) => { if (ev.key === 'Escape') { setPlacing(false); closePop(); } });
         addEventListener('hashchange', () => { closePop(); setTimeout(render, 40); });
         addEventListener('resize', () => setTimeout(render, 60));
+        window.RV = { CFG, api, h, esc, say, sync, render, route, routeName, me, mine, repliesOf, unreadIn, openThread, pointOf, pathOf, isUi, closePop, panel, panelBody, bar, AVATAR, NAME_KEY, PASS_KEY, VERSION, shotOf, comments: () => comments, isPaused: () => !!paused };
+        if (RVX().start) RVX().start();
         sync();
         setInterval(sync, 20000);
     }

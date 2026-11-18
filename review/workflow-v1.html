@@ -1,0 +1,1226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RegulateED product workflow, version 1</title>
+<style>
+    @font-face { font-family: "Open Sans"; font-weight: 400; src: url("../fonts/open-sans-latin-400.woff2") format("woff2"); }
+    @font-face { font-family: "Open Sans"; font-weight: 600; src: url("../fonts/open-sans-latin-600.woff2") format("woff2"); }
+    @font-face { font-family: "Open Sans"; font-weight: 700; src: url("../fonts/open-sans-latin-700.woff2") format("woff2"); }
+    @font-face { font-family: "Open Sans"; font-weight: 800; src: url("../fonts/open-sans-latin-800.woff2") format("woff2"); }
+    :root {
+        --teal: #2A9D8F; --coral: #F2845C; --slate: #1F3A4D; --paper: #FFF8F0; --mint: #7FD3C6; --line: #E9E1D6;
+        --g: #3BAA5C; --y: #F2B92F; --r: #E0524B;
+        --a: var(--coral); --b: var(--teal); --ink: var(--slate); --k: var(--slate); --ring: rgba(42,157,143,.28);
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { margin: 0; background: var(--paper); font: 17px/1.5 "Open Sans", system-ui, sans-serif; color: var(--slate); }
+    a { color: inherit; }
+    button { font: inherit; color: inherit; }
+    svg.sym { display: block; }
+
+    /* top bar */
+    .bar { position: sticky; top: 0; z-index: 5; background: var(--slate); color: #fff; --ink: #fff; --a: #F7A27F; --b: var(--mint); --ring: rgba(255,255,255,.22); }
+    .bar .in { max-width: 1120px; margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; gap: 16px; min-height: 60px; }
+    .bar .logo { width: 170px; cursor: pointer; }
+    .bar .crumb { flex: 1; font-weight: 700; opacity: .8; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .home { display: none; background: var(--mint); color: var(--slate); border: 0; border-radius: 40px; padding: 10px 20px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+    body:not(.at-hub) .home { display: inline-block; }
+
+    .page { display: none; max-width: 1120px; margin: 0 auto; padding: 32px 20px 72px; }
+    .page.on { display: block; animation: rise .25s ease-out; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--teal); margin: 0 0 6px; }
+    h1 { font-size: clamp(30px, 4.4vw, 46px); line-height: 1.1; margin: 0 0 14px; letter-spacing: -.5px; }
+    h2 { font-size: clamp(24px, 3.2vw, 34px); line-height: 1.15; margin: 0 0 14px; }
+    h3 { font-size: 19px; margin: 0 0 6px; }
+    p { margin: 0 0 12px; }
+    .lead { font-size: clamp(17px, 2vw, 20px); max-width: 760px; opacity: .9; }
+    .note { font-size: 14px; opacity: .7; }
+    .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    .split2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 32px; align-items: start; }
+    .split2.wide { grid-template-columns: minmax(0, .85fr) minmax(0, 1.2fr); }
+    @media (max-width: 860px) { .grid3, .grid2, .split2, .split2.wide { grid-template-columns: 1fr; } }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin-bottom: 14px; }
+    .card p:last-child, .card ul:last-child { margin-bottom: 0; }
+    .card ul { margin: 4px 0 0; padding-left: 22px; }
+    .card li { margin: 3px 0; }
+    .tag { font-size: 12px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; }
+    .warn { border-left: 6px solid var(--coral); } .warn .tag { color: var(--coral); }
+    .todo { border-left: 6px solid var(--slate); background: #F3EEE6; } .todo .tag { color: var(--slate); }
+
+    /* hub matrix */
+    .mxwrap { overflow-x: auto; margin: 18px 0 8px; -webkit-overflow-scrolling: touch; }
+    .mx { width: 100%; min-width: 680px; border-collapse: separate; border-spacing: 6px; }
+    .mx th, .mx td { border-radius: 12px; }
+    .mx thead button { width: 100%; background: var(--slate); color: #fff; border: 0; border-radius: 12px; padding: 14px 0; font-size: 22px; font-weight: 800; cursor: pointer; }
+    .mx thead button small { display: block; font-size: 11px; font-weight: 600; opacity: .7; letter-spacing: .5px; }
+    .mx tbody th { width: 32%; padding: 0; }
+    .mx tbody th button { width: 100%; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; cursor: pointer; display: flex; gap: 12px; align-items: center; }
+    .mx tbody th b { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--teal); color: #fff; font-size: 15px; }
+    .mx tbody th span { font-weight: 800; font-size: 16px; line-height: 1.25; }
+    .mx tbody th small { display: block; font-weight: 400; font-size: 13px; opacity: .7; }
+    .mx td { background: #fff; border: 1px solid var(--line); padding: 0; }
+    .mx td a { display: grid; place-items: center; height: 100%; min-height: 62px; border-radius: 12px; text-decoration: none; }
+    .mx td.on { background: var(--teal); border-color: var(--teal); }
+    .mx td.on a::after { content: ""; width: 20px; height: 20px; border-radius: 50%; background: #fff; }
+    .mx button:hover, .mx td.on a:hover { filter: brightness(1.08); }
+    .mx tbody th button:hover { border-color: var(--teal); }
+    .hint { font-size: 14px; opacity: .7; margin-bottom: 26px; }
+    .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+
+    /* insights */
+    .loop { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+    @media (max-width: 700px) { .loop { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .loop div { background: #fff; border: 1px solid var(--line); border-top: 5px solid var(--teal); border-radius: 14px; padding: 12px 14px; font-weight: 800; }
+    .loop div:nth-child(4) { border-top-color: var(--coral); }
+    .loop b { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--teal); color: #fff; font-size: 13px; margin-right: 8px; }
+    .loop span { display: block; font-weight: 400; font-size: 14px; opacity: .7; margin-top: 4px; }
+    .opt { position: relative; background: #fff; border: 1px solid var(--line); border-radius: .9em; padding: .6em 5.5em .6em .9em; margin-bottom: .5em; }
+    .opt b { display: block; }
+    .opt span { display: block; font-size: .8em; opacity: .7; }
+    .opt em { display: block; font-style: normal; font-size: .78em; font-weight: 700; color: var(--teal); margin-top: .2em; }
+    .opt i { position: absolute; right: .7em; top: 50%; transform: translateY(-50%); font-style: normal; font-weight: 800; font-size: .85em; background: var(--teal); color: #fff; border-radius: 3em; padding: .35em .9em; }
+    .opt.best { border: .15em solid var(--teal); }
+    .tile { text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; cursor: pointer; }
+    .tile:hover { border-color: var(--teal); }
+    .tile b { display: block; font-size: 17px; margin-bottom: 4px; }
+    .tile span { font-size: 14px; opacity: .75; }
+    .tile.hero { background: var(--slate); color: #fff; border-color: var(--slate); }
+
+    /* grade and method chips */
+    .chips-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 22px; }
+    .gchip { min-width: 54px; text-align: center; padding: 6px 12px; border-radius: 10px; font-weight: 800; background: #EAE3D8; color: #9A9184; border: 0; cursor: pointer; text-decoration: none; }
+    .gchip.on { background: var(--teal); color: #fff; }
+    .gchip.focus { outline: 3px solid var(--coral); outline-offset: 2px; }
+    .mlink { display: flex; gap: 14px; align-items: flex-start; text-decoration: none; cursor: pointer; }
+    .mlink b.n { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--teal); color: #fff; }
+    .mlink:hover h3 { text-decoration: underline; }
+    .no b.n { background: #CFC6B9; }
+
+    .steps { list-style: none; margin: 0 0 18px; padding: 0; counter-reset: s; }
+    .steps li { counter-increment: s; position: relative; padding: 0 0 12px 44px; }
+    .steps li::before { content: counter(s); position: absolute; left: 0; top: -1px; width: 30px; height: 30px; border-radius: 50%; background: var(--teal); color: #fff; font-weight: 800; font-size: 15px; display: grid; place-items: center; }
+
+    .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+    @media (max-width: 860px) { .facts { grid-template-columns: 1fr; } }
+    .fact { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; }
+    .fact .tag { margin-bottom: 2px; }
+    .fact b { font-size: 18px; }
+
+    /* device mocks, sized in em so they scale with the page */
+    .mock { font-size: clamp(11px, 1.35vw, 15px); }
+    .tablet { background: var(--slate); border-radius: 2.2em; padding: 1em; box-shadow: 0 1em 2.6em rgba(31,58,77,.22); }
+    .phone { max-width: 22em; margin: 0 auto; background: var(--slate); border-radius: 2.6em; padding: .9em; box-shadow: 0 1em 2.6em rgba(31,58,77,.22); }
+    .laptop .lid { background: var(--slate); border-radius: 1.2em 1.2em 0 0; padding: .9em .9em 0; }
+    .laptop .base { height: 1.2em; background: #34536A; border-radius: 0 0 1.8em 1.8em; margin: 0 -1.6em; }
+    .screen { background: var(--paper); border-radius: 1.3em; padding: 1.3em 1.4em; }
+    .phone .screen { border-radius: 1.9em; }
+    .laptop .screen { border-radius: .4em .4em 0 0; }
+    .screen .top { display: flex; justify-content: space-between; font-size: .85em; font-weight: 700; opacity: .6; }
+    .screen .q { text-align: center; font-size: 1.6em; font-weight: 800; margin: .6em 0 .7em; line-height: 1.2; }
+    .screen .foot { text-align: center; margin-top: .9em; font-size: .85em; opacity: .65; }
+    .btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8em; }
+    .btns.col { grid-template-columns: 1fr; gap: .5em; }
+    .btn { border-radius: 1.1em; padding: .9em .4em .7em; text-align: center; color: #fff; font-weight: 800; font-size: 1.05em; }
+    .btn svg { display: block; width: 4.6em; margin: 0 auto .4em; }
+    .btn.row { display: flex; align-items: center; gap: .7em; padding: .55em .9em; text-align: left; }
+    .btn.row svg { width: 2.3em; margin: 0; }
+    .btn.G { background: var(--g); } .btn.Y { background: var(--y); color: var(--slate); } .btn.R { background: var(--r); }
+    .btn.sel { outline: .25em solid var(--slate); outline-offset: .1em; }
+    .pills { display: flex; flex-wrap: wrap; gap: .4em; justify-content: center; margin-top: .8em; }
+    .pill { background: #fff; border: 1px solid var(--line); border-radius: 3em; padding: .25em .8em; font-size: .85em; font-weight: 600; }
+    .pill.sel { background: var(--slate); color: #fff; border-color: var(--slate); }
+    .send { display: block; margin: .9em auto 0; width: 60%; text-align: center; background: var(--teal); color: #fff; font-weight: 800; border-radius: 3em; padding: .5em; }
+    .url { background: #fff; border-radius: 3em; padding: .3em 1em; font-size: .8em; margin-bottom: .7em; color: #6B7C88; }
+    .saved { margin-top: .9em; text-align: center; font-weight: 700; background: #fff; border: 1px solid var(--line); border-radius: .9em; padding: .5em; }
+    .saved i { display: inline-block; width: 1em; height: 1em; border-radius: 50%; background: var(--y); vertical-align: -.12em; margin-right: .35em; }
+    .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7em; }
+    .flow .screen { padding: .8em; min-height: 17em; }
+    .flow .q { font-size: 1.05em; }
+    .flow .btn { font-size: .85em; padding: .45em; }
+    .flow .lab { font-size: .72em; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--teal); text-align: center; }
+    .timer { text-align: center; font-size: 2.6em; font-weight: 800; margin: .2em 0 0; }
+    .progress { height: .6em; background: #E3EFEC; border-radius: 1em; overflow: hidden; margin: .5em 0; }
+    .progress i { display: block; height: 100%; width: 62%; background: var(--teal); }
+    .token { display: inline-grid; place-items: center; width: 2.1em; height: 2.1em; border-radius: 50%; background: var(--coral); color: #fff; font-weight: 800; font-size: .9em; }
+    .token.off { background: #E7E1D8; }
+    .poster { background: #fff; border: 1px solid var(--line); border-radius: 1.2em; padding: 1.2em; text-align: center; box-shadow: 0 .6em 1.6em rgba(31,58,77,.12); }
+    .poster svg { width: 9em; margin: .7em auto; }
+    .poster b { display: block; font-size: 1.3em; }
+    .poster span { font-size: .85em; opacity: .7; }
+
+    .split { display: flex; height: 40px; border-radius: 10px; overflow: hidden; font-weight: 800; color: #fff; font-size: 15px; }
+    .split i { font-style: normal; display: grid; place-items: center; }
+    .split .G { background: var(--g); } .split .Y { background: var(--y); color: var(--slate); } .split .R { background: var(--r); }
+    .mock .split { height: 2em; font-size: .9em; border-radius: .6em; margin-top: .9em; }
+
+    /* own device diagram */
+    .devices { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8em; }
+    .mini { background: var(--slate); border-radius: 1em; padding: .45em; }
+    .mini .screen { padding: .6em .4em; border-radius: .6em; text-align: center; }
+    .mini .dot { width: 2.4em; height: 2.4em; border-radius: 50%; margin: .2em auto .3em; }
+    .mini small { font-size: .75em; font-weight: 700; opacity: .65; }
+    .arrowdown { text-align: center; font-size: 2em; color: var(--coral); line-height: 1; margin: .3em 0; }
+    .eventbox { background: #fff; border: .2em solid var(--slate); border-radius: 1em; padding: .8em 1em; text-align: center; font-weight: 800; }
+    .eventbox small { display: block; font-weight: 600; opacity: .65; }
+
+    .event { display: inline-flex; flex-wrap: wrap; border-radius: 14px; overflow: hidden; border: 3px solid var(--slate); font-size: 21px; font-weight: 700; margin: 6px 0 22px; }
+    .event div { padding: 10px 20px; background: #fff; border-right: 2px solid var(--line); }
+    .event div:last-child { border-right: 0; }
+    .event .tag { margin: 0; }
+
+    .backrow { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .backrow button { background: #fff; border: 1px solid var(--line); border-radius: 40px; padding: 10px 18px; font-weight: 700; cursor: pointer; }
+    .backrow button.main { background: var(--slate); color: #fff; border-color: var(--slate); }
+
+    @media print {
+        .bar, .backrow { display: none; }
+        .page { display: block !important; break-after: page; }
+    }
+    /* activities solution map */
+    .grade { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; border-radius: 30px; padding: 4px 11px; white-space: nowrap; }
+    .grade::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+    .grade.strong { background: #DDF1EE; color: #17695F; }
+    .grade.moderate { background: #E6F4F1; color: #2A9D8F; }
+    .grade.emerging { background: #FDF0D5; color: #A56A00; }
+    .grade.weak { background: #FBE3DA; color: #B4532E; }
+    .states { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: 18px 0 8px; }
+    @media (max-width: 900px) { .states { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .state { text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 0 0 14px; cursor: pointer; overflow: hidden; }
+    .state:hover { border-color: var(--teal); }
+    .state .sb { height: 14px; display: flex; }
+    .state .sb i { display: block; }
+    .state b { display: block; font-size: 16px; line-height: 1.25; padding: 12px 16px 2px; }
+    .state span { display: block; font-size: 14px; opacity: .75; padding: 0 16px; }
+    .amx { width: 100%; min-width: 760px; border-collapse: separate; border-spacing: 5px; }
+    .amx thead th { font-size: 13px; font-weight: 800; padding: 0 4px 4px; text-align: center; line-height: 1.2; }
+    .amx thead th .sw { display: block; height: 8px; border-radius: 4px; margin: 0 auto 6px; width: 70%; }
+    .amx tbody th { width: 36%; padding: 0; }
+    .amx tbody th button { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 10px; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; cursor: pointer; }
+    .amx tbody th button:hover { border-color: var(--teal); }
+    .amx tbody th b { font-size: 15px; line-height: 1.25; }
+    .amx td { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 0; }
+    .amx td a { display: grid; place-items: center; min-height: 46px; text-decoration: none; }
+    .amx td.on { background: var(--teal); border-color: var(--teal); }
+    .amx td.on a::after { content: ""; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+    .amx td.side { background: #E6F4F1; border-color: #CBE7E2; }
+    .amx td.side a::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--teal); opacity: .55; }
+    .band { border-radius: 18px; padding: 18px 22px; margin: 6px 0 22px; color: #fff; }
+    .band .split { height: 30px; margin-top: 10px; }
+    .acts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 14px; }
+    .act { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; }
+    .act b { display: block; }
+    .act span { font-size: 14px; opacity: .75; }
+    .famrow { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+    .sources { margin: 0; padding-left: 20px; font-size: 14px; }
+    .sources li { margin: 6px 0; }
+    .sources a { color: var(--teal); word-break: break-word; }
+    .params { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+    @media (max-width: 700px) { .params { grid-template-columns: 1fr; } }
+    .params div { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; }
+    .params b { display: block; font-size: 16px; }
+    .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 20px; align-items: center; }
+    .spill { display: inline-flex; align-items: center; gap: 6px; border-radius: 30px; padding: 5px 12px; font-size: 13px; font-weight: 800; background: #fff; border: 1px solid var(--line); text-decoration: none; }
+    .spill i { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* ---------- product workflow (v1) ---------- */
+    .trail { flex: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; min-width: 0; font-size: 14px; font-weight: 700; }
+    .trail a { color: rgba(255,255,255,.78); text-decoration: none; white-space: nowrap; }
+    .trail a:hover { color: #fff; text-decoration: underline; }
+    .trail span { color: rgba(255,255,255,.4); }
+    .trail b { color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 46vw; }
+    .spine { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 26px; margin: 26px 0 10px; position: relative; }
+    @media (max-width: 900px) { .spine { grid-template-columns: 1fr; gap: 18px; } }
+    .stage { position: relative; display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 0 0 18px; cursor: pointer; overflow: visible; box-shadow: 0 8px 24px rgba(31,58,77,.08); transition: transform .15s, box-shadow .15s, border-color .15s; }
+    .stage:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(31,58,77,.14); border-color: var(--teal); }
+    .stage .top { border-radius: 20px 20px 0 0; padding: 16px 18px 14px; color: #fff; }
+    .stage .top .n { font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; opacity: .85; }
+    .stage .top b { display: block; font-size: 21px; line-height: 1.2; margin-top: 2px; }
+    .stage p { margin: 12px 18px 10px; font-size: 15px; color: #4A5E6D; }
+    .stage .inside { margin: 0 18px; font-size: 13px; font-weight: 800; color: var(--teal); }
+    .stage::after { content: "→"; position: absolute; right: -22px; top: 30px; font-size: 22px; font-weight: 800; color: var(--coral); }
+    .stage:last-child::after { content: none; }
+    @media (max-width: 900px) { .stage::after { content: "↓"; right: auto; left: 50%; top: auto; bottom: -22px; transform: translateX(-50%); } }
+    .loopback { text-align: center; font-size: 14px; font-weight: 700; color: var(--coral); margin: 4px 0 26px; }
+    .s1 { background: var(--teal); } .s2 { background: #3E7CA6; } .s3 { background: var(--coral); } .s4 { background: var(--slate); }
+    .branches { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin: 14px 0 18px; }
+    .branch { display: block; text-decoration: none; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
+    .branch:hover { border-color: var(--teal); }
+    .branch b { display: block; font-size: 17px; margin-bottom: 4px; }
+    .branch span { font-size: 14px; color: #4A5E6D; }
+    .branch.key { border-left: 6px solid var(--coral); }
+    .stagehead { border-radius: 18px; color: #fff; padding: 18px 22px; margin: 0 0 18px; }
+    .stagehead .n { font-size: 12px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; opacity: .85; }
+    .stagehead h2 { color: #fff; margin: 4px 0 6px; }
+    .stagehead p { margin: 0; opacity: .9; max-width: 760px; }
+    .quote { border-left: 5px solid var(--coral); background: #fff; border-radius: 0 14px 14px 0; padding: 12px 16px; margin: 0 0 16px; font-size: 15px; }
+    .quote b { display: block; font-size: 12px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--coral); margin-bottom: 4px; }
+    .ents { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 22px; margin: 18px 0; }
+    @media (max-width: 1000px) { .ents { grid-template-columns: 1fr; gap: 16px; } }
+    .ent { position: relative; background: #fff; border: 2px solid var(--slate); border-radius: 14px; overflow: visible; }
+    .ent h4 { margin: 0; background: var(--slate); color: #fff; padding: 8px 12px; font-size: 15px; border-radius: 11px 11px 0 0; }
+    .ent ul { list-style: none; margin: 0; padding: 8px 12px 10px; font-size: 13px; }
+    .ent li { padding: 3px 0; border-bottom: 1px dashed #EFE8DD; }
+    .ent li:last-child { border-bottom: 0; }
+    .ent li.new { color: #B4532E; font-weight: 700; }
+    .ent::after { content: "→"; position: absolute; right: -19px; top: 8px; font-weight: 800; color: var(--coral); font-size: 18px; }
+    .ent:last-child::after { content: none; }
+    @media (max-width: 1000px) { .ent::after { content: "↓"; right: auto; left: 50%; top: auto; bottom: -20px; } }
+    .ent.act { border-color: var(--coral); } .ent.act h4 { background: var(--coral); }
+    .eff { width: 100%; border-collapse: collapse; font-size: 15px; background: #fff; border-radius: 14px; overflow: hidden; }
+    .eff th, .eff td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+    .eff th { background: var(--slate); color: #fff; font-size: 13px; }
+    .bars { display: flex; align-items: flex-end; gap: 12px; height: 150px; padding: 10px 6px 0; border-bottom: 2px solid var(--line); }
+    .bars div { flex: 1; text-align: center; font-size: 12px; font-weight: 700; color: #4A5E6D; }
+    .bars i { display: block; background: var(--r); border-radius: 6px 6px 0 0; margin-bottom: 4px; }
+    .bars .after i { background: #E98A84; }
+    .vlist { display: grid; gap: 12px; }
+    .vrow { display: grid; grid-template-columns: 120px 1fr auto; gap: 14px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; }
+    .vrow .v { font-weight: 800; font-size: 18px; }
+    .vrow .cur { background: var(--teal); color: #fff; border-radius: 30px; padding: 3px 10px; font-size: 12px; font-weight: 800; }
+    .vrow .arc { background: #EAE3D8; color: #6B6257; border-radius: 30px; padding: 3px 10px; font-size: 12px; font-weight: 800; }
+    .topreggie { flex: none; width: 42px; height: 42px; overflow: visible; margin-left: auto; animation: topbreathe 4s ease-in-out infinite; transform-origin: 50% 85%; }
+    @keyframes topbreathe { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-2px) scale(1.05); } }
+    @media (prefers-reduced-motion: reduce) { .topreggie { animation: none; } }
+</style>
+<meta name="robots" content="noindex, nofollow">
+<style>html.rv-locked body { visibility: hidden; }</style>
+<script>document.documentElement.classList.add('rv-locked');</script>
+</head>
+<body class="at-hub">
+
+<svg width="0" height="0" style="position:absolute">
+    <defs>
+        <symbol id="wave" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="44" fill="none" stroke-width="4" style="stroke:var(--ring)"/>
+            <path d="M14 50 L20 37 L26 62 L32 40 L38 58 L44 50" fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--a)"/>
+            <path d="M44 50 C51 37 58 37 65 50 S79 63 86 50" fill="none" stroke-width="7" stroke-linecap="round" style="stroke:var(--b)"/>
+        </symbol>
+        <symbol id="lockup" viewBox="0 0 360 100">
+            <use href="#wave" width="100" height="100"/>
+            <text x="114" y="60" style="font:800 40px 'Open Sans',system-ui,sans-serif;letter-spacing:-.5px;fill:var(--ink)">RegulateED</text>
+            <text x="116" y="82" style="font:600 10.5px 'Open Sans',system-ui,sans-serif;letter-spacing:2.2px;fill:var(--ink);opacity:.65">CLASSROOM SELF-REGULATION</text>
+        </symbol>
+        <symbol id="reggie" viewBox="0 0 100 100">
+            <path d="M50 18 C50 11 54 7 60 6" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--b)"/>
+            <circle cx="61" cy="6" r="3.5" style="fill:var(--a)"/>
+            <path d="M50 18 C73 18 86 34 86 56 C86 77 70 88 50 88 C30 88 14 77 14 56 C14 34 27 18 50 18 Z" style="fill:var(--b)"/>
+            <path d="M33 52 Q39 46 45 52 M55 52 Q61 46 67 52" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--k)"/>
+            <path d="M43 64 Q50 70 57 64" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--k)"/>
+            <circle cx="33" cy="62" r="4.5" opacity=".85" style="fill:var(--a)"/>
+            <circle cx="67" cy="62" r="4.5" opacity=".85" style="fill:var(--a)"/>
+        </symbol>
+        <symbol id="face-g" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="46" fill="#3BAA5C"/>
+            <circle cx="35" cy="40" r="6" fill="#fff"/><circle cx="65" cy="40" r="6" fill="#fff"/>
+            <path d="M30 60 Q50 80 70 60" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="face-y" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="46" fill="#F2B92F"/>
+            <circle cx="35" cy="40" r="6" fill="#1F3A4D"/><circle cx="65" cy="40" r="6" fill="#1F3A4D"/>
+            <path d="M30 66 Q40 58 50 66 T70 66" fill="none" stroke="#1F3A4D" stroke-width="7" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="face-r" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="46" fill="#E0524B"/>
+            <path d="M27 33 L41 39 M73 33 L59 39" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="35" cy="45" r="6" fill="#fff"/><circle cx="65" cy="45" r="6" fill="#fff"/>
+            <path d="M32 72 Q50 56 68 72" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+        </symbol>
+        <!-- an illustrative QR pattern, not a working code -->
+        <symbol id="qr" viewBox="0 0 21 21">
+            <rect width="21" height="21" fill="#fff"/>
+            <path fill="#1F3A4D" d="M0 0h7v7H0zM14 0h7v7h-7zM0 14h7v7H0z"/>
+            <path fill="#fff" d="M1 1h5v5H1zM15 1h5v5h-5zM1 15h5v5H1z"/>
+            <path fill="#1F3A4D" d="M2 2h3v3H2zM16 2h3v3h-3zM2 16h3v3H2zM8 0h1v1H8zM10 1h2v1h-2zM8 2h1v2H8zM11 3h1v2h-1zM9 5h2v1H9zM8 6h1v2H8zM10 7h3v1h-3zM0 8h2v1H0zM3 8h3v1H3zM13 8h1v2h-1zM15 8h2v1h-2zM18 8h3v1h-3zM1 9h1v2H1zM4 10h2v1H4zM7 9h2v2H7zM10 9h2v1h-2zM16 10h2v1h-2zM19 10h1v2h-1zM0 12h3v1H0zM5 12h2v1H5zM9 11h1v3H9zM11 12h3v1h-3zM15 12h1v2h-1zM17 12h1v1h-1zM8 15h2v1H8zM11 14h2v2h-2zM14 15h1v1h-1zM16 14h3v1h-3zM20 14h1v3h-1zM8 17h1v2H8zM10 18h3v1h-3zM14 17h2v2h-2zM17 16h2v2h-2zM9 20h3v1H9zM13 20h1v1h-1zM16 19h1v2h-1zM18 19h2v1h-2z"/>
+        </symbol>
+    </defs>
+</svg>
+
+<header class="bar"><div class="in">
+    <svg class="sym logo" viewBox="0 0 360 100" onclick="go('')"><use href="#lockup"/></svg>
+    <nav class="trail" id="trail" aria-label="Where you are"></nav>
+    <svg class="sym topreggie" viewBox="0 0 100 100" role="img" aria-label="Reggie"><title>Reggie</title><use href="#reggie"/></svg>
+</div></header>
+
+<!-- ===================== HOME: THE WORKFLOW ===================== -->
+<section class="page" id="p-hub" data-crumb="Workflow">
+    <p class="eyebrow">RegulateED product workflow · version 1 · 18 November 2026</p>
+    <h1>From a feeling in the room to proof of what helps.</h1>
+    <p class="lead">Four steps, run again at every check-in. Data collection hears the class, insights say what it means, an activity tries to shift the room, and trends show whether it worked. Tap a step to drill in; its branches open inside.</p>
+    <div class="spine">
+        <button class="stage" onclick="go('collect')"><div class="top s1"><div class="n">Step 1</div><b>Data collection</b></div><p>Ask "How are you feeling?" the way each age can answer, and tie every answer to an event.</p><div class="inside">Methods · grades · own iPad</div></button>
+        <button class="stage" onclick="go('insights')"><div class="top s2"><div class="n">Step 2</div><b>Insights analysis</b></div><p>Turn events into meaning: this moment against the class's usual, and the pattern across the week.</p><div class="inside">The event · the week · split · from insight to activity</div></button>
+        <button class="stage" onclick="go('activities')"><div class="top s3"><div class="n">Step 3</div><b>Activity execution</b></div><p>From the room's result to the activities that can shift it, each with how it is run and the science behind it.</p><div class="inside">5 room results · 12 activity families · the evidence</div></button>
+        <button class="stage" onclick="go('trends')"><div class="top s4"><div class="n">Step 4</div><b>Trends and effectiveness</b></div><p>Did the room shift as expected? Over weeks, which activities work for this class at this moment?</p><div class="inside">Expected against actual · what works · over time</div></button>
+    </div>
+    <p class="loopback">↺ The next check-in starts the loop again, and every turn adds to the evidence.</p>
+    <p class="eyebrow">Foundations, under every step</p>
+    <div class="tiles">
+        <button class="tile hero" onclick="go('foundations/data')"><b>The event record</b><span>What every check-in, activity and re-check stores</span></button>
+        <button class="tile" onclick="go('foundations/privacy')"><b>Privacy</b><span>What is kept, and what never is</span></button>
+        <button class="tile" onclick="go('foundations/evidence')"><b>How we grade evidence</b><span>Strong to weak or contested</span></button>
+        <button class="tile" onclick="go('foundations/frameworks')"><b>The frameworks, honestly</b><span>Polyvagal, sensory integration, Zones, interoception</span></button>
+        <button class="tile" onclick="go('foundations/versions')"><b>Versions and comments</b><span>How comments survive a change to this map</span></button>
+    </div>
+    <p class="note" style="margin-top:18px">Internal: information gathering, product understanding and workflow. Not the product a teacher sees.</p>
+</section>
+
+<!-- ===================== STEP 2: INSIGHTS ===================== -->
+<section class="page" id="p-insights" data-crumb="Insights analysis">
+    <div class="stagehead s2"><div class="n">Step 2</div><h2>Insights analysis</h2><p>Events become insights when they are compared: this moment against the class's usual, the same moment across the week, and weeks against weeks.</p></div>
+    <div class="quote"><b>Adam, review comment, 18 November</b>"The Recess Results across the whole week is the insight that takes us into the activities functionality.. This is the transition from Data Collection to Insights Analysis, then it will transition into Activity execution..."</div>
+    <p class="eyebrow">Three kinds of insight</p>
+    <div class="grid3">
+        <div class="card"><div class="tag">Now</div><p>This event against this class's usual for the same moment: "Back from recess, 10 of 21 unsettled; usually 6."</p></div>
+        <div class="card"><div class="tag">Pattern</div><p>The same moment across the week: Recess is unsettled four days out of five. This is the insight that opens Activity execution.</p></div>
+        <div class="card"><div class="tag">Trend</div><p>Weeks against weeks, with and without an activity: is the recess pattern easing since wall pushes started? Step 4 measures it.</p></div>
+    </div>
+    <p class="eyebrow">Branches</p>
+    <div class="branches">
+        <a class="branch key" href="#insights/event"><b>The event, and the week it builds</b><span>Every answer belongs to a moment; the week of recess results is the pattern</span></a>
+        <a class="branch" href="#insights/split"><b>Split, not average</b><span>Why an average alone can hide a child in Red</span></a>
+        <a class="branch" href="#insights/to-activities"><b>From insight to activity</b><span>Check in, insight, options, apply, re-check</span></a>
+        <a class="branch" href="#foundations/data"><b>The event record</b><span>Which events carry an activity expectation, so trends can measure it</span></a>
+    </div>
+    <p class="eyebrow">Every insight ends in one of five room results</p>
+    <div class="pill-row" id="insight-states"></div>
+    <div class="card todo"><div class="tag">To research</div><p>The science of what a pattern means: why a class tends to be unsettled after recess, at transitions or late in the day, and which patterns call for which response. The activity review covered what helps; the pattern science is still to gather.</p></div>
+</section>
+
+<!-- ===================== STEP 3: ACTIVITIES ===================== -->
+<section class="page" id="p-activities" data-crumb="Activity execution">
+    <div class="stagehead s3"><div class="n">Step 3</div><h2>Activity execution</h2><p>Start from the insight result, see the shift the room needs, then the activities that can make that shift: what each is, how it is run, and the science behind why it should help.</p></div>
+    <p class="eyebrow">1. Start with the room result</p>
+    <div class="states" id="state-cards"></div>
+    <p class="eyebrow" style="margin-top:26px">2. The map: which activity families fit which result</p>
+    <div class="mxwrap"><table class="amx" id="amap"></table></div>
+    <p class="hint">A full dot is a first choice for that result; a light dot is a supporting option. Tap a result or a family to go deeper.</p>
+    <div class="grid2">
+        <div class="card"><div class="tag">What the evidence says, in one line</div><p>Movement breaks and slow breathing have the best evidence; heavy work, Brain Gym style moves and weighted vests the weakest. Almost nothing has been tested on a class that is already Red, within minutes: RegulateED's own re-checks could be the first.</p></div>
+        <div class="card"><div class="tag">Teacher aids, for every activity</div><ul><li>A short script to read aloud, with a story for K to 2</li><li>A visual and a 2-minute timer on the teacher's screen</li><li>Grade adaptations and the cautions</li><li>A re-check prompt when it ends</li></ul></div>
+    </div>
+    <p><a href="#foundations/evidence" style="font-weight:800;color:var(--teal)">How we grade evidence →</a> &nbsp; <a href="#foundations/frameworks" style="font-weight:800;color:var(--teal)">The frameworks, honestly →</a></p>
+</section>
+
+<!-- ===================== STEP 4: TRENDS ===================== -->
+<section class="page" id="p-trends" data-crumb="Trends and effectiveness">
+    <div class="stagehead s4"><div class="n">Step 4</div><h2>Trends and effectiveness</h2><p>Every activity carries an expectation. The re-check measures the shift, and over weeks the trend shows whether the activity works for this class at this moment.</p></div>
+    <div class="loop">
+        <div><b>1</b>Activity applied<span>Chosen by the teacher from the matched options</span></div>
+        <div><b>2</b>Expectation set<span>The shift it should make, and when to re-check</span></div>
+        <div><b>3</b>Re-check<span>A linked event, a few minutes later</span></div>
+        <div><b>4</b>Outcome<span>Expected against actual</span></div>
+        <div><b>5</b>Effectiveness<span>Across many runs, for this class and moment</span></div>
+    </div>
+    <div class="split2" style="margin-top:22px">
+        <div>
+            <div class="card"><div class="tag">Expected against actual, one run (example)</div>
+                <p><b>Recess, Tue 11/18 · Ms Jones · K1 · T-Rex Wall Pushes</b></p>
+                <div class="split" style="margin-top:8px"><i class="G" style="flex:11">11</i><i class="Y" style="flex:6">6</i><i class="R" style="flex:4">4</i></div>
+                <p style="margin:8px 0 2px;font-size:14px">Expected: Red down to 1 or fewer, Green up. Re-check due 5 minutes after.</p>
+                <div class="split"><i class="G" style="flex:16">16</i><i class="Y" style="flex:4">4</i><i class="R" style="flex:1">1</i></div>
+                <p style="margin:8px 0 0;font-weight:800;color:var(--teal)">Met: Red 4 to 1, Green 11 to 16</p>
+            </div>
+            <div class="card"><div class="tag">The baseline</div><p>Events with no activity are the baseline. Comparing recess weeks with and without an activity is what lets a trend say the activity, not the weather, made the difference.</p></div>
+        </div>
+        <div>
+            <div class="card"><div class="tag">After recess: share of the class in Red, by week (example)</div>
+                <div class="bars">
+                    <div><i style="height:96px"></i>W1</div><div><i style="height:104px"></i>W2</div><div class="after"><i style="height:70px"></i>W3</div><div class="after"><i style="height:52px"></i>W4</div><div class="after"><i style="height:44px"></i>W5</div><div class="after"><i style="height:40px"></i>W6</div>
+                </div>
+                <p style="margin:8px 0 0;font-size:14px">Wall pushes after recess began in week 3 (lighter bars).</p>
+            </div>
+        </div>
+    </div>
+    <p class="eyebrow">Branches</p>
+    <div class="branches">
+        <a class="branch key" href="#trends/effectiveness"><b>What works for this class</b><span>Each activity ranked by its re-checks</span></a>
+        <a class="branch" href="#foundations/data"><b>The event record</b><span>The expectation, the re-check link and the outcome</span></a>
+        <a class="branch" href="#activities"><b>Back to the activities</b><span>The library the rankings choose from</span></a>
+    </div>
+</section>
+
+<section class="page" id="p-trends-effectiveness" data-crumb="What works for this class">
+    <p class="eyebrow">Effectiveness</p>
+    <h2>Which activities shift this class, at this moment.</h2>
+    <p class="lead">Every run of an activity is scored by its re-check. Across runs, RegulateED ranks the options it offers the teacher, so the best for this class at this moment comes first.</p>
+    <table class="eff">
+        <thead><tr><th>Ms Jones · K1 · after recess (example)</th><th>Runs</th><th>Average change in Red</th><th>Expectation met</th><th>Evidence</th></tr></thead>
+        <tbody>
+            <tr><td><b>T-Rex Wall Pushes</b> (heavy work)</td><td>6</td><td>−2.5</td><td>5 of 6</td><td><span class="grade weak">Weak or contested</span></td></tr>
+            <tr><td><b>Balloon Breath</b> (slow breathing)</td><td>4</td><td>−1.8</td><td>3 of 4</td><td><span class="grade moderate">Moderate</span></td></tr>
+            <tr><td><b>Butterfly Squeezes</b> (self-soothing touch)</td><td>3</td><td>−0.7</td><td>1 of 3</td><td><span class="grade emerging">Emerging</span></td></tr>
+        </tbody>
+    </table>
+    <div class="grid2" style="margin-top:18px">
+        <div class="card"><div class="tag">Two kinds of evidence</div><p>The research grade says what is known in general. The class's own record says what works here. When they disagree, as wall pushes do above, both are shown: the class record ranks the options, the research grade stays visible.</p></div>
+        <div class="card"><div class="tag">Who sees it</div><ul><li>Teacher: the ranked options for each moment</li><li>School OT: which activities work, by grade and moment</li><li>Principal: whether classes need fewer resets over a term</li></ul></div>
+    </div>
+    <div class="card todo"><div class="tag">To decide</div><p>How many runs before a class's own record outranks the research grade, and whether the app may reorder options on its own or only suggest.</p></div>
+</section>
+
+<!-- ===================== FOUNDATIONS ===================== -->
+<section class="page" id="p-foundations-data" data-crumb="The event record">
+    <p class="eyebrow">Foundations</p>
+    <h2>The event record: what every check-in, activity and re-check stores.</h2>
+    <p class="lead">An event has to know whether an activity followed it and what shift was expected, or no trend can measure the activity. That is the one change to the data from today's design.</p>
+    <div class="quote"><b>Adam, review comment, 18 November</b>"The data collection events will need to know if they have activity expectations as part of a trend monitoring element, so the data needs to be considered in this way."</div>
+    <div class="ents">
+        <div class="ent"><h4>Event (check-in)</h4><ul><li>Moment, date and time</li><li>Teacher, class, grade</li><li>Method (1 to 5)</li><li>Children present</li><li>Counts: Green, Yellow, Red, or the class colour</li><li class="new">Purpose: check-in</li></ul></div>
+        <div class="ent act"><h4>Activity run</h4><ul><li class="new">Responds to: the event</li><li class="new">Activity and family</li><li class="new">Led by: teacher, or the app per child (G4, G5)</li><li class="new">Started, length</li></ul></div>
+        <div class="ent act"><h4>Expectation</h4><ul><li class="new">Expected shift, e.g. Red to 1 or fewer</li><li class="new">Re-check due, e.g. 5 minutes</li><li class="new">Set from the activity's defaults</li></ul></div>
+        <div class="ent"><h4>Event (re-check)</h4><ul><li>Same fields as a check-in</li><li class="new">Purpose: re-check</li><li class="new">Linked to the activity run</li></ul></div>
+        <div class="ent"><h4>Outcome</h4><ul><li class="new">Actual shift: re-check minus check-in</li><li class="new">Met or not met</li><li class="new">Feeds effectiveness by class, moment, activity</li></ul></div>
+    </div>
+    <p class="note">Fields in coral are new: they exist so trends can measure activities.</p>
+    <div class="grid2">
+        <div class="card"><div class="tag">The baseline</div><p>Check-ins with no activity run are kept just the same. They are the "usual" an insight compares against, and the weeks without an activity a trend compares with.</p></div>
+        <div class="card"><div class="tag">Still nothing about a child</div><p>Every record is about the class and the moment. G4 and G5 answers arrive unnamed; whether they carry an anonymised token is still to decide.</p></div>
+    </div>
+</section>
+
+<section class="page" id="p-foundations-evidence" data-crumb="How we grade evidence">
+    <p class="eyebrow">Foundations</p>
+    <h2>How we grade the evidence for each activity.</h2>
+    <div class="grid2">
+        <div class="card"><span class="grade strong">Strong</span><p style="margin-top:8px">Several good trials or a meta-analysis in children, consistent on outcomes that matter in class: behaviour, attention, measured stress.</p></div>
+        <div class="card"><span class="grade moderate">Moderate</span><p style="margin-top:8px">Good evidence, but mostly in adults, in small trials, or mixed in children. Reasonable to use; worth measuring.</p></div>
+        <div class="card"><span class="grade emerging">Emerging</span><p style="margin-top:8px">Promising early studies, a plausible mechanism or a strong practice tradition, not yet tested well in classrooms.</p></div>
+        <div class="card"><span class="grade weak">Weak or contested</span><p style="margin-top:8px">Reviews find little or no effect, or its claims are disputed. Use with care, never as a promise, and say so.</p></div>
+    </div>
+    <div class="card"><div class="tag">Why it matters</div><p>A health product for children must not claim more than the science supports. The full review with every source is in the repo: <i>2026-11-18 RegulateED activity evidence review</i>.</p></div>
+</section>
+
+<section class="page" id="p-foundations-frameworks" data-crumb="The frameworks, honestly">
+    <p class="eyebrow">Foundations</p>
+    <h2>The four frameworks RegulateED cites, and where each stands.</h2>
+    <div id="fw"></div>
+</section>
+
+<section class="page" id="p-foundations-versions" data-crumb="Versions and comments">
+    <p class="eyebrow">Foundations</p>
+    <h2>Versions, and what happens to comments when the map changes.</h2>
+    <p class="lead">This map will change as we evaluate it. Nothing anyone says about it is lost.</p>
+    <div class="grid2">
+        <div class="card"><div class="tag">Every comment remembers</div><ul><li>The page and the version it was made on</li><li>The place in the workflow (for example Step 2 › The event)</li><li>The spot: the element tapped, and where in it</li><li>A drawing, if there was one</li></ul></div>
+        <div class="card"><div class="tag">Every version is kept</div><ul><li>Each published version is frozen at its own address</li><li>A comment can always be opened exactly where it was made</li><li>An archived version says so, with a link to the current one</li></ul></div>
+        <div class="card"><div class="tag">Comments carry forward</div><ul><li>A new version lists where each old place now lives</li><li>Older comments show on it with an outlined pin and their version tag</li><li>If the exact spot is gone, the pin sits on the nearest part that survived, marked "may have moved"</li></ul></div>
+        <div class="card"><div class="tag">Nothing is deleted</div><p>Resolved comments stay in the record. The comments, drawings and every version live on Adam's laptop and in the repo.</p></div>
+    </div>
+    <p class="eyebrow" style="margin-top:8px">Versions</p>
+    <div class="vlist">
+        <div class="vrow"><span class="v">Workflow v1</span><span>18 November 2026: the four-step product workflow with Foundations.</span><span class="cur">Current</span></div>
+        <div class="vrow"><span class="v">Data collection v1</span><span>18 November 2026: the K to 5 data collection page, now Step 1 of the workflow. <a href="data-collection.html" style="color:var(--teal);font-weight:800">Open as it was →</a></span><span class="arc">Archived</span></div>
+    </div>
+</section>
+
+<!-- ===================== STEP 1: DATA COLLECTION (from Data collection v1) ===================== -->
+<section class="page" id="p-collect" data-crumb="Data collection">
+    <div class="stagehead s1"><div class="n">Step 1</div><h2>Data collection</h2><p>Every child is asked "How are you feeling?" the way their age can answer, and every answer belongs to an event.</p></div>
+    <p class="eyebrow">The method matrix, Kindergarten to Grade 5</p>
+    <h1>One question, asked the way each age can answer.</h1>
+    <p class="lead">Every child is asked "How are you feeling?" and answers Green, Yellow or Red. How they answer changes as they grow. This matrix shows which method each grade uses.</p>
+    <div class="mxwrap"><table class="mx" id="matrix"></table></div>
+    <p class="hint">Tap a grade to meet those children. Tap a method to see how it works. Tap a dot to see why that grade uses that method.</p>
+    <p class="eyebrow">Branches</p>
+    <div class="tiles">
+        <button class="tile hero" onclick="go('collect/own-ipad')"><b>Each child's own iPad</b><span>G4 and G5 send their own result from the RegulateED app</span></button>
+        <button class="tile" onclick="go('insights')"><b>On to Step 2</b><span>Insights analysis: what the answers mean</span></button>
+        <button class="tile" onclick="go('foundations/privacy')"><b>Privacy</b><span>What is kept, and what never is</span></button>
+    </div>
+</section>
+
+<!-- ===================== GRADES (filled from data below) ===================== -->
+<div id="grade-pages"></div>
+
+<!-- ===================== METHOD 1 ===================== -->
+<section class="page" id="p-collect-method-group" data-crumb="Method 1: Teacher-led group question">
+    <p class="eyebrow">Method 1</p>
+    <h2>Teacher-led group question</h2>
+    <div class="chips-row" data-grades="group"></div>
+    <div class="split2">
+        <div>
+            <p class="lead">The teacher asks the whole class and reads the room, then records one colour for the class.</p>
+            <ol class="steps">
+                <li>The teacher opens the event: Recess, today, their class.</li>
+                <li>Asks the class, "How are we feeling?"</li>
+                <li>Children answer out loud, hold up a colour card or point.</li>
+                <li>The teacher picks one colour for the class. Saved.</li>
+            </ol>
+            <div class="card"><div class="tag">Why K and G1</div><p>No reading and no device in a child's hand. It is what a K or G1 teacher already does, and it takes under a minute.</p></div>
+            <div class="card"><div class="tag">What is recorded</div><p>One colour for the class, saved to the event. Nothing about any child.</p></div>
+            <div class="card warn"><div class="tag">Watch for</div><p>Loud voices sway it and children copy each other, so a quiet child in Red can go unseen. That is why the entry survey runs alongside it in the same grades.</p></div>
+        </div>
+        <div class="mock"><div class="phone"><div class="screen">
+            <div class="top"><span>Recess · 11/18</span><span>Ms Jones · K1</span></div>
+            <div class="q">How is the class feeling?</div>
+            <div class="btns col">
+                <div class="btn G row"><svg viewBox="0 0 100 100"><use href="#face-g"/></svg>Green</div>
+                <div class="btn Y row sel"><svg viewBox="0 0 100 100"><use href="#face-y"/></svg>Yellow</div>
+                <div class="btn R row"><svg viewBox="0 0 100 100"><use href="#face-r"/></svg>Red</div>
+            </div>
+            <div class="saved"><i></i>Saved: the class is Yellow</div>
+            <div class="foot">On the teacher's phone or iPad</div>
+        </div></div></div>
+    </div>
+</section>
+
+<!-- ===================== METHOD 2 ===================== -->
+<section class="page" id="p-collect-method-entry" data-crumb="Method 2: Event-based entry survey">
+    <p class="eyebrow">Method 2</p>
+    <h2>Event-based entry survey</h2>
+    <div class="chips-row" data-grades="entry"></div>
+    <div class="split2">
+        <div>
+            <p class="lead">The teacher's iPad stands at the classroom door. As the children come in, each one taps the face that matches how they feel.</p>
+            <ol class="steps">
+                <li>The teacher opens the event and sets their iPad on a stand at the door.</li>
+                <li>As the line comes in: "How are you feeling?"</li>
+                <li>Each child taps one face as they pass. A soft chime says "got it".</li>
+                <li>The teacher closes the event and sees the count of each colour.</li>
+            </ol>
+            <div class="card"><div class="tag">Why K to G3</div><p>Faces, not words, so no reading is needed, and every child counts the same. It stops after G3: older children are seen tapping by the line, and answer more honestly in private.</p></div>
+            <div class="card"><div class="tag">What is recorded</div><p>A count of each colour and the total taps against the children present. Never a name, and never the time or order of a tap, so a tap cannot be matched to the child who walked in.</p></div>
+            <div class="card warn"><div class="tag">Watch for, and the guard</div><ul><li>Double taps: a short pause after each tap</li><li>Pressing for fun: taps checked against children present</li><li>A bad round: the teacher can discard the event</li></ul></div>
+        </div>
+        <div class="mock"><div class="tablet"><div class="screen">
+            <div class="top"><span>Recess · 11/18/2026</span><span>Ms Jones · K1</span></div>
+            <div class="q">How are you feeling?</div>
+            <div class="btns">
+                <div class="btn G"><svg viewBox="0 0 100 100"><use href="#face-g"/></svg>Green</div>
+                <div class="btn Y"><svg viewBox="0 0 100 100"><use href="#face-y"/></svg>Yellow</div>
+                <div class="btn R"><svg viewBox="0 0 100 100"><use href="#face-r"/></svg>Red</div>
+            </div>
+            <div class="split"><i class="G" style="flex:13">13</i><i class="Y" style="flex:6">6</i><i class="R" style="flex:2">2</i></div>
+            <div class="foot">21 taps, 21 children present. No names.</div>
+        </div></div></div>
+    </div>
+</section>
+
+<!-- ===================== METHOD 3 ===================== -->
+<section class="page" id="p-collect-method-qr" data-crumb="Method 3: QR code survey">
+    <p class="eyebrow">Method 3</p>
+    <h2>QR code survey: anonymous, by event</h2>
+    <div class="chips-row" data-grades="qr"></div>
+    <div class="split2">
+        <div>
+            <p class="lead">The event's QR code goes up on the board. Children scan it on a classroom iPad or Chromebook and answer a short web form. No name, no login, no app.</p>
+            <ol class="steps">
+                <li>The teacher opens the event; RegulateED shows its QR code.</li>
+                <li>Children scan it, or type the short link.</li>
+                <li>Pick a colour, then "Where do you feel it?"</li>
+                <li>Send. The answer joins the event.</li>
+            </ol>
+            <div class="card"><div class="tag">Why G2 to G4</div><p>Children now read simple words and can use a shared device, so each answers alone and adds one more thing: where they feel it. It stops after G4, when the app does everything the form does plus the reset.</p></div>
+            <div class="card"><div class="tag">What is recorded</div><p>One unnamed answer per child, pooled into the event: the colour and the body spot. The QR code carries the event, never the child.</p></div>
+        </div>
+        <div class="mock" style="display:grid;grid-template-columns:.8fr 1fr;gap:1.4em;align-items:start">
+            <div class="poster"><b>Check in</b><span>Recess · Ms Jones · G2</span><svg viewBox="0 0 21 21" shape-rendering="crispEdges"><use href="#qr"/></svg><span>Scan me</span></div>
+            <div class="phone"><div class="screen">
+                <div class="url">regulateed.com/check-in</div>
+                <div class="q" style="font-size:1.2em">How are you feeling?</div>
+                <div class="btns">
+                    <div class="btn G"><svg viewBox="0 0 100 100" style="width:2.6em"><use href="#face-g"/></svg>Green</div>
+                    <div class="btn Y sel"><svg viewBox="0 0 100 100" style="width:2.6em"><use href="#face-y"/></svg>Yellow</div>
+                    <div class="btn R"><svg viewBox="0 0 100 100" style="width:2.6em"><use href="#face-r"/></svg>Red</div>
+                </div>
+                <div class="q" style="font-size:1em;margin:.9em 0 0">Where do you feel it?</div>
+                <div class="pills"><span class="pill sel">Tummy</span><span class="pill">Heart</span><span class="pill">Arms</span><span class="pill">Head</span></div>
+                <span class="send">Send</span>
+            </div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== METHOD 4 ===================== -->
+<section class="page" id="p-collect-method-mobile" data-crumb="Method 4: RegulateED mobile app">
+    <p class="eyebrow">Method 4</p>
+    <h2>RegulateED mobile app</h2>
+    <div class="chips-row" data-grades="mobile"></div>
+    <div class="split2 wide">
+        <div>
+            <p class="lead">The full RegulateED loop on the child's own school iPad: check in, a 2-minute reset chosen for how they feel, a re-check, and a Focus Token when they reach Green.</p>
+            <div class="card"><div class="tag">Why G4 and G5</div><p>Children read well and use their school device on their own, so they can run a reset themselves without the teacher stopping the class.</p></div>
+            <div class="card"><div class="tag">What is recorded</div><p>The check-in, body spot, the reset done and the re-check, each sent from the child's own iPad to the event. So the school also sees whether resets work.</p></div>
+            <p><a href="#collect/own-ipad" style="font-weight:800;color:var(--teal)">How each child's own iPad sends its result →</a></p>
+        </div>
+        <div class="mock"><div class="tablet"><div class="flow">
+            <div class="screen">
+                <div class="lab">1 Check in</div>
+                <div class="q">How are you feeling?</div>
+                <div class="btns col"><div class="btn G">Green</div><div class="btn Y">Yellow</div><div class="btn R sel">Red</div></div>
+                <div class="pills"><span class="pill sel">Fast heart</span><span class="pill">Tight tummy</span></div>
+            </div>
+            <div class="screen">
+                <div class="lab">2 Reset</div>
+                <svg viewBox="0 0 100 100" style="width:5.5em;margin:.5em auto 0;display:block"><use href="#reggie"/></svg>
+                <div class="q" style="margin-bottom:0">Wall Pushes</div>
+                <div class="timer">1:42</div>
+                <div class="progress"><i></i></div>
+            </div>
+            <div class="screen">
+                <div class="lab">3 Re-check</div>
+                <div class="q">How does your body feel now?</div>
+                <div class="btns col"><div class="btn G sel">Green</div></div>
+                <div style="text-align:center;margin-top:.8em"><span class="token">★</span> <span class="token">★</span> <span class="token off"></span></div>
+                <div class="foot" style="margin-top:.3em">Focus Token earned</div>
+            </div>
+        </div></div></div>
+    </div>
+</section>
+
+<!-- ===================== METHOD 5 ===================== -->
+<section class="page" id="p-collect-method-web" data-crumb="Method 5: RegulateED web app">
+    <p class="eyebrow">Method 5</p>
+    <h2>RegulateED web app</h2>
+    <div class="chips-row" data-grades="web"></div>
+    <div class="split2 wide">
+        <div>
+            <p class="lead">The same app as Method 4, opened in a web browser. Nothing to install: Chromebooks, laptops and classroom smartboards all reach it.</p>
+            <div class="card"><div class="tag">Why both an app and a web app</div><p>Schools buy different devices: many classrooms run on Chromebooks, others on iPads. Two doors to the same RegulateED means no school is left out.</p></div>
+            <div class="card"><div class="tag">What is recorded</div><p>Exactly what the mobile app records, sent to the same event, so answers from both doors add up as one class.</p></div>
+        </div>
+        <div class="mock laptop">
+            <div class="lid"><div class="screen">
+                <div class="url">app.regulateed.com</div>
+                <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:1.2em;align-items:center">
+                    <div>
+                        <div class="q" style="text-align:left;font-size:1.3em;margin:0 0 .6em">How are you feeling?</div>
+                        <div class="btns">
+                            <div class="btn G"><svg viewBox="0 0 100 100" style="width:2.8em"><use href="#face-g"/></svg>Green</div>
+                            <div class="btn Y sel"><svg viewBox="0 0 100 100" style="width:2.8em"><use href="#face-y"/></svg>Yellow</div>
+                            <div class="btn R"><svg viewBox="0 0 100 100" style="width:2.8em"><use href="#face-r"/></svg>Red</div>
+                        </div>
+                        <div class="pills" style="justify-content:flex-start"><span class="pill">Fast heart</span><span class="pill sel">Fidgety legs</span><span class="pill">Heavy arms</span></div>
+                    </div>
+                    <div style="text-align:center">
+                        <svg viewBox="0 0 100 100" style="width:6.5em;margin:0 auto;display:block"><use href="#reggie"/></svg>
+                        <div style="font-weight:800;margin-top:.3em">Next: Cross-Crawl March</div>
+                        <div style="font-size:.85em;opacity:.7">2 minutes, at your desk</div>
+                    </div>
+                </div>
+            </div></div>
+            <div class="base"></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== CONCEPT: OWN IPAD ===================== -->
+<section class="page" id="p-collect-own-ipad" data-crumb="Each child's own iPad">
+    <p class="eyebrow">The concept, G4 and G5</p>
+    <h2>Every child sends their own result, from their own school iPad.</h2>
+    <div class="split2">
+        <div>
+            <p class="lead">From G4 the RegulateED app is on each child's school iPad. When the teacher opens an event, every iPad in the room asks the question at once. Each child answers privately and their result goes back to the event.</p>
+            <ol class="steps">
+                <li>The teacher opens the event from their own screen: After lunch, today, their class.</li>
+                <li>Every child's iPad shows the check-in.</li>
+                <li>Each child answers in private, does their reset, re-checks.</li>
+                <li>Each result is sent to the event, with no name attached.</li>
+                <li>The teacher sees the class split fill in, live.</li>
+            </ol>
+            <div class="card"><div class="tag">Why it matters</div><p>Every child is heard, nobody sees anybody else's answer, and the teacher does not have to stop the lesson to collect it.</p></div>
+            <div class="card"><div class="tag">Privacy</div><p>What travels is the answer and the event: colour, body spot, the reset and the re-check. Never a name, photo or voice. It is designed to stay inside student privacy law (FERPA for school records, COPPA for children's apps).</p></div>
+            <div class="card todo"><div class="tag">To decide</div><p>Whether results stay fully anonymous, or carry an anonymised school token (no name) so a school OT can follow one child's IEP or 504 goals over 30, 60 and 90 days, as the framework plans.</p></div>
+        </div>
+        <div class="mock">
+            <div class="devices">
+                <div class="mini"><div class="screen"><div class="dot" style="background:var(--g)"></div><small>Sent</small></div></div>
+                <div class="mini"><div class="screen"><div class="dot" style="background:var(--y)"></div><small>Sent</small></div></div>
+                <div class="mini"><div class="screen"><div class="dot" style="background:var(--g)"></div><small>Sent</small></div></div>
+                <div class="mini"><div class="screen"><div class="dot" style="background:#E7E1D8"></div><small>Answering</small></div></div>
+                <div class="mini"><div class="screen"><div class="dot" style="background:var(--r)"></div><small>Sent</small></div></div>
+                <div class="mini"><div class="screen"><div class="dot" style="background:var(--g)"></div><small>Sent</small></div></div>
+                <div class="mini"><div class="screen"><div class="dot" style="background:#E7E1D8"></div><small>Answering</small></div></div>
+                <div class="mini"><div class="screen"><div class="dot" style="background:var(--y)"></div><small>Sent</small></div></div>
+            </div>
+            <p style="text-align:center;font-size:.9em;opacity:.7;margin:.6em 0 0">Each child's own iPad, answered in private</p>
+            <div class="arrowdown">↓</div>
+            <div class="eventbox">After lunch · 11/18/2026 · Mr Diaz · G4<small>The event: answers arrive with no name</small></div>
+            <div class="arrowdown">↓</div>
+            <div class="tablet"><div class="screen">
+                <div class="top"><span>Teacher view</span><span>24 of 26 answered</span></div>
+                <div class="split"><i class="G" style="flex:14">14</i><i class="Y" style="flex:7">7</i><i class="R" style="flex:3">3</i></div>
+                <div class="foot">3 children in Red after lunch: <a href="#insights/to-activities" style="font-weight:800;color:var(--teal)">see the insight and the activity options</a></div>
+            </div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== CONCEPT: INSIGHTS ===================== -->
+<section class="page" id="p-insights-to-activities" data-crumb="From insight to activity">
+    <p class="eyebrow">From results to action</p>
+    <h2>Every result becomes an insight, and every insight offers a way to shift the class.</h2>
+    <p class="lead">The check-in tells the teacher where the class is. Insights turn that into what to do next: activities designed to move a mostly Red room toward Yellow and Green, offered as options the teacher chooses and applies to the class.</p>
+    <div class="loop">
+        <div><b>1</b>Check in<span>Any method, any grade</span></div>
+        <div><b>2</b>Insight<span>What the split says</span></div>
+        <div><b>3</b>Options<span>Activities matched to it</span></div>
+        <div><b>4</b>Apply<span>The teacher picks one</span></div>
+        <div><b>5</b>Re-check<span>Did the class shift?</span></div>
+    </div>
+    <div class="split2" style="margin-top:26px">
+        <div>
+            <div class="card"><div class="tag">The insight</div><p>Read from the split, never the average alone: how much of the room is Red, Yellow or Green, at which moment, compared with this class's usual. For example, "Back from recess, almost half the class is unsettled: more than usual for them."</p></div>
+            <div class="card"><div class="tag">The options</div><p>Two or three activities designed for that result, each about 2 minutes and done at the desk or as a class. A mostly Red room gets calming heavy work and slow breathing; a mostly Yellow room gets soothing touch or breathing. The teacher chooses; RegulateED never runs one on its own.</p></div>
+            <div class="card"><div class="tag">The proof</div><p>A quick re-check after the activity is a second event linked to the first, so the shift is measured: Red to Yellow, Yellow to Green. Over weeks, insights learn which activities work best for this class at this moment, and offer those first.</p></div>
+            <div class="card"><div class="tag">By grade</div><p>K to G3: the teacher leads the activity with the whole class. G4 and G5: the teacher can apply it to the class, and the app can also offer each child a reset of their own.</p></div>
+        </div>
+        <div class="mock"><div class="tablet"><div class="screen">
+            <div class="top"><span>Insights · Ms Jones · K1</span><span>Recess · 11/18/2026</span></div>
+            <div class="q" style="font-size:1.25em;text-align:left;margin:.6em 0 .2em">Back from recess: 10 of 21 are unsettled</div>
+            <div style="font-size:.85em;opacity:.7">Usual for this class after recess: 6</div>
+            <div class="split"><i class="G" style="flex:11">11</i><i class="Y" style="flex:6">6</i><i class="R" style="flex:4">4</i></div>
+            <div style="font-size:.75em;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin:1.1em 0 .5em">Activities for this result</div>
+            <div class="opt best"><b>T-Rex Wall Pushes</b><span>Heavy work · 2 min · calms high energy</span><em>Worked best for this class: 4 Red to 1</em><i>Apply</i></div>
+            <div class="opt"><b>Balloon Breath</b><span>Rhythmic breathing · 2 min · slows the heart rate</span><i>Apply</i></div>
+            <div class="opt"><b>Butterfly Squeezes</b><span>Touch reset · 2 min · soothes worry and overload</span><i>Apply</i></div>
+            <div style="font-size:.75em;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin:1.1em 0 .2em">After the reset: re-check</div>
+            <div class="split" style="margin-top:.4em"><i class="G" style="flex:16">16</i><i class="Y" style="flex:4">4</i><i class="R" style="flex:1">1</i></div>
+            <div class="foot">Shift: 3 fewer in Red, 5 more in Green</div>
+        </div></div></div>
+    </div>
+    <p class="eyebrow" style="margin-top:22px">What insights learn over time</p>
+    <div class="grid3">
+        <div class="card"><div class="tag">When</div><p>The moments a class usually struggles, such as after recess or before lunch, so a reset can be planned before the room tips into Red.</p></div>
+        <div class="card"><div class="tag">What works</div><p>Which activities shift this class, at which moment, ranked by the re-checks. The best one is offered first.</p></div>
+        <div class="card"><div class="tag">Progress</div><p>Whether the class needs fewer resets over the weeks: the trend a teacher, a school OT or a principal wants to see.</p></div>
+    </div>
+    <div class="grid2">
+        <div class="card"><div class="tag">To develop</div><p>The RegulateED activity library: each activity designed by an OT for a result, an age band and a place (at the desk, standing, whole class). The examples above come from the framework's four groups: heavy work, movement across the body, touch resets and rhythmic breathing.</p></div>
+        <div class="card todo"><div class="tag">To decide</div><p>Green, Yellow and Red cannot show a sluggish, low-energy class, the one that needs waking up, not calming down. The framework used a fourth state, Blue, for that. Does the check-in need a way to tell it apart?</p></div>
+    </div>
+</section>
+
+<!-- ===================== CONCEPT: EVENT ===================== -->
+<section class="page" id="p-insights-event" data-crumb="The event, and the week">
+    <p class="eyebrow">What every method shares</p>
+    <h2>Every answer belongs to an event.</h2>
+    <div class="event">
+        <div><div class="tag">Moment</div>Recess</div>
+        <div><div class="tag">Date</div>11/18/2026</div>
+        <div><div class="tag">Teacher</div>Ms Jones</div>
+        <div><div class="tag">Class</div>K1</div>
+    </div>
+    <div class="grid3">
+        <div class="card"><div class="tag">One question</div><p>"How are you feeling?" Green, Yellow or Red, the same three faces in every grade.</p></div>
+        <div class="card"><div class="tag">One event</div><p>The moment, date, teacher and class. All five methods save their answers to the event, so a K class and a G5 class line up the same way.</p></div>
+        <div class="card"><div class="tag">One pattern</div><p>Events line up over days and weeks, so the school sees when classes struggle, such as after recess.</p></div>
+    </div>
+    <p class="eyebrow" style="margin-top:14px">A week of events, Ms Jones K1 (example)</p>
+    <div class="card" id="week"></div>
+</section>
+
+<!-- ===================== CONCEPT: SPLIT ===================== -->
+<section class="page" id="p-insights-split" data-crumb="Split, not average">
+    <p class="eyebrow">From answers to a class result</p>
+    <h2>Show the split, not just the average.</h2>
+    <p class="lead">An average turns colours into a number (Green 2, Yellow 1, Red 0). It is handy for trends over weeks, but on its own it can hide the children who need help.</p>
+    <div class="grid2" style="margin-top:18px">
+        <div class="card"><div class="tag">Class X: average 1.0, "Yellow"</div><div class="split"><i class="G" style="flex:10">10 Green</i><i class="R" style="flex:10">10 Red</i></div><p style="margin-top:10px">Half the room is in Red. Nobody is actually Yellow.</p></div>
+        <div class="card"><div class="tag">Class Y: average 1.0, "Yellow"</div><div class="split"><i class="Y" style="flex:20">20 Yellow</i></div><p style="margin-top:10px">The whole room is a bit wiggly. A breathing reset will do.</p></div>
+    </div>
+    <p class="lead">Same average, very different rooms. So every method that counts children (2 to 5) shows the split of colours first, and any Red is always shown, never averaged away.</p>
+</section>
+
+<!-- ===================== CONCEPT: PRIVACY ===================== -->
+<section class="page" id="p-foundations-privacy" data-crumb="Privacy">
+    <p class="eyebrow">Privacy by design</p>
+    <h2>No record about a named child, in any grade.</h2>
+    <div class="grid2">
+        <div class="card"><div class="tag">What we keep</div><ul><li>The event: moment, date, time, teacher, class</li><li>Which method collected it</li><li>The class colour, the counts, or each unnamed answer</li><li>From G4: the reset done and the re-check</li></ul></div>
+        <div class="card warn"><div class="tag">What we never keep</div><ul><li>Names, logins with names, or class rosters</li><li>Photos, video or voice</li><li>The time or order of a tap at the door</li><li>Anything a classmate could see on another child's screen</li></ul></div>
+    </div>
+    <div class="grid3">
+        <div class="card"><div class="tag">K to G3, methods 1 and 2</div><p>No child is ever recorded: the class colour or the counts only.</p></div>
+        <div class="card"><div class="tag">G2 to G4, method 3</div><p>Unnamed answers. The QR code carries the event, not the child.</p></div>
+        <div class="card todo"><div class="tag">G4 and G5, methods 4 and 5</div><p>Sent from each child's own iPad, no name. An anonymised token for IEP and 504 tracking is still to decide.</p></div>
+    </div>
+    <p class="note">The student privacy laws here are FERPA (school records) and COPPA (children's apps). To be confirmed by a privacy lawyer before any classroom pilot.</p>
+</section>
+
+<div id="gen"></div>
+
+<script>
+
+    // One source for the matrix, the grade pages and every chip row.
+    const METHODS = [
+        { id: 'group',  n: 1, name: 'Teacher-led group question', sub: 'The teacher asks the class and reads the room', grades: ['K', 'G1'] },
+        { id: 'entry',  n: 2, name: 'Event-based entry survey',   sub: "One tap each on the teacher's iPad at the door", grades: ['K', 'G1', 'G2', 'G3'] },
+        { id: 'qr',     n: 3, name: 'QR code survey',             sub: 'Anonymous web form, results by event', grades: ['G2', 'G3', 'G4'] },
+        { id: 'mobile', n: 4, name: 'RegulateED mobile app',      sub: "On each child's own school iPad", grades: ['G4', 'G5'] },
+        { id: 'web',    n: 5, name: 'RegulateED web app',         sub: 'The same app in a browser: Chromebook, smartboard', grades: ['G4', 'G5'] },
+    ];
+    const GRADES = [
+        { id: 'K', name: 'Kindergarten', age: '5 to 6',
+          who: 'Most children are just starting to read: letters, their own name, a few sight words. Big feelings arrive fast and show in the body before they find the words. Anything on a device needs an adult to start it.',
+          reading: 'Pre-readers', device: "The teacher's", answer: 'With the class',
+          can: ['Point to the face that matches how they feel', 'Answer out loud with the class', 'Tap one big picture button'],
+          cannot: ['Read a question or a password', 'Scan a QR code or log in', 'Look after a device of their own'],
+          why: { group: 'The teacher asks and reads the room: no reading, no device, under a minute.', entry: 'One tap on a face at the door: every child counts, still no reading.' },
+          whyNot: 'Not the QR form or the app yet: both need reading and a device in the child\'s hands.' },
+        { id: 'G1', name: 'Grade 1', age: '6 to 7',
+          who: 'Beginning readers: short words and simple sentences with pictures. Starting to name their feelings, still quick to copy a friend. Device skills vary a lot across one class.',
+          reading: 'Beginning readers', device: "The teacher's", answer: 'With the class',
+          can: ['Name a feeling with a picture to help', 'Tap a face at the door on their own', 'Take part in a class reset'],
+          cannot: ['Fill in a form reliably', 'Keep a login or a device of their own'],
+          why: { group: 'Still the fastest way to read a seated class.', entry: 'The door tap hears every child, including the quiet ones.' },
+          whyNot: 'The QR form waits until most of the class reads and can handle a shared device.' },
+        { id: 'G2', name: 'Grade 2', age: '7 to 8',
+          who: 'Reading simple sentences on their own. Can use a shared classroom iPad or Chromebook with a little help. Starting to link a body signal to a feeling: "my tummy feels tight".',
+          reading: 'Reads simple sentences', device: 'Shared classroom', answer: 'Each child, unnamed',
+          can: ['Answer on their own, privately', 'Scan a QR code on a shared device', 'Say where they feel it in their body'],
+          cannot: ['Run a full reset on a device without help'],
+          why: { entry: 'Still the quickest way to hear every child as they come back in.', qr: 'Each child answers alone on a shared device and adds where they feel it.' },
+          whyNot: 'No longer the group question: children can answer for themselves, so every voice counts, not the loudest. The app waits for G4.' },
+        { id: 'G3', name: 'Grade 3', age: '8 to 9',
+          who: 'Fluent readers, now reading to learn. Comfortable on classroom devices. Very aware of classmates and what they think, and some start to hide how they feel.',
+          reading: 'Fluent', device: 'Shared classroom', answer: 'Each child, unnamed',
+          can: ['Answer a short form quickly', 'Notice and name a body signal', 'Choose between two calm-down ideas'],
+          cannot: ['Always answer honestly in front of the line'],
+          why: { entry: 'Works for classes coming back from recess; G3 is its last year.', qr: 'The private option: the answer is on a screen, not seen by the line.' },
+          whyNot: 'The app waits for G4 and G5, when children can run a reset on their own.' },
+        { id: 'G4', name: 'Grade 4', age: '9 to 10',
+          who: 'Independent readers, often with a school iPad or Chromebook each. They can notice a body signal, name it and choose what helps. Privacy from classmates matters to them.',
+          reading: 'Independent', device: 'Their own school device', answer: 'Each child, privately',
+          can: ['Check in, do a 2-minute reset and re-check on their own', 'Choose a strategy that works for them', 'Use the app on an iPad or in a browser'],
+          cannot: ['Comfortably answer out loud or at the door in front of others'],
+          why: { qr: 'The light option for a school or class not on the app yet.', mobile: 'The full check-in, reset and re-check on their own iPad.', web: 'The same app in a browser, for Chromebook schools.' },
+          whyNot: 'Not the door survey: tapping in front of the line is no longer private enough at this age.' },
+        { id: 'G5', name: 'Grade 5', age: '10 to 11',
+          who: 'Ready to own their regulation: they check in, pick a reset and judge whether it worked. Privacy from peers matters most, and so does being trusted to do it themselves.',
+          reading: 'Independent', device: 'Their own school device', answer: 'Each child, privately',
+          can: ['Run the whole loop alone', 'Notice their own patterns over a week', 'Help a younger class as a reset buddy'],
+          cannot: [],
+          why: { mobile: 'The full loop on their own iPad.', web: 'The same app in a browser, whatever device the school has.' },
+          whyNot: 'Not the QR form: the app does everything the form does and adds the reset and the re-check.' },
+    ];
+    const ALL = GRADES.map(g => g.id);
+
+    const el = (h) => { const t = document.createElement('template'); t.innerHTML = h.trim(); return t.content.firstElementChild; };
+    const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+    // matrix
+    const mx = document.getElementById('matrix');
+    mx.innerHTML = '<thead><tr><th></th>' + GRADES.map(g => `<th><button onclick="go('collect/grade/${g.id}')">${g.id}<small>age ${g.age}</small></button></th>`).join('') + '</tr></thead><tbody>' +
+        METHODS.map(m => `<tr><th><button onclick="go('collect/method/${m.id}')"><b>${m.n}</b><span>${esc(m.name)}<small>${esc(m.sub)}</small></span></button></th>` +
+            ALL.map(g => m.grades.includes(g) ? `<td class="on"><a href="#collect/method/${m.id}/${g}" aria-label="${esc(m.name)} in ${g}"></a></td>` : '<td></td>').join('') + '</tr>').join('') + '</tbody>';
+
+    // grade pages
+    const gp = document.getElementById('grade-pages');
+    for (const g of GRADES) {
+        const used = METHODS.filter(m => m.grades.includes(g.id));
+        gp.appendChild(el(`<section class="page" id="p-collect-grade-${g.id}" data-crumb="${g.name}">
+            <p class="eyebrow">Who the children are</p>
+            <h2>${g.name}, age ${g.age}</h2>
+            <div class="chips-row">${ALL.map(x => `<a class="gchip ${x === g.id ? 'on' : ''}" href="#collect/grade/${x}">${x}</a>`).join('')}</div>
+            <p class="lead">${esc(g.who)}</p>
+            <div class="facts">
+                <div class="fact"><div class="tag">Reading</div><b>${g.reading}</b></div>
+                <div class="fact"><div class="tag">Device</div><b>${g.device}</b></div>
+                <div class="fact"><div class="tag">How they answer</div><b>${g.answer}</b></div>
+            </div>
+            <div class="grid2">
+                <div class="card"><div class="tag">They can</div><ul>${g.can.map(c => `<li>${esc(c)}</li>`).join('')}</ul></div>
+                ${g.cannot.length ? `<div class="card warn"><div class="tag">Not yet</div><ul>${g.cannot.map(c => `<li>${esc(c)}</li>`).join('')}</ul></div>` : '<div class="card"><div class="tag">Not yet</div><p>Nothing in the check-in is out of reach at this age.</p></div>'}
+            </div>
+            <p class="eyebrow" style="margin-top:12px">The methods ${g.id} uses, and why</p>
+            <div class="grid2">${used.map(m => `<a class="card mlink" href="#collect/method/${m.id}/${g.id}"><b class="n">${m.n}</b><div><h3>${esc(m.name)}</h3><p>${esc(g.why[m.id])}</p></div></a>`).join('')}</div>
+            <div class="card"><div class="tag">And why not the others</div><p>${esc(g.whyNot)}</p></div>
+        </section>`));
+    }
+
+    // grade chips on method pages
+    for (const row of document.querySelectorAll('[data-grades]')) {
+        const m = METHODS.find(x => x.id === row.dataset.grades);
+        row.innerHTML = ALL.map(g => `<a class="gchip ${m.grades.includes(g) ? 'on' : ''}" data-g="${g}" href="#collect/grade/${g}">${g}</a>`).join('') +
+            '<span class="note" style="align-self:center;margin-left:6px">Tap a grade to meet those children</span>';
+    }
+
+    // the week on the event page (example data)
+    const week = [['Arrival', [[16,4,1],[17,4,0],[15,5,1],[16,5,0],[14,6,1]]], ['Recess', [[9,8,4],[10,7,4],[13,6,2],[8,9,4],[9,7,5]]], ['Lunch', [[13,7,1],[14,6,1],[12,8,1],[15,6,0],[12,7,2]]]];
+    document.getElementById('week').innerHTML = '<div style="display:grid;grid-template-columns:70px repeat(5,1fr);gap:8px;align-items:center;font-size:14px"><span></span>' +
+        ['Mon','Tue','Wed','Thu','Fri'].map(d => `<b style="text-align:center;opacity:.6">${d}</b>`).join('') +
+        week.map(([lab, days]) => `<b>${lab}</b>` + days.map(([g, y, r]) => `<div class="split" style="height:28px;${lab === 'Recess' ? 'outline:3px solid var(--coral);outline-offset:2px' : ''}"><i class="G" style="flex:${g}"></i><i class="Y" style="flex:${y}"></i>${r ? `<i class="R" style="flex:${r}"></i>` : ''}</div>`).join('')).join('') +
+        '</div><p style="margin:12px 0 0">The class comes back from recess unsettled most days: the moment to plan a reset for.</p>';
+
+
+    const STATES = [
+        { id: 'red', short: 'Mostly Red', name: 'Mostly Red: wired or overwhelmed', swatch: 'var(--r)', band: '#B9433D',
+          split: [['g', 6], ['y', 6], ['r', 9]],
+          goal: 'Bring the room down: calm bodies first, then minds.',
+          looks: 'Loud, fast, bodies everywhere. Small things set children off, some are in tears or shutting down, and nobody can hear the instructions. Typical after recess, a fire drill, a fight in the line, or a long indoor day.',
+          shift: 'From high arousal to settled: slower breathing, quieter bodies, voices down. Not to sleepy: the aim is ready to learn, which for a Red room means Yellow first, then Green.' },
+        { id: 'yellow', short: 'Mostly Yellow', name: 'Mostly Yellow: wiggly or worried', swatch: 'var(--y)', band: '#B98A12',
+          split: [['g', 7], ['y', 12], ['r', 2]],
+          goal: 'Settle and focus: take the edge off before the task.',
+          looks: 'Fidgeting, chatting, getting up, slow to start. Some children are anxious about a test or a change in the day, others are simply restless.',
+          shift: 'From restless or worried to steady attention: a short reset that releases the fidget or soothes the worry, then straight into the task.' },
+        { id: 'split', short: 'Split room', name: 'A split room: a few in Red, most in Green', swatch: 'linear-gradient(90deg, var(--r), var(--g))', band: '#5B6E3E',
+          split: [['g', 15], ['y', 3], ['r', 3]],
+          goal: 'Help the few without stopping the many.',
+          looks: 'Most of the class is fine and ready, but two or three children are clearly not. A whole-class reset would cost the many; ignoring it costs the few.',
+          shift: 'The few move toward Yellow and Green with a quiet individual option, while the class carries on. The teacher sees the count, never the names.' },
+        { id: 'low', short: 'Low energy', name: 'Low energy: sluggish and flat', swatch: '#6C8EBF', band: '#4A6A99',
+          split: [['g', 8], ['b', 10], ['y', 3]],
+          goal: 'Bring the room up: wake bodies and attention.',
+          looks: 'Heads on desks, slow to answer, yawning, glazed. Typical after lunch, late afternoon, or a long sitting stretch.',
+          shift: 'From low arousal to alert: brief vigorous movement and rhythm that lift energy without tipping the room into Red.',
+          note: 'Green, Yellow and Red cannot show this room today: a sluggish child may tap Yellow or Green. The framework used a fourth state, Blue. Shown here in blue so the map is complete; whether the check-in adds it is Adam\'s ruling.' },
+        { id: 'green', short: 'Mostly Green', name: 'Mostly Green: calm and ready', swatch: 'var(--g)', band: '#2D8A4A',
+          split: [['g', 18], ['y', 2], ['r', 1]],
+          goal: 'Keep it: protect the calm and build the habit.',
+          looks: 'Settled, listening, ready to start. The aim now is not to fix anything but to keep the routine that got the class here.',
+          shift: 'Stay Green through the next transition: brief routines that build self-awareness, so children learn to reset themselves before they need to.' },
+    ];
+
+    // Source: DOCS/2026-11-18 RegulateED activity evidence review.md (every grade and source comes from it).
+    const FAMILIES = [
+        { id: 'breathing', name: 'Slow breathing, long out-breath', grade: 'moderate', fit: { red: 1, yellow: 1, split: 2, green: 2 },
+          oneLine: 'Slower breaths with a longer exhale, paced by a picture or a story.',
+          what: 'Children breathe more slowly than usual, with the out-breath longer than the in-breath, paced by something to picture or trace: smell the flower, blow out the candle, a balloon filling and emptying, a finger tracing a star.',
+          examples: [['Balloon Breath', 'Hands cup a balloon that slowly fills, then slowly empties'], ['Star-Trace Breathing', 'Breathe in up one point of a star, out down the next'], ['Smell the Flower, Blow the Candle', 'For K to 2: a short story script']],
+          params: [['Length', '4 to 10 breaths, 1 to 3 minutes'], ['Where', 'Seated at the desk'], ['Who', 'Whole class']],
+          how: ['The teacher starts the 2-minute card; the visual paces the breath.', 'Coach slow and gentle breaths, never "big deep breaths".', 'Out-breath longer than the in-breath, about 4 to 6 breaths a minute for older children.', 'Re-check when the card ends.'],
+          why: 'Slow breathing makes the heart rate rise and fall with each breath and engages the body\'s blood-pressure reflex; both shift the body toward calm, and a long out-breath adds to it.',
+          evidence: 'Strong in adults: a meta-analysis of 223 studies found slow breathing raises heart rate variability. In children, a trial with 342 seven-year-olds found a one-minute video of four slow breaths lowered heart rate and raised the calming heart rhythm. A school programme for ages 7 to 11 worked better for the older children. Not yet tested on on-task behaviour, or on a class that is already upset.',
+          cautions: '"Big deep breaths" can make children over-breathe, feel dizzy and more anxious. Take care with asthma or panic. Untested in a room that is already Red.',
+          sources: [['Laborde et al. 2022, Neuroscience and Biobehavioral Reviews 138:104711', 'https://doi.org/10.1016/j.neubiorev.2022.104711'], ['Obradovic, Sulik, Armstrong-Carter 2022, Developmental Psychobiology', 'https://doi.org/10.1002/dev.22214'], ['Aritzeta et al. 2022, Int J Environ Res Public Health 19(9):5475', 'https://doi.org/10.3390/ijerph19095475'], ['Lehrer and Gevirtz 2014, Frontiers in Psychology 5:756', 'https://doi.org/10.3389/fpsyg.2014.00756']] },
+        { id: 'movement', name: 'Movement breaks', grade: 'moderate', gradeNote: 'Moderate to strong for on-task behaviour, the best-supported family', fit: { yellow: 1, low: 1, split: 2 },
+          oneLine: 'Short whole-class bursts of movement during the lesson.',
+          what: 'Short bursts of whole-class movement during lessons: jumping, dancing, story-led exercise, or movement built into the lesson itself.',
+          examples: [['Story Run', 'Act out a story on the spot: run, jump the log, climb'], ['Copy the Leader', 'A child leads moves for everyone to copy'], ['Number Jumps', 'Jump the answer to a quick sum']],
+          params: [['Length', '4 to 15 minutes'], ['Where', 'Standing beside desks'], ['Effort', 'Moderate to vigorous']],
+          how: ['Use for a restless or flat room, not one that is already Red.', 'Aim for more than 4 minutes: very short bursts showed less effect.', 'End with a calm 30 seconds before the task.', 'Re-check after.'],
+          why: 'Exercise raises arousal and blood flow and releases the restlessness of sitting too long; some studies find better impulse control afterwards.',
+          evidence: 'The best-supported family. A meta-analysis of 16 studies found classroom activity improved on-task behaviour (effect size 0.60). In grades 3 and 4, on-task behaviour rose 8%, and 20% for the least on-task children. Time on task improved in 9 of 11 interventions in another review. Claims about grades and thinking skills are weak.',
+          cautions: 'It raises arousal: a Red room may need a calming step after. Adapt for physical disability and small rooms.',
+          sources: [['Watson et al. 2017, IJBNPA 14:114', 'https://doi.org/10.1186/s12966-017-0569-9'], ['Daly-Smith et al. 2018, BMJ Open Sport and Exercise Medicine 4:e000341', 'https://bmjopensem.bmj.com/content/4/1/e000341'], ['Mahar et al. 2006, Medicine and Science in Sports and Exercise 38(12)', 'https://doi.org/10.1249/01.mss.0000235359.16685.a3'], ['Infantes-Paniagua et al. 2021, Brain Sciences 11(6):675', 'https://doi.org/10.3390/brainsci11060675']] },
+        { id: 'energise', name: 'Energising a flat room', grade: 'moderate', gradeNote: 'Moderate for movement; weak for music alone', fit: { low: 1 },
+          oneLine: 'Brief vigorous movement and rhythm to lift a sluggish class.',
+          what: 'Brief vigorous movement, clapping or stomping rhythms, or upbeat music to lift a sluggish, low-energy class.',
+          examples: [['Four-Minute Intervals', '20 seconds hard, 10 seconds rest, told as a story'], ['Clap and Stomp', 'A rhythm the class copies, faster each round'], ['Shake It Out', 'Shake hands, arms, legs, counting down from ten']],
+          params: [['Length', '3 to 10 minutes'], ['Where', 'Standing'], ['Who', 'Whole class']],
+          how: ['Use when the room is flat: after lunch, late afternoon.', 'Keep it short and end with a settle, so the room does not tip into Red.', 'Re-check after.'],
+          why: 'Short exercise raises arousal and can sharpen attention and impulse control.',
+          evidence: 'A meta-analysis for ages 6 to 12 found short bouts of activity improve attention. Four minutes of intervals cut off-task behaviour in grades 4 and 5; a trial with 211 fourth graders kept them on task while others drifted. Upbeat music as an energiser has only adult evidence.',
+          cautions: 'Too intense can tip a Yellow room into Red: plan the cool-down.',
+          sources: [['de Greeff et al. 2018, J Sci Med Sport 21(5):501 to 507', 'https://pubmed.ncbi.nlm.nih.gov/29054748/'], ['Ma, Le Mare, Gurd 2015, Appl Physiol Nutr Metab 40(3):238 to 244', ''], ['Heemskerk and Roebers 2024, Frontiers in Cognition', 'https://doi.org/10.3389/fcogn.2024.1362636'], ['Howie, Schatz, Pate 2015, Res Q Exerc Sport', 'https://read.qxmd.com/read/26009945']] },
+        { id: 'touch', name: 'Self-soothing touch', grade: 'emerging', gradeNote: 'Emerging, adults only', fit: { yellow: 1, split: 1, red: 2 },
+          oneLine: 'Hands on heart, a self-hug or butterfly taps.',
+          what: 'Placing hands on the heart or belly, hugging oneself, or the butterfly hug: arms crossed, hands tapping the shoulders in turn.',
+          examples: [['Butterfly Squeezes', 'Arms crossed, gentle taps left and right'], ['Hand on Heart', 'One hand on the heart, one on the belly, three slow breaths'], ['Arm Tapping', 'Tap down each arm and back up']],
+          params: [['Length', '20 seconds to 2 minutes'], ['Where', 'Seated'], ['Who', 'Whole class or one child']],
+          how: ['Always optional: offer, never require.', 'Pair it with slow breathing.', 'Re-check after.'],
+          why: 'Warm, gentle touch may calm the body\'s stress-hormone response.',
+          evidence: 'One good adult trial: 20 seconds of self-soothing touch before a stressful task lowered the stress hormone cortisol, though heart rate and how stressed people felt did not change. The butterfly hug comes from trauma-therapy practice, not trials. No child study was found.',
+          cautions: 'Some children dislike touch, even their own. Never present the butterfly hug as trauma treatment in a classroom.',
+          sources: [['Dreisoerner et al. 2021, Comprehensive Psychoneuroendocrinology 8:100091', 'https://doi.org/10.1016/j.cpnec.2021.100091'], ['Artigas and Jarero, the butterfly hug method (EMDRIA resource)', 'https://www.emdria.org/resource/the-emdr-therapy-butterfly-hug-method-for-self-administered-bilateral-stimulation-iberoamerican-journal-of-psychotraumatology-and-dissociation/']] },
+        { id: 'heavywork', name: 'Heavy work (push and pull)', grade: 'weak', fit: { red: 2, yellow: 2, split: 2 },
+          oneLine: 'Pushing or carrying against resistance, as in OT sensory practice.',
+          what: 'Pushing or pulling against resistance: wall push-ups, chair push-ups, carrying books, stacking chairs. Used in OT sensory practice to "organise" or calm a child.',
+          examples: [['T-Rex Wall Pushes', 'Short arms, push the wall, count to ten'], ['Chair Push-Ups', 'Hands on the seat, lift, hold, lower'], ['Heavy Backpack Lift', 'Carry the book box to the shelf']],
+          params: [['Length', '1 to 5 minutes'], ['Where', 'Standing or seated'], ['Who', 'One child or whole class']],
+          how: ['Treat it as a movement break, not a sensory treatment.', 'Stable chairs only for chair push-ups.', 'Re-check after.'],
+          why: 'The idea is that deep input from muscles and joints regulates arousal. That is a theory, not a shown pathway; some of any benefit is probably the movement break itself.',
+          evidence: 'No controlled test of heavy work on its own in ordinary K to 5 classrooms was found. Reviews of sensory approaches find few effects on classroom regulation, and the studies there are mostly of autistic children or children with sensory processing difficulties.',
+          cautions: 'Popular and low-risk, but do not call it proven calming. Its place in the library rests on the class\'s own re-checks.',
+          sources: [['Piller et al. 2025, Frontiers in Pediatrics', 'https://doi.org/10.3389/fped.2025.1720179'], ['Case-Smith, Weaver, Fristad 2015, Autism 19(2)', 'https://capacity-resource.middletownautism.com/wp-content/uploads/sites/3/2015/07/CASE-SMITH-2014.pdf'], ['Bodison and Parham 2018, AJOT 72(1)', 'https://doi.org/10.5014/ajot.2018.029413']] },
+        { id: 'crossmidline', name: 'Cross-body moves (and Brain Gym)', grade: 'weak', fit: { low: 2, yellow: 2 },
+          oneLine: 'Hand or foot crossing the body, central to Brain Gym.',
+          what: 'Movements where a hand or foot crosses the middle of the body: cross-crawl, figure-eights, windmill touches. Central to Brain Gym.',
+          examples: [['Cross-Crawl March', 'Elbow to opposite knee, marching on the spot'], ['Windmill Touches', 'Hand to opposite toe, then switch'], ['Figure-8 Eye Trace', 'Follow a thumb drawing a sideways eight']],
+          params: [['Length', '1 to 3 minutes'], ['Where', 'Standing'], ['Who', 'Whole class']],
+          how: ['Use it as a short movement break only.', 'Never describe it as "balancing the brain".'],
+          why: 'Brain Gym claims these moves "integrate the two halves of the brain". Reviews find no support for that; any benefit is that of a movement break.',
+          evidence: 'Reviews from 2007 and 2010 found no support for Brain Gym\'s claims and placed its ideas among discredited approaches; the UK schools department said in 2009 it had not been properly evaluated.',
+          cautions: 'Using "hemisphere" or "brain balancing" language would cost RegulateED credibility with informed reviewers.',
+          sources: [['Hyatt 2007, Remedial and Special Education 28(2):117 to 124', 'https://doi.org/10.1177/07419325070280020201'], ['Spaulding, Mostert, Beam 2010, Exceptionality 18(1):18 to 30', 'https://core.ac.uk/download/58825343.pdf']] },
+        { id: 'pmr', name: 'Muscle relaxation (tense and let go)', grade: 'emerging', fit: { red: 2, yellow: 2 },
+          oneLine: 'Squeeze and release muscle groups, told as a story.',
+          what: 'Tensing then releasing groups of muscles in turn, told as a story for young children: squeeze the lemon, the turtle in its shell.',
+          examples: [['Squeeze the Lemon', 'Squeeze tight, then drop the lemon and let go'], ['Turtle Shell', 'Shoulders up into the shell, then out into the sun'], ['Spaghetti Body', 'Stiff like dry spaghetti, then floppy like cooked']],
+          params: [['Length', '2 to 3 minutes short, 5 to 15 full'], ['Where', 'Seated'], ['Who', 'Whole class']],
+          how: ['Teach it over a few sessions before relying on it.', 'Use story scripts: young children struggle with muscle words.', 'Re-check after.'],
+          why: 'Feeling the contrast between tight and loose teaches children to notice and lower muscle tension.',
+          evidence: 'In 8 to 12 year olds, one trial found this raised heart rate during training while imagery lowered it; mood improved either way. A small trial with 10 and 11 year olds lowered how stressed they felt, but not behaviour. Strong evidence exists only for teenagers and adults.',
+          cautions: 'Needs teaching time. May not suit children with pain conditions or very flexible joints.',
+          sources: [['Lohaus et al. 2001, British Journal of Health Psychology 6(2):197 to 206', 'https://doi.org/10.1348/135910701169151'], ['Sofianopoulou et al. 2021, EMBnet Journal', 'https://doi.org/10.14806/ej.26.1.976'], ['Hamdani et al. 2022, Int J Mental Health Systems', 'https://doi.org/10.1186/s13033-022-00541-y']] },
+        { id: 'mindful', name: 'Mindful attention and grounding', grade: 'moderate', gradeNote: 'Moderate, for small effects', fit: { green: 1, yellow: 2 },
+          oneLine: 'Short guided noticing of breath, body or senses.',
+          what: 'Short guided noticing of the breath, the body or the senses, such as 5-4-3-2-1 grounding (five things you see, four you hear) or a three-minute daily practice.',
+          examples: [['5-4-3-2-1', 'Name 5 things you see, 4 you hear, 3 you feel'], ['Listening Bell', 'Listen until the sound is completely gone'], ['Body Scan Lite', 'Notice feet, hands, tummy, face']],
+          params: [['Length', 'About 3 minutes'], ['Where', 'Seated'], ['Who', 'Whole class']],
+          how: ['Best as a routine in a calm room, not a fix for a Red one.', 'Keep it short and optional.'],
+          why: 'Trains attention and lowers reactivity through noticing without judging.',
+          evidence: 'Large reviews find small benefits that shrink against fair comparisons and fade later. A trial of 8,376 teenagers found no benefit. The most encouraging elementary trial, MindUP in grades 4 and 5, was only four classes. 5-4-3-2-1 has no child trial.',
+          cautions: 'Quiet inward focus can unsettle some children with trauma or anxiety.',
+          sources: [['Dunning et al. 2022, Evidence-Based Mental Health 25:135 to 142', 'https://doi.org/10.1136/ebmental-2022-300464'], ['Kuyken et al. 2022, Evidence-Based Mental Health 25:99 to 109', 'https://doi.org/10.1136/ebmental-2021-300396'], ['Schonert-Reichl et al. 2015, Developmental Psychology', 'https://reachfamilies.umn.edu/sites/default/files/rdoc/Schonert-Reichl_2015_0.pdf'], ['Dunning et al. 2019, J Child Psychol Psychiatry', 'https://eprints.whiterose.ac.uk/id/eprint/144191/']] },
+        { id: 'naming', name: 'Naming feelings and body signals', grade: 'emerging', fit: { green: 1, yellow: 2, split: 2 },
+          oneLine: 'Putting a word to a feeling and a place in the body.',
+          what: 'Putting a word to a feeling, and noticing body signals (heartbeat, tummy, muscles) and linking them to feelings. The check-in\'s "Where do you feel it?" is a small version of this.',
+          examples: [['Where Do You Feel It?', 'Point to the body spot on the check-in'], ['Feelings Word of the Day', 'One new word, one body signal that goes with it'], ['Body Detective', 'What is my heart, tummy, face telling me?']],
+          params: [['Length', 'Seconds, in the check-in'], ['Where', 'Anywhere'], ['Who', 'Each child, in the class']],
+          how: ['Build it into the check-in rather than a separate lesson.', 'Give younger and autistic children picture support.'],
+          why: 'In adults, naming a feeling lowers the brain\'s alarm response, a quiet form of emotion regulation.',
+          evidence: 'The adult brain research is solid. In preschoolers, daily naming went with faster recovery from feelings, but that study shows a link, not a cause. In adults, naming has also been found to make later calming strategies harder. The interoception curriculum has only small before-and-after studies, mostly of autistic children.',
+          cautions: 'Do not claim the check-in itself calms children: untested in children, and naming can sometimes hold a feeling in place.',
+          sources: [['Lieberman et al. 2007, Psychological Science 18(5):421 to 428', 'https://doi.org/10.1111/j.1467-9280.2007.01916.x'], ['Torre and Lieberman 2018, Emotion Review 10(2):116 to 124', 'https://doi.org/10.1177/1754073917742706'], ['Nook, Satpute, Ochsner 2021, Affective Science', 'https://doi.org/10.1007/s42761-021-00036-y'], ['Mahler et al. 2022, Occupational Therapy International', 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9045986']] },
+        { id: 'environment', name: 'Changing the room', grade: 'moderate', gradeNote: 'Moderate for clutter and noise; emerging for light and music', fit: { red: 1, split: 2, green: 2, yellow: 2 },
+          oneLine: 'Lower the lights, the noise and the clutter.',
+          what: 'Changing the room instead of the child: softer lighting, less noise, calm background music, fewer things on the walls. The PEO idea that changing the environment changes how children take part.',
+          examples: [['Lights Down', 'Dim the lights for the reset'], ['Quiet Voices', 'A sound meter on the board, aim for the green band'], ['Calm Music', 'Soft music during seatwork']],
+          params: [['Length', 'As long as the activity'], ['Where', 'The room'], ['Who', 'The teacher']],
+          how: ['Pair with any activity for a Red room.', 'No music during reading or verbal tasks.'],
+          why: 'Less sensory load and fewer distractions; music works through mood and arousal.',
+          evidence: 'Busy walls meant more off-task time and less learning for kindergarteners. Noise harms children\'s listening and verbal tasks more than adults\'. Single studies found variable lighting cut restlessness and calm music helped primary pupils. A 2025 review found too little to rate room changes as a regulation tool.',
+          cautions: 'Treat lighting product claims with care. Music can distract during language work.',
+          sources: [['Fisher, Godwin, Seltman 2014, Psychological Science 25(7)', 'https://doi.org/10.1177/0956797614533801'], ['Klatte, Bergstrom, Lachmann 2013, Frontiers in Psychology 4:578', 'https://doi.org/10.3389/fpsyg.2013.00578'], ['Barkmann et al. 2012, Physiology and Behavior', 'https://pubmed.ncbi.nlm.nih.gov/22001491/'], ['Hallam, Price, Katsarou 2002, Educational Studies 28(2)', 'https://dc2.philarchive.org/rec/HALTEO-9']] },
+        { id: 'coreg', name: 'The teacher\'s calm, and class rituals', grade: 'emerging', fit: { red: 1, split: 1, yellow: 2, low: 2, green: 2 },
+          oneLine: 'A calm adult voice and predictable routines.',
+          what: 'The adult\'s own calm (voice, pace, presence) used to steady the class, and predictable rituals such as a morning meeting and a set calm-down routine.',
+          examples: [['Lower, Slower', 'The teacher drops voice and pace before giving the next step'], ['Our Reset Routine', 'The same three steps every time the class resets'], ['Morning Meeting', 'A short circle to start the day']],
+          params: [['Length', 'Ongoing'], ['Where', 'Every transition'], ['Who', 'The teacher, the whole class']],
+          how: ['Script the teacher\'s first sentence for each activity.', 'Use the same reset ritual every time.'],
+          why: 'A calm, responsive adult models and supports regulation until children can do it alone; children\'s stress seems to track the adults around them.',
+          evidence: 'Classes with more burned-out teachers had students with higher morning stress hormone, a link rather than a cause. A large trial of a classroom approach helped only where teachers used it fully. No trial isolates the "calm adult voice".',
+          cautions: 'Depends on the teacher\'s own wellbeing. Never word it as blaming teachers.',
+          sources: [['Oberle and Schonert-Reichl 2016, Social Science and Medicine 159:30 to 37', 'https://econpapers.repec.org/RePEc:eee:socmed:v:159:y:2016:i:c:p:30-37'], ['Rimm-Kaufman et al. 2014, American Educational Research Journal', 'https://www.aera.net/Newsroom/Recent-AERA-Research/Efficacy-of-the-Responsive-Classroom-Approach-Results-From-a-3-Year-Longitudinal-Randomized-Controlled-Trial'], ['Murray et al. 2015, Self-Regulation and Toxic Stress Report 1 (US ACF)', 'https://acf.gov/sites/default/files/documents/report_1_foundations_paper_final_012715_submitted_508_0.pdf']] },
+        { id: 'deskaids', name: 'Desk aids: headphones and weighted items', grade: 'weak', gradeNote: 'Weak for weighted vests; emerging for headphones', fit: { split: 2 },
+          oneLine: 'For one child: headphones, weighted lap pads or vests.',
+          what: 'For one child at the desk: noise-cancelling headphones for a child sensitive to sound, or weighted vests and lap pads.',
+          examples: [['Quiet Headphones', 'For a sound-sensitive child during noisy times'], ['Lap Pad', 'A weighted pad on the lap during seatwork']],
+          params: [['Length', 'Timed periods'], ['Where', 'At the desk'], ['Who', 'One child']],
+          how: ['Offer as a quiet option for the few in a split room.', 'Never use weight as a restraint.'],
+          why: 'Headphones lower sound load for children who over-react to it. Weight is said to give calming pressure; that is not shown.',
+          evidence: 'Two reviews found weighted vests do not work. No good lap pad trial exists. Headphones lowered a stress measure in six autistic children with sound sensitivity.',
+          cautions: 'Individual aids, never a whole-class strategy. Weighted vests need limits and supervision.',
+          sources: [['Stephenson and Carter 2009, J Autism Dev Disord 39(1):105 to 114', 'https://doi.org/10.1007/s10803-008-0605-3'], ['Taylor et al. 2017, Research in Autism Spectrum Disorders 37:49 to 60', 'https://doi.org/10.1016/j.rasd.2017.03.003'], ['Pfeiffer et al. 2019, Frontiers in Integrative Neuroscience 13:65', 'https://doi.org/10.3389/fnint.2019.00065']] },
+    ];
+
+    const FRAMEWORKS = [
+        { name: 'Polyvagal Theory', grade: 'weak', status: 'Proposes two vagal circuits behind social engagement and shutdown. Critics argue each of its five premises is likely refuted, and in 2026, 39 experts in vagal physiology concluded it is untenable; its author has published a rebuttal.', forUs: 'Use as a clinical metaphor at most, never as the mechanism. The breathing and co-regulation evidence stands without it.',
+          sources: [['Porges 2007, Biological Psychology 74:116 to 143', 'https://pubmed.ncbi.nlm.nih.gov/17049418/'], ['Grossman 2023, Biological Psychology', 'https://pubmed.ncbi.nlm.nih.gov/37230290/'], ['Grossman et al. 2026, Clinical Neuropsychiatry 23(1):100 to 112', 'https://doi.org/10.36131/cnfioritieditore20260110']] },
+        { name: 'Ayres Sensory Integration', grade: 'moderate', status: 'A clinic-based, child-led OT therapy. A blinded trial in autistic children aged 4 to 8 improved goal attainment, and it is classed as evidence-based for autistic children of about 4 to 12. Paediatricians advise caution.', forUs: 'Its evidence does not carry over to whole-class activities for typical children. Do not cite it as the reason a classroom activity works.',
+          sources: [['Schaaf et al. 2014, J Autism Dev Disord', 'https://doi.org/10.1007/s10803-013-1983-8'], ['Schoen et al. 2019, Autism Research 12(1):6 to 19', 'https://doi.org/10.1002/aur.2046'], ['NCAEP 2020 evidence-based practices report', 'https://ncaep.fpg.unc.edu/wp-content/uploads/EBP-Report-2020.pdf']] },
+        { name: 'Zones of Regulation', grade: 'weak', status: 'Very widely used, thin evidence: a small trial in elementary students found no change in disruptive behaviour or self-control, a review judged the evidence inconclusive, and an autism treatment science body says it cannot be called evidence-based.', forUs: 'If RegulateED borrows its colour language, say it is borrowed vocabulary, not borrowed evidence.',
+          sources: [['Ochocki et al. 2020, International Journal of School Social Work', 'https://doi.org/10.4148/2161-4148.1046'], ['Romanowycz et al. 2021, The Allied Health Scholar 2(2)', 'https://ojs.adelaide.edu.au/index.php/tahs/article/view/1595'], ['ASAT review of the Zones of Regulation', 'https://asatonline.org/research-treatment/research-synopses/review-of-the-zones-of-regulation-program/']] },
+        { name: 'Interoception Curriculum (Mahler)', grade: 'emerging', status: 'Only before-and-after studies without a comparison group, in special education: 9 middle-schoolers over 7 weeks and 14 autistic students over 25 weeks, both with gains. Its use in general classrooms is promoted but untested against a control group.', forUs: 'A good idea that fits wider research, not yet proven. RegulateED\'s check-in data could help test it.',
+          sources: [['Mahler et al. 2022, Occupational Therapy International', 'https://pmc.ncbi.nlm.nih.gov/articles/PMC9045986']] },
+    ];
+
+
+    // ---------------------------------------------------------------- step 3: activities
+    const GRADE = { strong: 'Strong', moderate: 'Moderate', emerging: 'Emerging', weak: 'Weak or contested' };
+    const ORDER = Object.keys(GRADE);
+    const badge = (g) => `<span class="grade ${g}">${GRADE[g]}</span>`;
+    const src = (list) => `<ol class="sources">${list.map(([t, u]) => `<li>${esc(t)}${u ? ` <a href="${esc(u)}" target="_blank" rel="noopener">${esc(u.replace(/^https?:\/\//, ''))}</a>` : ''}</li>`).join('')}</ol>`;
+    const swatchBar = (s) => `<span class="sb">${s.split.map(([c, n]) => `<i style="flex:${n};background:${c === 'b' ? '#6C8EBF' : `var(--${c})`}"></i>`).join('')}</span>`;
+
+    document.getElementById('state-cards').innerHTML = STATES.map((s) => `<button class="state" onclick="go('activities/state/${s.id}')">${swatchBar(s)}<b>${esc(s.name)}</b><span>${esc(s.goal)}</span></button>`).join('');
+    document.getElementById('insight-states').innerHTML = STATES.map((s) => `<a class="spill" href="#activities/state/${s.id}"><i style="background:${s.swatch}"></i>${esc(s.short)}</a>`).join('');
+    document.getElementById('amap').innerHTML = '<thead><tr><th></th>' + STATES.map((s) => `<th><span class="sw" style="background:${s.swatch}"></span>${esc(s.short)}</th>`).join('') + '</tr></thead><tbody>' +
+        FAMILIES.map((f) => `<tr><th><button onclick="go('activities/family/${f.id}')"><b>${esc(f.name)}</b>${badge(f.grade)}</button></th>` +
+            STATES.map((s) => (f.fit[s.id] ? `<td class="${f.fit[s.id] === 1 ? 'on' : 'side'}"><a href="#activities/family/${f.id}" aria-label="${esc(f.name)} for ${esc(s.short)}"></a></td>` : '<td></td>')).join('') + '</tr>').join('') + '</tbody>';
+
+    const gen = document.getElementById('gen');
+    for (const s of STATES) {
+        const ranked = FAMILIES.filter((f) => f.fit[s.id]).sort((a, b) => (a.fit[s.id] - b.fit[s.id]) || (ORDER.indexOf(a.grade) - ORDER.indexOf(b.grade)));
+        const cls = { g: 'G', y: 'Y', r: 'R', b: 'B' };
+        gen.appendChild(el(`<section class="page" id="p-activities-state-${s.id}" data-crumb="${esc(s.short)}">
+            <p class="eyebrow">Room result</p>
+            <h2>${esc(s.name)}</h2>
+            <div class="band" style="background:${s.band}"><b style="font-size:19px">${esc(s.goal)}</b><div class="split">${s.split.map(([c, n]) => `<i class="${cls[c]}" style="flex:${n};${c === 'b' ? 'background:#6C8EBF' : ''}">${n}</i>`).join('')}</div></div>
+            <div class="grid2">
+                <div class="card"><div class="tag">What the room looks like</div><p>${esc(s.looks)}</p></div>
+                <div class="card"><div class="tag">The shift we want</div><p>${esc(s.shift)}</p></div>
+            </div>
+            <p class="eyebrow" style="margin-top:8px">Activities for this result: first choices, then supporting</p>
+            <div class="grid2">${ranked.map((f) => `<a class="card mlink" href="#activities/family/${f.id}"><b class="n" style="${f.fit[s.id] === 2 ? 'background:#9CC9C2' : ''}">${f.fit[s.id] === 1 ? '1st' : '+'}</b><div style="flex:1"><div class="famrow"><h3>${esc(f.name)}</h3>${badge(f.grade)}</div><p>${esc(f.oneLine)}</p></div></a>`).join('')}</div>
+            ${s.note ? `<div class="card todo"><div class="tag">To decide</div><p>${esc(s.note)}</p></div>` : ''}
+        </section>`));
+    }
+    for (const f of FAMILIES) {
+        const used = STATES.filter((s) => f.fit[s.id]);
+        gen.appendChild(el(`<section class="page" id="p-activities-family-${f.id}" data-crumb="${esc(f.name)}">
+            <p class="eyebrow">Activity family</p>
+            <h2>${esc(f.name)}</h2>
+            <div class="pill-row">${badge(f.grade)}${f.gradeNote ? `<span class="note">${esc(f.gradeNote)}</span>` : ''}${used.map((s) => `<a class="spill" href="#activities/state/${s.id}"><i style="background:${s.swatch}"></i>${esc(s.short)}${f.fit[s.id] === 2 ? ' (supporting)' : ''}</a>`).join('')}</div>
+            <p class="lead">${esc(f.what)}</p>
+            <p class="eyebrow" style="margin-top:6px">Example activities</p>
+            <div class="acts">${f.examples.map(([n, d]) => `<div class="act"><b>${esc(n)}</b><span>${esc(d)}</span></div>`).join('')}</div>
+            <div class="params">${f.params.map(([k, v]) => `<div><div class="tag">${esc(k)}</div><b>${esc(v)}</b></div>`).join('')}</div>
+            <div class="split2">
+                <div>
+                    <div class="card"><div class="tag">How it is deployed</div><ol class="steps" style="margin:6px 0 0">${f.how.map((x) => `<li>${esc(x)}</li>`).join('')}</ol></div>
+                    <div class="card"><div class="tag">Why it should help</div><p>${esc(f.why)}</p></div>
+                </div>
+                <div>
+                    <div class="card"><div class="tag">What the evidence shows</div><p style="margin-bottom:8px">${badge(f.grade)}</p><p>${esc(f.evidence)}</p></div>
+                    <div class="card warn"><div class="tag">Cautions</div><p>${esc(f.cautions)}</p></div>
+                </div>
+            </div>
+            <div class="card"><div class="tag">Key sources</div>${src(f.sources)}</div>
+        </section>`));
+    }
+    document.getElementById('fw').innerHTML = FRAMEWORKS.map((x) => `<div class="card"><div class="famrow"><h3>${esc(x.name)}</h3>${badge(x.grade)}</div><p>${esc(x.status)}</p><p><b>For RegulateED:</b> ${esc(x.forUs)}</p>${src(x.sources)}</div>`).join('');
+
+    // ---------------------------------------------------------------- the trail and the router
+    // A route is a path of segments; each page is p-<segments joined by ->. A page's parent is the
+    // longest shorter route that has a page, so the trail always leads back to the workflow.
+    const pageFor = (route) => {
+        const parts = route ? route.split('/') : [];
+        for (let n = parts.length; n > 0; n--) {
+            const pg = document.getElementById('p-' + parts.slice(0, n).join('-'));
+            if (pg) return { page: pg, route: parts.slice(0, n).join('/'), rest: parts.slice(n) };
+        }
+        return { page: document.getElementById('p-hub'), route: '', rest: [] };
+    };
+    const trailOf = (route) => {
+        const out = [];
+        let r = route;
+        while (r) {
+            const hit = pageFor(r);
+            if (hit.route !== r) { r = hit.route; continue; }
+            out.unshift({ route: r, name: hit.page.dataset.crumb || r });
+            r = r.split('/').slice(0, -1).join('/');
+        }
+        return [{ route: '', name: 'Workflow' }, ...out];
+    };
+    for (const p of document.querySelectorAll('.page:not(#p-hub)')) {
+        p.appendChild(el('<div class="backrow"><button class="main" data-up>Up one level</button><button onclick="go(\'\')">The workflow</button></div>'));
+    }
+    document.addEventListener('click', (ev) => {
+        const up = ev.target.closest('[data-up]');
+        if (!up) return;
+        const t = trailOf(pageFor(location.hash.replace(/^#\/?/, '')).route);
+        go(t.length > 1 ? t[t.length - 2].route : '');
+    });
+
+    function go(route) { location.hash = route; if (!route) show(); }
+    function show() {
+        const hit = pageFor(location.hash.replace(/^#\/?/, ''));
+        document.querySelectorAll('.page.on').forEach((p) => p.classList.remove('on'));
+        hit.page.classList.add('on');
+        document.body.classList.toggle('at-hub', hit.page.id === 'p-hub');
+        const t = trailOf(hit.route);
+        document.getElementById('trail').innerHTML = t.map((x, i) => (i === t.length - 1 ? `<b>${esc(x.name)}</b>` : `<a href="#${x.route}">${esc(x.name)}</a><span>›</span>`)).join('');
+        hit.page.querySelectorAll('.gchip.focus').forEach((c) => c.classList.remove('focus'));
+        if (hit.rest[0]) { const c = hit.page.querySelector(`.gchip[data-g="${hit.rest[0]}"]`); if (c) c.classList.add('focus'); }
+        window.scrollTo(0, 0);
+    }
+    // The review layer names each comment's place with the trail.
+    window.reviewRouteName = (r) => trailOf(pageFor(r).route).slice(1).map((x) => x.name).join(' › ') || 'Workflow';
+    addEventListener('hashchange', show);
+    show();
+</script>
+<script>window.REVIEW = {"page":"workflow","version":"1","file":"workflow-v1.html","links":{"current":"index.html","currentPage":"workflow","data-collection@1":"data-collection.html","workflow@1":"workflow-v1.html","manual":"manual.html"},"title":"RegulateED product workflow, version 1","tag":"Workflow v1","frozen":"18 Nov 2026","archived":true,"currentHref":"index.html","api":"https://regulateed-review.sashook.com","passHash":"1a55f65e93387e97bce9768422378405e8daf8cdd3e270528c7ccc76f24e32a3","sources":[],"nav":{"top":{"label":"← Current workflow","href":"index.html"},"bottom":{"label":"← Current workflow","href":"index.html"}}};</script>
+<script src="review.js?v=98e9d0ec61"></script>
+<script src="rounds.js?v=98e9d0ec61"></script>
+</body>
+</html>
