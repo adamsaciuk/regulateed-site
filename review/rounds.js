@@ -1,11 +1,11 @@
-// RegulateED review rounds (Adam, 2026-11-18): the review runs in rounds. Comments are filed as
+// RegulateED review sprints (Adam, 2026-11-18; called rounds until he named them Sprints). Comments are filed as
 // numbered tracker items (R1-03), each with its own link and collaboration chat; links in any
 // message become chips that open what they point at; every reader has an Iris Chat, and a message
 // card greets them when Iris has written. Loaded after review.js, which hands over window.RV.
 (function () {
     'use strict';
     let RV = null;
-    let tracker = { round: 1, state: 'open', items: [] };
+    let tracker = { sprints: [], items: [] };
     let tab = 'comments';
     let openId = null;
     let linkTarget = null;
@@ -93,7 +93,9 @@
     const comments = () => RV.comments();
     const links = () => (RV.CFG.links || {});
     const onCurrent = () => !!RV.CFG.page && !RV.CFG.archived && RV.CFG.page === (links().currentPage || RV.CFG.page) && (RV.CFG.file || 'index.html') === (links().current || 'index.html');
-    const itemById = (id) => tracker.items.find((x) => x.id === id);
+    // Sprint 1 items were first numbered R1-xx; old links still find them.
+    const itemById = (id) => tracker.items.find((x) => x.id === id || x.id === String(id).replace(/^R1-/, 'S1-'));
+    const isDemo = (id) => /^D-/.test(String(id || '')) || RV.CFG.page === 'demo';
     const itemOfThread = (id) => tracker.items.find((x) => (x.threads || []).includes(id));
     const seen = (key) => { try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch { return {}; } };
     const markSeen = (key, id) => { const m = seen(key); m[id] = new Date().toISOString(); localStorage.setItem(key, JSON.stringify(m)); };
@@ -123,8 +125,8 @@
         setTimeout(() => ring.remove(), 3200);
     };
     const spotOf = (arg) => {
-        const [route, path, fx, fy] = String(arg || '').split('~');
-        return { route: route || '', anchor: path ? { path, fx: Number(fx) || 0, fy: Number(fy) || 0 } : null };
+        const [route, path, fx, fy, page] = String(arg || '').split('~');
+        return { route: route || '', page: page || '', anchor: path ? { path, fx: Number(fx) || 0, fy: Number(fy) || 0 } : null };
     };
 
     // ------------------------------------------------------------------ chips
@@ -138,20 +140,27 @@
             return b;
         };
         switch (kind) {
-            case 'item': { const it = itemById(arg); return make('ck-item', arg, label || (it ? it.topic : 'Tracker item'), () => openTracker(arg)); }
+            case 'item': { const it = itemById(arg); return make('ck-item', it ? it.id : arg, label || (it ? it.topic : 'Tracker item'), () => openTracker(it ? it.id : arg)); }
             case 'research': return make('ck-research', 'Research', label || research[arg] || arg, () => goRoute('foundations/research/' + arg));
             case 'page': return make('', 'Page', label || RV.routeName(arg), () => goRoute(arg));
             case 'thread': return make('', 'Thread', label || 'Open the thread', () => {
                 if (!RV.openThread(arg)) location.href = (links().current || 'index.html') + '?thread=' + encodeURIComponent(arg);
             });
-            case 'spot': { const s = spotOf(arg); return make('', 'Spot', label || RV.routeName(s.route), () => {
-                if (onCurrent()) { location.hash = s.route; setTimeout(() => flashAt(s.anchor), 300); }
-                else location.href = (links().current || 'index.html') + '?spot=' + encodeURIComponent(arg) + '#' + s.route;
-            }); }
+            case 'spot': {
+                // A spot remembers the page it was linked on (the workflow when none is named, for older links).
+                const s = spotOf(arg);
+                const page = s.page || links().currentPage || 'workflow';
+                const here = page === RV.CFG.page && (page !== links().currentPage || onCurrent());
+                const name = page === 'demo' ? 'Demo page' : page === 'manual' ? 'The manual' : RV.routeName(s.route);
+                return make('', 'Spot', label || name, () => {
+                    if (here) { if (RV.route() !== s.route) location.hash = s.route; setTimeout(() => flashAt(s.anchor), 300); }
+                    else location.href = (page === links().currentPage ? links().current : links()[page] || links().current || 'index.html') + '?spot=' + encodeURIComponent(arg) + '#' + s.route;
+                });
+            }
             case 'v1': return make('', 'Version 1', label || 'As it was in v1', () => { location.href = (links()['workflow@1'] || 'workflow-v1.html') + '#' + arg; });
             case 'manual': return make('', '', label || 'The review manual', () => { location.href = links().manual || 'manual.html'; });
             case 'chat': return make('', '', label || 'Iris Chat', () => openPanel('iris'));
-            case 'tracker': return make('ck-item', '', label || `Round ${tracker.round} tracker`, () => openTracker(null));
+            case 'tracker': return make('ck-item', '', label || 'The sprint tracker', () => openTracker(null));
             default: return null;
         }
     };
@@ -197,9 +206,9 @@
     const paint = () => {
         const panel = RV.panel;
         const fresh = irisUnseen().length;
-        tabsEl.replaceChildren(...[['comments', 'Comments'], ['tracker', `Round ${tracker.round}`], ['iris', 'Iris Chat']].map(([k, t]) => {
+        tabsEl.replaceChildren(...[['comments', 'Comments'], ['tracker', 'Sprints'], ['iris', 'Iris Chat']].map(([k, t]) => {
             const b = h('button', { class: tab === k ? 'on' : '', type: 'button' }, t, k === 'iris' && fresh ? h('span', { class: 'dot' }) : null);
-            b.addEventListener('click', () => { tab = k; if (k !== 'tracker') openId = null; paint(); });
+            b.addEventListener('click', () => { tab = k; openId = null; paint(); });
             return b;
         }));
         irisBtn.replaceChildren(h('span', { class: 'rv-avatar', html: RV.AVATAR }), 'Iris');
@@ -211,11 +220,11 @@
         if (tab === 'iris') paintIris();
     };
 
-    const composer = (placeholder, send) => {
+    const composer = (placeholder, send, demo) => {
         const wrap = h('div', { class: 'rv-compose' });
-        if (RV.isPaused()) { wrap.append(h('p', { class: 'rv-hint' }, 'Maintenance pause: messages open again shortly.')); return wrap; }
-        let nameInput = null;
-        if (!myName()) { nameInput = h('input', { placeholder: 'Your name', maxlength: '60', style: 'width:100%;box-sizing:border-box;font:inherit;border:2px solid #E9E1D6;border-radius:10px;padding:7px 10px;margin-bottom:6px' }); wrap.append(nameInput); }
+        if (RV.isPaused() && !demo) { wrap.append(h('p', { class: 'rv-hint' }, 'Maintenance pause: messages open again shortly.')); return wrap; }
+        const nameInput = RV.needName(wrap);
+        if (nameInput) nameInput.setAttribute('style', 'display:none;width:100%;box-sizing:border-box;font:inherit;border:2px solid #E9E1D6;border-radius:10px;padding:7px 10px;margin-top:6px');
         const area = h('textarea', { placeholder, maxlength: '4000' });
         const link = h('button', { type: 'button', title: 'Tap a spot on the page to link it here' }, 'Link a spot');
         const go = h('button', { class: 'main', type: 'button' }, 'Send');
@@ -257,10 +266,14 @@
         body.replaceChildren();
         const it = openId && itemById(openId);
         if (!it) {
-            body.append(h('p', { class: 'rv-hint' }, `Round ${tracker.round}: every comment is filed as an item. We talk the items through, Adam decides, and the next version is built from them. `, chipFor('manual', '', 'How this works')));
-            if (!tracker.items.length) { body.append(h('p', { class: 'rv-hint' }, 'No items yet.')); return; }
+            body.append(h('p', { class: 'rv-hint' }, 'Every comment is filed as an item in its sprint. We talk the items through, Adam decides, and the next version is built from them. ', chipFor('manual', '', 'How this works')));
+            for (const sp of tracker.sprints || []) {
+                const mine = tracker.items.filter((x) => String(x.sprint) === String(sp.n));
+                body.append(h('h3', { style: 'margin:16px 0 2px;font-size:18px' }, sp.title, h('span', { class: 'rv-pill ' + (sp.state === 'open' ? 'ok' : sp.state === 'demo' ? 'grey' : 'call'), style: 'margin-left:8px;vertical-align:2px' }, sp.state === 'talk-through' ? 'Talk-through' : sp.state)),
+                    h('p', { class: 'rv-hint' }, sp.note || ''));
+                if (!mine.length) { body.append(h('p', { class: 'rv-hint' }, 'No items yet.')); continue; }
             for (const st of ORDER) {
-                const list = tracker.items.filter((x) => x.status === st);
+                const list = mine.filter((x) => x.status === st);
                 if (!list.length) continue;
                 body.append(h('div', { class: 'rv-sec' }, STATUS[st][0]));
                 for (const x of list) {
@@ -272,9 +285,10 @@
                     body.append(b);
                 }
             }
+            }
             return;
         }
-        const back = h('button', { class: 'rv-back', type: 'button' }, `← Round ${tracker.round} tracker`);
+        const back = h('button', { class: 'rv-back', type: 'button' }, '← Sprints');
         back.addEventListener('click', () => { openId = null; paint(); });
         body.append(back, h('h3', { style: 'margin:6px 0 4px;font-size:19px' }, h('span', { style: 'color:#E0703F' }, it.id + ' '), it.topic),
             h('span', { class: 'rv-pill ' + STATUS[it.status][1] }, STATUS[it.status][0]),
@@ -290,7 +304,7 @@
                 plain(s.text).length > 260 ? plain(s.text).slice(0, 260) + '…' : plain(s.text), s.thread ? h('div', { style: 'margin-top:4px' }, chipFor('thread', s.thread)) : null));
         }
         body.append(h('div', { class: 'rv-sec' }, 'Collaboration chat'), h('p', { class: 'rv-hint' }, 'Talk this item through here: you, Adam and Iris.'));
-        body.append(msgList(itemChat(it.id)), composer(`Write about ${it.id}`, (name, text) => post('item', it.id, name, text)));
+        body.append(msgList(itemChat(it.id)), composer(`Write about ${it.id}`, (name, text) => post('item', it.id, name, text), isDemo(it.id)));
         markSeen(ITEM_SEEN, it.id);
     };
 
@@ -370,7 +384,7 @@
                 const fx = r.width ? Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width)).toFixed(3) : 0;
                 const fy = r.height ? Math.min(1, Math.max(0, (ev.clientY - r.top) / r.height)).toFixed(3) : 0;
                 const area = linkTarget;
-                area.value = (area.value ? area.value.replace(/\s*$/, ' ') : '') + `[[spot:${RV.route()}~${RV.pathOf(target)}~${fx}~${fy}]] `;
+                area.value = (area.value ? area.value.replace(/\s*$/, ' ') : '') + `[[spot:${RV.route()}~${RV.pathOf(target)}~${fx}~${fy}~${RV.CFG.page || ''}]] `;
                 stopLinking();
                 area.focus();
             }, true);

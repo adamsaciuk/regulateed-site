@@ -97,6 +97,13 @@
         .rv-pin.unread::after { content: ""; position: absolute; top: -5px; right: -5px; width: 12px; height: 12px; border-radius: 50%; background: #E0524B; border: 2px solid #fff; }
         #rv-panel .hideclosed { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; margin: 2px 2px 8px; cursor: pointer; }
         #rv-panel .hideclosed input { width: 18px; height: 18px; accent-color: #2A9D8F; }
+        .rv-who { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+        .rv-who b { flex-basis: 100%; font-size: 14px; }
+        .rv-who button { font: inherit; font-weight: 800; font-size: 15px; flex: 1; min-width: 80px; border: 2px solid #E9E1D6; background: #fff; border-radius: 14px; padding: 10px 8px; cursor: pointer; }
+        .rv-who button.on { border-color: #2A9D8F; background: #EEF8F6; }
+        .rv-whobox { background: #fff; border: 1px solid #E9E1D6; border-radius: 12px; padding: 10px; margin: 0 0 10px; display: grid; gap: 8px; }
+        .rv-whobox input { font: inherit; border: 2px solid #E9E1D6; border-radius: 10px; padding: 7px 10px; }
+        .rv-whobox .main { font: inherit; font-weight: 800; border: 0; border-radius: 30px; padding: 8px; background: #1F3A4D; color: #fff; cursor: pointer; }
         #rv-panel .who { font-size: 13px; color: #4A5E6D; margin: 4px 2px 6px; }
         #rv-panel .who button { font: inherit; font-weight: 700; color: #2A9D8F; background: none; border: 0; cursor: pointer; padding: 0 4px; }
         .rv-pin.carried { background: #fff; color: #E0703F; border: 2px solid #F2845C; font-size: 11px; }
@@ -316,7 +323,8 @@
         try {
             // A maintenance pause (Adam): the team reads but cannot add until Iris lifts it; queued comments wait.
             const st = await api('GET', '/api/review/state').catch(() => ({ paused: false }));
-            paused = st.paused ? (st.note || 'Maintenance pause: comments are closed for a short while.') : null;
+            // The demo page stays open during a pause, for testing (Adam, Sprint 2).
+            paused = st.paused && CFG.page !== 'demo' ? (st.note || 'Maintenance pause: comments are closed for a short while.') : null;
             html.classList.toggle('rv-paused', !!paused);
             if (paused) { setPlacing(false); }
             for (const item of paused ? [] : queue()) {
@@ -428,10 +436,25 @@
         el.style.top = (y + 10) + 'px';
     };
 
+    // Who is writing is a deliberate choice (Adam: "Its really only Jordan and Me"): the team's names are fixed,
+    // so replies, unread counts and each person's Iris Chat always find the right person.
+    const TEAM = [['Adam', 'Adam Saciuk'], ['Jordan', 'jordan']];
+    const whoPicker = (input, onPick) => {
+        const others = h('button', { type: 'button' }, 'Someone else');
+        const pick = h('div', { class: 'rv-who' }, h('b', {}, 'Who are you?'),
+            ...TEAM.map(([label, name]) => h('button', { type: 'button', 'data-name': name, onclick: (ev) => {
+                input.value = name;
+                input.style.display = 'none';
+                pick.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === ev.currentTarget));
+                if (onPick) onPick(name);
+            } }, label)), others);
+        others.addEventListener('click', () => { input.value = ''; input.style.display = ''; pick.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === others)); input.focus(); });
+        return pick;
+    };
     const needName = (box) => {
         if (localStorage.getItem(NAME_KEY)) return null;
-        const input = h('input', { placeholder: 'Your name', maxlength: '60' });
-        box.append(h('div', { style: 'margin-bottom:8px' }, input));
+        const input = h('input', { placeholder: 'Your name', maxlength: '60', style: 'display:none' });
+        box.append(h('div', { style: 'margin-bottom:8px' }, whoPicker(input), input));
         return input;
     };
 
@@ -580,8 +603,11 @@
         if (name) {
             const change = h('button', {}, 'change');
             change.addEventListener('click', () => {
-                const next = (prompt('Your name, as the team knows you', name) || '').trim();
-                if (next) { localStorage.setItem(NAME_KEY, next); render(); }
+                const input = h('input', { placeholder: 'Your name', maxlength: '60', style: 'display:none' });
+                const ok = h('button', { type: 'button', class: 'main' }, 'Done');
+                const box = h('div', { class: 'rv-whobox' }, whoPicker(input, (n) => { localStorage.setItem(NAME_KEY, n); box.remove(); render(); }), input, ok);
+                ok.addEventListener('click', () => { const n = input.value.trim(); if (n) localStorage.setItem(NAME_KEY, n); box.remove(); render(); });
+                change.closest('.who').after(box);
             });
             panelBody.append(h('p', { class: 'who' }, `Commenting as ${name}`, change));
         }
@@ -850,7 +876,7 @@
         addEventListener('keydown', (ev) => { if (ev.key === 'Escape') { setPlacing(false); closePop(); } });
         addEventListener('hashchange', () => { closePop(); setTimeout(render, 40); });
         addEventListener('resize', () => setTimeout(render, 60));
-        window.RV = { CFG, api, h, esc, say, sync, render, route, routeName, me, mine, repliesOf, unreadIn, openThread, pointOf, pathOf, isUi, closePop, panel, panelBody, bar, AVATAR, NAME_KEY, PASS_KEY, VERSION, shotOf, comments: () => comments, isPaused: () => !!paused };
+        window.RV = { CFG, api, h, esc, say, needName, sync, render, route, routeName, me, mine, repliesOf, unreadIn, openThread, pointOf, pathOf, isUi, closePop, panel, panelBody, bar, AVATAR, NAME_KEY, PASS_KEY, VERSION, shotOf, comments: () => comments, isPaused: () => !!paused };
         if (RVX().start) RVX().start();
         sync();
         setInterval(sync, 20000);

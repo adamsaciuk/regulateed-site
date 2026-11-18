@@ -28,10 +28,10 @@
     .card .tag { font-size: 12px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; }
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
     .grid .card { margin: 0; }
-    ol.round { list-style: none; padding: 0; margin: 0 0 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
-    ol.round li { background: #fff; border: 1px solid var(--line); border-top: 5px solid var(--teal); border-radius: 14px; padding: 12px 14px; font-size: 15px; }
-    ol.round li b { display: block; font-size: 16px; margin-bottom: 2px; }
-    ol.round li.now { border-top-color: var(--coral); }
+    ol.sprint { list-style: none; padding: 0; margin: 0 0 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+    ol.sprint li { background: #fff; border: 1px solid var(--line); border-top: 5px solid var(--teal); border-radius: 14px; padding: 12px 14px; font-size: 15px; }
+    ol.sprint li b { display: block; font-size: 16px; margin-bottom: 2px; }
+    ol.sprint li.now { border-top-color: var(--coral); }
     .pill { display: inline-block; font-size: 12px; font-weight: 800; border-radius: 12px; padding: 2px 9px; letter-spacing: .4px; text-transform: uppercase; }
     .p-call { background: #FDE3D7; color: #B4532C; } .p-asked { background: #FFF0C7; color: #8A6000; } .p-research { background: #ECE6F6; color: #5E4A8C; }
     .p-ok { background: #DDF1EC; color: #1E7268; } .p-grey { background: #ECEFF1; color: #5F6E78; } .p-done { background: var(--slate); color: #fff; }
@@ -54,7 +54,7 @@
 </head>
 <body>
 <header><div class="in">
-    <a class="mark" href="index.html"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke-width="4" stroke="rgba(127,211,198,.4)"/><path d="M14 50 L20 37 L26 62 L32 40 L38 58 L44 50" fill="none" stroke="#F7A27F" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M44 50 C51 37 58 37 65 50 S79 63 86 50" fill="none" stroke="#7FD3C6" stroke-width="7" stroke-linecap="round"/></svg><span>RegulateED<small>HOW WE REVIEW</small></span></a>
+    <a class="mark" href="index.html"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke-width="4" stroke="rgba(127,211,198,.4)"/><path d="M14 50 L20 37 L26 62 L32 40 L38 58 L44 50" fill="none" stroke="#F7A27F" stroke-width="7" stroke-linecap="sprint" stroke-linejoin="sprint"/><path d="M44 50 C51 37 58 37 65 50 S79 63 86 50" fill="none" stroke="#7FD3C6" stroke-width="7" stroke-linecap="sprint"/></svg><span>RegulateED<small>HOW WE REVIEW</small></span></a>
 </div></header>
 <main>
     <p class="eyebrow">The review manual · version 2 · 18 November 2026</p>
@@ -62,10 +62,10 @@
     <p class="lead">This site is where we shape RegulateED before anyone builds it: the product workflow, the research behind it, and every comment we make about it. This page explains how to use it, and how your comments turn into the next version.</p>
 
     <div class="card"><div class="tag">Where this is going</div>
-        <p style="margin:0">When the review rounds are done, everything we agree becomes a <b>pitch presentation</b> for RegulateED, with prototype screens and a demo running on made-up data. So every comment, decision and research answer here is building toward the pitch.</p></div>
+        <p style="margin:0">When the review sprints are done, everything we agree becomes a <b>pitch presentation</b> for RegulateED, with prototype screens and a demo running on made-up data. So every comment, decision and research answer here is building toward the pitch.</p></div>
 
     <ol class="toc">
-        <li><a href="#rounds">How a round works</a></li>
+        <li><a href="#sprints">How a sprint works</a></li>
         <li><a href="#in">Getting in, and your name</a></li>
         <li><a href="#way">Finding your way</a></li>
         <li><a href="#comment">Leaving a comment or a drawing</a></li>
@@ -81,16 +81,17 @@
         <li><a href="#quick">Quick reference</a></li>
     </ol>
 
-    <h2 id="rounds"><span class="n">1</span>How a round works</h2>
-    <p>We review in rounds. That keeps the comments under control and makes sure every one of them is dealt with.</p>
-    <ol class="round">
+    <h2 id="sprints"><span class="n">1</span>How a sprint works</h2>
+    <p>We review in sprints. That keeps the comments under control and makes sure every one of them is dealt with.</p>
+    <ol class="sprint">
         <li><b>1. Open</b>Everyone comments on the current version: on any spot, with drawings, and with questions.</li>
-        <li><b>2. Filed</b>Iris files every comment as a numbered item on the tracker, such as <span class="chip item">R1-03</span>. Several comments about the same thing become one item.</li>
+        <li><b>2. Filed</b>Iris files every comment as a numbered item on the tracker, such as <span class="chip item">S1-03</span>. Several comments about the same thing become one item.</li>
         <li class="now"><b>3. Talk-through</b>We go through the tracker together. Research questions get answered. Adam makes the decisions.</li>
-        <li><b>4. The line</b>Adam closes the round. Anything said after that goes into the next round.</li>
+        <li><b>4. The line</b>Adam closes the sprint. Anything said after that goes into the next sprint.</li>
         <li><b>5. Built</b>Iris builds what was agreed, publishes the next version, and closes each thread with what happened to it.</li>
     </ol>
-    <div class="card"><div class="tag">Where we are now</div><p style="margin:0">Round 1 was everything said on workflow version 1 and data collection version 1, and it is now filed on the tracker, ready for the talk-through. Version 2 is open. New comments made here belong to Round 2. Questions and discussion about a Round 1 item go in that item's collaboration chat.</p></div>
+    <div class="card"><div class="tag">Where we are now</div><p style="margin:0">Sprint 1 was everything said on workflow version 1 and data collection version 1, and it is now filed on the tracker, ready for the talk-through. Version 2 is open. New comments made here belong to Sprint 2. Questions and discussion about a Sprint 1 item go in that item's collaboration chat.</p></div>
+    <div class="card"><div class="tag">Want to practise first?</div><p style="margin:0">The <a href="demo.html">demo page</a> is a safe place to try comments, drawings, links and chats. Nothing there is part of the product, and it is wiped after testing.</p></div>
 
     <h2 id="in"><span class="n">2</span>Getting in, and your name</h2>
     <ul>
@@ -132,12 +133,12 @@
     <table>
         <tr><th>You see</th><th>It means</th><th>What to do</th></tr>
         <tr><td><span class="pill p-asked">Iris asked you</span></td><td>Iris needs one answer from you before she can file it.</td><td>Reply in the thread.</td></tr>
-        <tr><td><span class="pill p-call">On the tracker: R1-03</span></td><td>It is filed as a tracker item and the conversation has moved there.</td><td>Tap the item link to see it and talk in its chat.</td></tr>
-        <tr><td><span class="pill p-done">Closed</span></td><td>It has been dealt with. The last reply says how: done in a version, decided against with the reason, or moved to the next round.</td><td>Nothing. <b>Hide closed</b> in the Comments list tidies them away.</td></tr>
+        <tr><td><span class="pill p-call">On the tracker: S1-03</span></td><td>It is filed as a tracker item and the conversation has moved there.</td><td>Tap the item link to see it and talk in its chat.</td></tr>
+        <tr><td><span class="pill p-done">Closed</span></td><td>It has been dealt with. The last reply says how: done in a version, decided against with the reason, or moved to the next sprint.</td><td>Nothing. <b>Hide closed</b> in the Comments list tidies them away.</td></tr>
     </table>
 
     <h2 id="tracker"><span class="n">7</span>The tracker and its items</h2>
-    <p>Open <b>Comments</b> and choose the <b>Round 1</b> tab. Items are grouped by where they stand:</p>
+    <p>Open <b>Comments</b> and choose the <b>Sprints</b> tab. Items are listed by sprint (Sprint 2 now open, Sprint 1 in its talk-through, and a Demo sprint for testing), then by where they stand:</p>
     <p><span class="pill p-call">Needs a decision</span> <span class="pill p-asked">Iris asked you</span> <span class="pill p-research">Needs research</span> <span class="pill p-ok">Answered</span> <span class="pill p-ok">Agreed</span> <span class="pill p-grey">Parked</span> <span class="pill p-done">Done</span></p>
     <p>Tap an item to open it. Each item shows:</p>
     <div class="grid">
@@ -148,13 +149,13 @@
         <div class="card"><div class="tag">What was said</div>Every comment and reply behind the item, word for word, each with a link back to its thread.</div>
         <div class="card"><div class="tag">Collaboration chat</div>Where you, Adam and Iris talk the item through. This is the place for discussion, rather than the old thread.</div>
     </div>
-    <p class="note">Every item has its own link. To send someone straight to an item, write <b>R1-03</b> and Iris will link it, or share regulateed.com/review/?item=R1-03.</p>
+    <p class="note">Every item has its own link. To send someone straight to an item, write <b>S1-03</b> and Iris will link it, or share regulateed.com/review/?item=S1-03.</p>
 
     <h2 id="chips"><span class="n">8</span>Links and evidence</h2>
     <p>Messages from Iris, and items on the tracker, carry <b>link chips</b>. Tap a chip and it takes you to that place:</p>
     <table>
         <tr><th>Chip</th><th>Takes you to</th></tr>
-        <tr><td><span class="chip item">R1-03 · Face leads, colour backs it up</span></td><td>The tracker item</td></tr>
+        <tr><td><span class="chip item">S1-03 · Face leads, colour backs it up</span></td><td>The tracker item</td></tr>
         <tr><td><span class="chip research">Research · Faces, words or colours</span></td><td>The research answer</td></tr>
         <tr><td><span class="chip">Page · Data collection › Grade 3</span></td><td>That page of the workflow</td></tr>
         <tr><td><span class="chip">Spot · Data collection › Grade 3</span></td><td>That exact spot on the page, with a flashing ring around it</td></tr>
@@ -166,7 +167,7 @@
     <h2 id="iris"><span class="n">9</span>Iris Chat</h2>
     <p>Tap <b>Iris</b> on the bottom bar, or the <b>Iris Chat</b> tab in Comments. This is your own conversation with Iris, for anything that is not about one spot on the page:</p>
     <ul>
-        <li>questions about the plan, the rounds or how to use the site</li>
+        <li>questions about the plan, the sprints or how to use the site</li>
         <li>asking for research</li>
         <li>checking that Iris understood you</li>
     </ul>
@@ -207,7 +208,7 @@
         <tr><td>Comment on something</td><td>Add comment, then tap the spot</td></tr>
         <tr><td>Show something</td><td>Draw, scribble, then Done</td></tr>
         <tr><td>See what is new for me</td><td>Comments, then New for you; or the message card</td></tr>
-        <tr><td>See where everything stands</td><td>Comments, then the Round 1 tab</td></tr>
+        <tr><td>See where everything stands</td><td>Comments, then the Sprints tab</td></tr>
         <tr><td>Discuss an item</td><td>Open the item, then Collaboration chat</td></tr>
         <tr><td>Ask Iris something</td><td>Iris on the bottom bar</td></tr>
         <tr><td>Read the research</td><td>Foundations, then Research for the team</td></tr>
@@ -216,8 +217,8 @@
     </table>
     <p class="note" style="margin-top:22px">Questions about this manual? Ask in Iris Chat, or leave a comment right here on this page.</p>
 </main>
-<script>window.REVIEW = {"page":"manual","version":"1","file":"manual.html","links":{"current":"index.html","currentPage":"workflow","data-collection@1":"data-collection.html","workflow@1":"workflow-v1.html","manual":"manual.html"},"title":"How we review: the RegulateED review manual","api":"https://regulateed-review.sashook.com","passHash":"1a55f65e93387e97bce9768422378405e8daf8cdd3e270528c7ccc76f24e32a3","sources":[],"nav":{"top":{"label":"← Workflow","href":"index.html"},"bottom":{"label":"← Workflow","href":"index.html"}}};</script>
-<script src="review.js?v=98e9d0ec61"></script>
-<script src="rounds.js?v=98e9d0ec61"></script>
+<script>window.REVIEW = {"page":"manual","version":"1","file":"manual.html","links":{"current":"index.html","currentPage":"workflow","data-collection@1":"data-collection.html","workflow@1":"workflow-v1.html","manual":"manual.html","demo":"demo.html"},"title":"How we review: the RegulateED review manual","api":"https://regulateed-review.sashook.com","passHash":"1a55f65e93387e97bce9768422378405e8daf8cdd3e270528c7ccc76f24e32a3","sources":[],"nav":{"top":{"label":"← Workflow","href":"index.html"},"bottom":{"label":"← Workflow","href":"index.html"}}};</script>
+<script src="review.js?v=0bf5d8aadd"></script>
+<script src="rounds.js?v=0bf5d8aadd"></script>
 </body>
 </html>
