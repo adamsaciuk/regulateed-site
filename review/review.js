@@ -80,6 +80,15 @@
         #rv-bar .add { background: #F2845C; color: #fff; }
         #rv-bar .add.on { background: #1F3A4D; }
         #rv-bar .list { background: #fff; color: #1F3A4D; }
+        #rv-bar .lock { background: #fff; color: #1F3A4D; }
+        .rv-toplink { flex: none; font-weight: 800; font-size: 14px; text-decoration: none; color: #1F3A4D !important; background: #FFF8F0; border-radius: 40px; padding: 8px 14px; white-space: nowrap; }
+        .rv-toplink:hover { background: #fff; }
+        @media (max-width: 640px) { .rv-toplink { font-size: 13px; padding: 7px 10px; } }
+        #rv-lockask { position: fixed; right: 18px; bottom: 78px; z-index: 9200; width: min(320px, calc(100vw - 24px)); background: #fff; border: 1px solid #E9E1D6; border-radius: 16px; box-shadow: 0 12px 32px rgba(31,58,77,.25); padding: 16px; font-size: 15px; line-height: 1.45; }
+        #rv-lockask p { margin: 4px 0 12px; color: #4A5E6D; }
+        #rv-lockask .row { display: flex; gap: 8px; justify-content: flex-end; }
+        #rv-lockask button { font: inherit; font-weight: 700; border: 1px solid #E9E1D6; background: #fff; border-radius: 30px; padding: 8px 16px; cursor: pointer; }
+        #rv-lockask button.main { background: #1F3A4D; border-color: #1F3A4D; color: #fff; }
         #rv-bar .all { font-weight: 800; text-decoration: none; border-radius: 40px; padding: 12px 18px; background: #1F3A4D; color: #fff; box-shadow: 0 6px 18px rgba(31,58,77,.25); white-space: nowrap; }
         @media (max-width: 520px) { #rv-bar { left: 12px; right: 12px; bottom: 12px; justify-content: center; } #rv-bar button, #rv-bar .all { padding: 11px 13px; font-size: 14px; } }
         #rv-banner { position: fixed; left: 50%; top: 72px; transform: translateX(-50%); z-index: 9000; background: #1F3A4D; color: #fff; padding: 10px 18px; border-radius: 40px; font-weight: 700; font-size: 15px; display: none; max-width: 92vw; text-align: center; }
@@ -134,10 +143,28 @@
         + '<circle cx="33" cy="62" r="4.5" fill="#F7A27F" opacity=".85"/><circle cx="67" cy="62" r="4.5" fill="#F7A27F" opacity=".85"/>'
         + '</g></g></svg>';
 
+    // Locking is deliberate (Adam): tap Lock, then confirm. It forgets the password on this device only.
+    const lockBtn = h('button', { class: 'lock', title: 'Lock this device behind the password' }, 'Lock');
+    lockBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        document.getElementById('rv-lockask')?.remove();
+        const ask = h('div', { id: 'rv-lockask', class: 'rv-ui' },
+            h('b', {}, 'Lock this device?'),
+            h('p', {}, 'The review password will be needed again to open these pages here.'),
+            h('div', { class: 'row' },
+                h('button', { onclick: () => ask.remove() }, 'Cancel'),
+                h('button', { class: 'main', onclick: () => { localStorage.removeItem(PASS_KEY); location.reload(); } }, 'Lock now')));
+        document.body.append(ask);
+    });
+
     const unlock = () => {
         html.classList.remove('rv-locked');
         document.getElementById('rv-gate')?.remove();
+        // The page's own top bar gets the way back to the review list, where people look for it.
+        const top = CFG.page && document.querySelector('header .in');
+        if (top) top.insertBefore(h('a', { class: 'rv-ui rv-toplink', href: './' }, '← All review pages'), top.children[1] || null);
         if (CFG.page) startPins();
+        else document.body.append(h('div', { id: 'rv-bar', class: 'rv-ui' }, lockBtn));
     };
     const gate = async () => {
         const saved = localStorage.getItem(PASS_KEY);
@@ -204,7 +231,7 @@
     const listBtn = h('button', { class: 'list' }, 'Comments');
     // Every review page leads back to the list of review pages.
     const allBtn = h('a', { class: 'all', href: './', title: 'All review pages' }, '← All pages');
-    const bar = h('div', { id: 'rv-bar', class: 'rv-ui' }, allBtn, addBtn, listBtn);
+    const bar = h('div', { id: 'rv-bar', class: 'rv-ui' }, allBtn, addBtn, listBtn, lockBtn);
     let pop = null;
 
     const route = () => location.hash.replace(/^#\/?/, '');
