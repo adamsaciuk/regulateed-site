@@ -81,7 +81,8 @@
         #rv-bar button { font: inherit; font-weight: 800; border: 0; border-radius: 40px; padding: 12px 18px; cursor: pointer; box-shadow: 0 6px 18px rgba(31,58,77,.25); }
         #rv-bar .add { background: #F2845C; color: #fff; }
         #rv-bar .add.on { background: #1F3A4D; }
-        #rv-bar .list { background: #fff; color: #1F3A4D; }
+        #rv-bar .list { display: none; }
+        #rv-bar .sprint { background: #1F3A4D; color: #fff; }
         #rv-bar .lock { background: #fff; color: #1F3A4D; }
         #rv-hello { position: fixed; left: 50%; top: 78px; transform: translateX(-50%); z-index: 9150; display: flex; align-items: center; gap: 10px; background: #fff; border: 2px solid #F2845C; border-radius: 40px; padding: 8px 10px 8px 14px; box-shadow: 0 10px 28px rgba(31,58,77,.25); font-weight: 700; font-size: 15px; max-width: calc(100vw - 20px); animation: rvhello .4s ease-out; }
         #rv-hello .rv-avatar svg { width: 26px; height: 26px; margin: 0; }
@@ -284,7 +285,7 @@
     const banner = h('div', { id: 'rv-banner', class: 'rv-ui' });
     const panelBody = h('div', { class: 'body' });
     const panel = h('aside', { id: 'rv-panel', class: 'rv-ui' }, h('header', {}, h('span', {}, 'Comments'), h('button', { onclick: () => panel.classList.remove('open'), 'aria-label': 'Close' }, '×')), panelBody);
-    const addLabel = () => ['Add', h('span', { class: 'lg' }, ' comment')];
+    const addLabel = () => ['Add', h('span', { class: 'lg' }, ' to a category')];
     const addBtn = h('button', { class: 'add' }, ...addLabel());
     const listBtn = h('button', { class: 'list' }, 'Comments');
     // The bottom bar's way out: Sprints on the current workflow, the current sprint on an earlier one.

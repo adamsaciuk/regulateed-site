@@ -8,7 +8,7 @@
     'use strict';
     let RV = null;
     let tracker = { sprint: '2', sprints: [], categories: [], legacy: {} };
-    let tab = 'comments';
+    let tab = 'sprint';
     let openCat = null;
     let showHistory = false;
     let linkTarget = null;
@@ -234,20 +234,24 @@
     let body = null;
     let tabsEl = null;
     let irisBtn = null;
+    let sprintBtn = null;
     const openPanel = (which) => { tab = which; RV.closePop(); RV.panel.classList.add('open'); paint(); };
     const openCategory = (id) => { openCat = id; openPanel('sprint'); };
     const paint = () => {
         const fresh = irisUnseen().length;
-        tabsEl.replaceChildren(...[['comments', 'Comments'], ['sprint', `Sprint ${current()}`], ['iris', 'Iris Chat']].map(([k, t]) => {
+        // Comments nest under categories (Adam): the sprint and Iris Chat are the only tabs.
+        tabsEl.replaceChildren(...[['sprint', `Sprint ${current()}`], ['iris', 'Iris Chat']].map(([k, t]) => {
             const b = h('button', { class: tab === k ? 'on' : '', type: 'button' }, t, k === 'iris' && fresh ? h('span', { class: 'dot' }) : null);
             b.addEventListener('click', () => { tab = k; openCat = null; paint(); });
             return b;
         }));
         irisBtn.replaceChildren(h('span', { class: 'rv-avatar', html: RV.AVATAR }), 'Iris');
         irisBtn.classList.toggle('fresh', !!fresh);
-        RV.panel.classList.toggle('wide', tab !== 'comments');
-        RV.panelBody.style.display = tab === 'comments' ? '' : 'none';
-        body.style.display = tab === 'comments' ? 'none' : '';
+        RV.panel.classList.add('wide');
+        RV.panelBody.style.display = 'none';
+        body.style.display = '';
+        const mineFresh = comments().filter((c) => isThread(c) && sprintOf(c) === current()).reduce((a, c) => a + RV.unreadIn(c), 0);
+        sprintBtn.replaceChildren(`Sprint ${current()}`, mineFresh ? h('span', { class: 'rv-new' }, `${mineFresh}`, h('span', { class: 'lg' }, ' new')) : '');
         if (tab === 'sprint') paintSprint();
         if (tab === 'iris') paintIris();
     };
@@ -274,6 +278,8 @@
         if (ct) { paintCategory(ct); return; }
         body.append(h('h3', { style: 'margin:4px 0 2px;font-size:19px' }, sp.title, h('span', { class: 'rv-pill ok', style: 'margin-left:8px;vertical-align:2px' }, 'Open')),
             h('p', { class: 'rv-hint' }, sp.note || '', ' ', chipFor('manual', '', 'How this works')));
+        const freshList = threadsIn(current()).filter((c) => RV.unreadIn(c));
+        if (freshList.length) { body.append(h('div', { class: 'rv-sec', style: 'color:#E0703F' }, 'New for you')); for (const c of freshList) body.append(threadRow(c)); }
         for (const x of liveCats()) {
             const list = threadsIn(current(), x.id);
             const n = counts(list);
@@ -421,11 +427,11 @@
             const header = RV.panel.querySelector('header');
             header.firstChild.replaceWith(tabsEl);
             RV.panel.insertBefore(body, RV.panelBody.nextSibling);
-            const sprintsBtn = RV.bar.querySelector('.all[href="#sprints"]');
-            if (sprintsBtn) { sprintsBtn.textContent = `Sprint ${current()}`; sprintsBtn.addEventListener('click', (ev) => { ev.preventDefault(); openCategory(null); }); }
-            const list = RV.bar.querySelector('.list');
-            list.addEventListener('click', () => { tab = 'comments'; openCat = null; paint(); });
-            list.after(irisBtn);
+            // The sprint button opens the categories, on every page.
+            sprintBtn = RV.bar.querySelector('.all[href="#sprints"]');
+            if (!sprintBtn) { sprintBtn = h('button', { class: 'sprint', type: 'button' }); RV.bar.querySelector('.add').before(sprintBtn); }
+            sprintBtn.addEventListener('click', (ev) => { ev.preventDefault(); if (RV.panel.classList.contains('open') && tab === 'sprint' && !openCat) RV.panel.classList.remove('open'); else openCategory(null); });
+            RV.bar.querySelector('.list').after(irisBtn);
             irisBtn.addEventListener('click', () => { if (RV.panel.classList.contains('open') && tab === 'iris') RV.panel.classList.remove('open'); else openPanel('iris'); });
             document.addEventListener('click', (ev) => {
                 if (!linkTarget || RV.isUi(ev.target)) return;
