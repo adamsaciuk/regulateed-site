@@ -71,8 +71,21 @@
     .mx button:hover, .mx td.on a:hover { filter: brightness(1.08); }
     .mx tbody th button:hover { border-color: var(--teal); }
     .hint { font-size: 14px; opacity: .7; margin-bottom: 26px; }
-    .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
-    @media (max-width: 860px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+
+    /* insights */
+    .loop { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+    @media (max-width: 700px) { .loop { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .loop div { background: #fff; border: 1px solid var(--line); border-top: 5px solid var(--teal); border-radius: 14px; padding: 12px 14px; font-weight: 800; }
+    .loop div:nth-child(4) { border-top-color: var(--coral); }
+    .loop b { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--teal); color: #fff; font-size: 13px; margin-right: 8px; }
+    .loop span { display: block; font-weight: 400; font-size: 14px; opacity: .7; margin-top: 4px; }
+    .opt { position: relative; background: #fff; border: 1px solid var(--line); border-radius: .9em; padding: .6em 5.5em .6em .9em; margin-bottom: .5em; }
+    .opt b { display: block; }
+    .opt span { display: block; font-size: .8em; opacity: .7; }
+    .opt em { display: block; font-style: normal; font-size: .78em; font-weight: 700; color: var(--teal); margin-top: .2em; }
+    .opt i { position: absolute; right: .7em; top: 50%; transform: translateY(-50%); font-style: normal; font-weight: 800; font-size: .85em; background: var(--teal); color: #fff; border-radius: 3em; padding: .35em .9em; }
+    .opt.best { border: .15em solid var(--teal); }
     .tile { text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; cursor: pointer; }
     .tile:hover { border-color: var(--teal); }
     .tile b { display: block; font-size: 17px; margin-bottom: 4px; }
@@ -239,6 +252,7 @@
     <p class="eyebrow">The ideas underneath</p>
     <div class="tiles">
         <button class="tile hero" onclick="go('concept/own-ipad')"><b>Each child's own iPad</b><span>G4 and G5 send their own result from the RegulateED app</span></button>
+        <button class="tile hero" onclick="go('concept/insights')"><b>Insights and activities</b><span>From a result to the activity that shifts the class</span></button>
         <button class="tile" onclick="go('concept/event')"><b>The event</b><span>Every answer belongs to a moment in the day</span></button>
         <button class="tile" onclick="go('concept/split')"><b>Split, not average</b><span>Why an average alone can hide a child in Red</span></button>
         <button class="tile" onclick="go('concept/privacy')"><b>Privacy</b><span>What is kept, and what never is</span></button>
@@ -456,9 +470,54 @@
             <div class="tablet"><div class="screen">
                 <div class="top"><span>Teacher view</span><span>24 of 26 answered</span></div>
                 <div class="split"><i class="G" style="flex:14">14</i><i class="Y" style="flex:7">7</i><i class="R" style="flex:3">3</i></div>
-                <div class="foot">3 children in Red after lunch: a class reset is suggested</div>
+                <div class="foot">3 children in Red after lunch: <a href="#concept/insights" style="font-weight:800;color:var(--teal)">see the insight and the activity options</a></div>
             </div></div>
         </div>
+    </div>
+</section>
+
+<!-- ===================== CONCEPT: INSIGHTS ===================== -->
+<section class="page" id="p-concept-insights" data-crumb="Insights and activities">
+    <p class="eyebrow">From results to action</p>
+    <h2>Every result becomes an insight, and every insight offers a way to shift the class.</h2>
+    <p class="lead">The check-in tells the teacher where the class is. Insights turn that into what to do next: activities designed to move a mostly Red room toward Yellow and Green, offered as options the teacher chooses and applies to the class.</p>
+    <div class="loop">
+        <div><b>1</b>Check in<span>Any method, any grade</span></div>
+        <div><b>2</b>Insight<span>What the split says</span></div>
+        <div><b>3</b>Options<span>Activities matched to it</span></div>
+        <div><b>4</b>Apply<span>The teacher picks one</span></div>
+        <div><b>5</b>Re-check<span>Did the class shift?</span></div>
+    </div>
+    <div class="split2" style="margin-top:26px">
+        <div>
+            <div class="card"><div class="tag">The insight</div><p>Read from the split, never the average alone: how much of the room is Red, Yellow or Green, at which moment, compared with this class's usual. For example, "Back from recess, almost half the class is unsettled: more than usual for them."</p></div>
+            <div class="card"><div class="tag">The options</div><p>Two or three activities designed for that result, each about 2 minutes and done at the desk or as a class. A mostly Red room gets calming heavy work and slow breathing; a mostly Yellow room gets soothing touch or breathing. The teacher chooses; RegulateED never runs one on its own.</p></div>
+            <div class="card"><div class="tag">The proof</div><p>A quick re-check after the activity is a second event linked to the first, so the shift is measured: Red to Yellow, Yellow to Green. Over weeks, insights learn which activities work best for this class at this moment, and offer those first.</p></div>
+            <div class="card"><div class="tag">By grade</div><p>K to G3: the teacher leads the activity with the whole class. G4 and G5: the teacher can apply it to the class, and the app can also offer each child a reset of their own.</p></div>
+        </div>
+        <div class="mock"><div class="tablet"><div class="screen">
+            <div class="top"><span>Insights · Ms Jones · K1</span><span>Recess · 11/18/2026</span></div>
+            <div class="q" style="font-size:1.25em;text-align:left;margin:.6em 0 .2em">Back from recess: 10 of 21 are unsettled</div>
+            <div style="font-size:.85em;opacity:.7">Usual for this class after recess: 6</div>
+            <div class="split"><i class="G" style="flex:11">11</i><i class="Y" style="flex:6">6</i><i class="R" style="flex:4">4</i></div>
+            <div style="font-size:.75em;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin:1.1em 0 .5em">Activities for this result</div>
+            <div class="opt best"><b>T-Rex Wall Pushes</b><span>Heavy work · 2 min · calms high energy</span><em>Worked best for this class: 4 Red to 1</em><i>Apply</i></div>
+            <div class="opt"><b>Balloon Breath</b><span>Rhythmic breathing · 2 min · slows the heart rate</span><i>Apply</i></div>
+            <div class="opt"><b>Butterfly Squeezes</b><span>Touch reset · 2 min · soothes worry and overload</span><i>Apply</i></div>
+            <div style="font-size:.75em;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin:1.1em 0 .2em">After the reset: re-check</div>
+            <div class="split" style="margin-top:.4em"><i class="G" style="flex:16">16</i><i class="Y" style="flex:4">4</i><i class="R" style="flex:1">1</i></div>
+            <div class="foot">Shift: 3 fewer in Red, 5 more in Green</div>
+        </div></div></div>
+    </div>
+    <p class="eyebrow" style="margin-top:22px">What insights learn over time</p>
+    <div class="grid3">
+        <div class="card"><div class="tag">When</div><p>The moments a class usually struggles, such as after recess or before lunch, so a reset can be planned before the room tips into Red.</p></div>
+        <div class="card"><div class="tag">What works</div><p>Which activities shift this class, at which moment, ranked by the re-checks. The best one is offered first.</p></div>
+        <div class="card"><div class="tag">Progress</div><p>Whether the class needs fewer resets over the weeks: the trend a teacher, a school OT or a principal wants to see.</p></div>
+    </div>
+    <div class="grid2">
+        <div class="card"><div class="tag">To develop</div><p>The RegulateED activity library: each activity designed by an OT for a result, an age band and a place (at the desk, standing, whole class). The examples above come from the framework's four groups: heavy work, movement across the body, touch resets and rhythmic breathing.</p></div>
+        <div class="card todo"><div class="tag">To decide</div><p>Green, Yellow and Red cannot show a sluggish, low-energy class, the one that needs waking up, not calming down. The framework used a fourth state, Blue, for that. Does the check-in need a way to tell it apart?</p></div>
     </div>
 </section>
 
