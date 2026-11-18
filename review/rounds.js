@@ -325,7 +325,7 @@
             const send = h('button', { class: 'main', type: 'button' }, 'Reply');
             send.addEventListener('click', async () => {
                 const name = myName();
-                if (!name) { RV.say('Choose who you are first: add something to a category once.'); setTimeout(() => RV.say(''), 3000); return; }
+                if (!name) { RV.say('Choose who you are first: add one tag and pick your name.'); setTimeout(() => RV.say(''), 3000); return; }
                 if (!area.value.trim()) { area.focus(); return; }
                 send.disabled = true;
                 try { await RV.api('POST', '/api/review/comments', { page: c.page, version: c.version || '1', route: c.route, anchor: null, parent: c.id, name, text: area.value.trim() }); }
@@ -359,7 +359,7 @@
         const sorted = list.slice().sort((a, b) => Number(a.resolved) - Number(b.resolved) || a.created.localeCompare(b.created));
         for (const c of sorted) inner.append(threadNode(c));
         if (!list.length) inner.append(h('p', { class: 'rv-hint' }, 'No threads yet.'));
-        inner.append(h('p', { class: 'rv-hint', style: 'margin-top:8px' }, 'Add to this category: tap Add to a category anywhere on the site, tap the evidence, and choose this category.'));
+        inner.append(h('p', { class: 'rv-hint', style: 'margin-top:8px' }, 'To add a thread here: tap Add tag anywhere on the site, tap the thing you mean, choose this category and write your comment.'));
         node.append(inner);
         return node;
     };

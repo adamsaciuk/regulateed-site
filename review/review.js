@@ -285,7 +285,7 @@
     const banner = h('div', { id: 'rv-banner', class: 'rv-ui' });
     const panelBody = h('div', { class: 'body' });
     const panel = h('aside', { id: 'rv-panel', class: 'rv-ui' }, h('header', {}, h('span', {}, 'Comments'), h('button', { onclick: () => panel.classList.remove('open'), 'aria-label': 'Close' }, '×')), panelBody);
-    const addLabel = () => ['Add', h('span', { class: 'lg' }, ' to a category')];
+    const addLabel = () => ['Add', h('span', { class: 'lg' }, ' tag')];
     const addBtn = h('button', { class: 'add' }, ...addLabel());
     const listBtn = h('button', { class: 'list' }, 'Comments');
     // The bottom bar's way out: Sprints on the current workflow, the current sprint on an earlier one.
@@ -466,16 +466,17 @@
         const box = h('div', { class: 'rv-pop' });
         if (image) box.append(h('img', { class: 'rv-shot', src: image, alt: 'Your drawing' }));
         const nameInput = needName(box);
-        const area = h('textarea', { placeholder: parent ? 'Reply' : image ? 'What does your drawing point at? (optional)' : 'Your comment', maxlength: '4000' });
+        const area = h('textarea', { placeholder: parent ? 'Reply' : image ? 'What does your drawing point at?' : 'Your comment: what about this thing?', maxlength: '4000' });
         const filing = !parent && RVX().categoryPicker ? RVX().categoryPicker() : null;
         if (filing) box.append(filing.el);
-        const save = h('button', { class: 'main' }, parent ? 'Reply' : 'Save');
+        const save = h('button', { class: 'main' }, parent ? 'Reply' : 'Save tag');
         box.append(area, h('div', { class: 'row' }, h('button', { onclick: closePop }, 'Cancel'), save));
         save.addEventListener('click', async () => {
             const name = nameInput ? nameInput.value.trim() : localStorage.getItem(NAME_KEY);
             if (!name) { nameInput.focus(); return; }
-            if (!area.value.trim() && !image) { area.focus(); return; }
+            // A thread is a tag on something: it saves only with a category and a comment (Adam).
             if (filing && !filing.value()) { filing.ask(); return; }
+            if (!area.value.trim()) { area.focus(); say('Write your comment: what about this thing?'); setTimeout(() => offlineNote(), 3000); return; }
             localStorage.setItem(NAME_KEY, name);
             const item = { page: CFG.page, version: VERSION, route: route(), anchor, parent, name, text: area.value.trim(), image: image || null,
                 category: filing ? filing.value() : null, title: filing && filing.title ? filing.title() : null, research: filing ? filing.research() : false };
@@ -858,7 +859,7 @@
         html.classList.toggle('rv-placing', on);
         addBtn.classList.toggle('on', on);
         if (on) addBtn.textContent = 'Cancel'; else addBtn.replaceChildren(...addLabel());
-        if (on) { closePop(); say('Tap the spot you want to comment on.'); } else offlineNote();
+        if (on) { closePop(); say('Tap the thing you want to tag.'); } else offlineNote();
     };
 
     function startPins() {
