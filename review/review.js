@@ -19,6 +19,7 @@
         const e = document.createElement(tag);
         for (const [k, v] of Object.entries(attrs || {})) {
             if (k === 'class') e.className = v;
+            else if (k === 'html') e.innerHTML = v;
             else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
             else e.setAttribute(k, v);
         }
@@ -81,6 +82,23 @@
         #rv-bar .add.on { background: #1F3A4D; }
         #rv-bar .list { background: #fff; color: #1F3A4D; }
         #rv-bar .lock { background: #fff; color: #1F3A4D; }
+        .rv-c.iris { background: #EEF8F6; border-radius: 10px; padding: 8px 10px; margin: 6px 0; border-bottom: 0; }
+        .rv-c.fresh { box-shadow: inset 3px 0 0 #F2845C; }
+        .rv-avatar svg { width: 22px; height: 22px; vertical-align: -6px; margin-right: 6px; }
+        .rv-team { font-size: 11px; font-weight: 800; color: #2A9D8F; margin-left: 6px; text-transform: uppercase; letter-spacing: .6px; }
+        .rv-closed { margin-top: 8px; font-size: 12px; font-weight: 800; color: #2A9D8F; text-transform: uppercase; letter-spacing: 1px; }
+        .rv-new { display: inline-block; margin-left: 8px; background: #F2845C; color: #fff; border-radius: 20px; padding: 1px 8px; font-size: 12px; font-weight: 800; }
+        .rv-pin.unread::after { content: ""; position: absolute; top: -5px; right: -5px; width: 12px; height: 12px; border-radius: 50%; background: #E0524B; border: 2px solid #fff; }
+        #rv-panel .who { font-size: 13px; color: #4A5E6D; margin: 4px 2px 6px; }
+        #rv-panel .who button { font: inherit; font-weight: 700; color: #2A9D8F; background: none; border: 0; cursor: pointer; padding: 0 4px; }
+        .rv-pin.carried { background: #fff; color: #E0703F; border: 2px solid #F2845C; font-size: 11px; }
+        .rv-pin.moved { border-style: dashed; }
+        .rv-from { background: #FFF4EC; border: 1px solid #F8D5C2; border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; font-size: 13px; line-height: 1.4; }
+        .rv-from a { color: #2A9D8F; font-weight: 800; }
+        #rv-panel .item.carried .n { background: #fff; color: #E0703F; border: 2px solid #F2845C; width: auto; padding: 0 6px; border-radius: 12px; }
+        #rv-panel .item .from { display: inline-block; margin-left: 6px; font-size: 11px; font-weight: 800; color: #E0703F; text-transform: uppercase; letter-spacing: .6px; }
+        #rv-archived { position: relative; z-index: 8500; background: #FFF4EC; color: #1F3A4D; border-bottom: 2px solid #F2845C; padding: 10px 16px; font-size: 14px; text-align: center; }
+        #rv-archived a { color: #2A9D8F; font-weight: 800; }
         #rv-bar .draw { background: #2A9D8F; color: #fff; }
         html.rv-drawing, html.rv-drawing body { overflow: hidden; overscroll-behavior: none; }
         html.rv-drawing #rv-bar, html.rv-drawing #rv-pins { display: none; }
@@ -175,9 +193,14 @@
     const unlock = () => {
         html.classList.remove('rv-locked');
         document.getElementById('rv-gate')?.remove();
-        // The page's own top bar gets the way back to the review list, where people look for it.
-        const top = CFG.page && document.querySelector('header .in');
-        if (top) top.insertBefore(h('a', { class: 'rv-ui rv-toplink', href: './' }, '← All review pages'), top.children[1] || null);
+        // An archived version says so, and leads to the current one from its own top bar.
+        const top = CFG.page && CFG.nav && CFG.nav.top && document.querySelector('header .in');
+        if (top) top.insertBefore(h('a', { class: 'rv-ui rv-toplink', href: CFG.nav.top.href }, CFG.nav.top.label), top.children[1] || null);
+        if (CFG.archived) {
+            document.body.prepend(h('div', { id: 'rv-archived', class: 'rv-ui' },
+                h('b', {}, `Archived: ${CFG.tag || CFG.title}`), ` frozen ${CFG.frozen || ''}. Comments here stay exactly where they were made. `,
+                h('a', { href: CFG.currentHref || 'index.html' }, 'Open the current workflow →')));
+        }
         if (CFG.page) startPins();
         else document.body.append(h('div', { id: 'rv-bar', class: 'rv-ui' }, lockBtn));
     };
@@ -244,8 +267,9 @@
     const panel = h('aside', { id: 'rv-panel', class: 'rv-ui' }, h('header', {}, h('span', {}, 'Comments'), h('button', { onclick: () => panel.classList.remove('open'), 'aria-label': 'Close' }, '×')), panelBody);
     const addBtn = h('button', { class: 'add' }, 'Add comment');
     const listBtn = h('button', { class: 'list' }, 'Comments');
-    // Every review page leads back to the list of review pages.
-    const allBtn = h('a', { class: 'all', href: './', title: 'All review pages' }, '← All pages');
+    // The bottom bar's way out: Versions on the current workflow, the current workflow on an archive.
+    const bottomNav = (CFG.nav && CFG.nav.bottom) || { label: '← All pages', href: './' };
+    const allBtn = h('a', { class: 'all', href: bottomNav.href }, bottomNav.label);
     const drawBtn = h('button', { class: 'draw' }, 'Draw');
     const bar = h('div', { id: 'rv-bar', class: 'rv-ui' }, allBtn, addBtn, drawBtn, listBtn, lockBtn);
     let pop = null;
@@ -280,7 +304,8 @@
                 await api('POST', '/api/review/comments', item);
                 setQueue(queue().slice(1));
             }
-            comments = (await api('GET', '/api/review/comments?page=' + encodeURIComponent(CFG.page))).comments;
+            const pages = [...new Set([CFG.page, ...SOURCES.map((s) => s.page)])];
+            comments = (await api('GET', '/api/review/comments?' + pages.map((p) => 'page=' + encodeURIComponent(p)).join('&'))).comments;
             online = true;
         } catch {
             online = false;
@@ -301,13 +326,65 @@
         }
         return steps.join(' > ');
     };
+    // If the exact element is gone (the page changed), the pin falls back to the nearest
+    // surviving part of its path and says it may have moved.
     const pointOf = (anchor) => {
         if (!anchor) return null;
-        let el = null;
-        try { el = document.querySelector(anchor.path); } catch { return null; }
-        if (!el || !el.getClientRects().length) return null;
-        const r = el.getBoundingClientRect();
-        return { x: r.left + scrollX + r.width * anchor.fx, y: r.top + scrollY + r.height * anchor.fy };
+        let path = anchor.path;
+        while (path) {
+            let el = null;
+            try { el = document.querySelector(path); } catch { el = null; }
+            if (el && el.getClientRects().length) {
+                const r = el.getBoundingClientRect();
+                const exact = path === anchor.path;
+                return exact
+                    ? { x: r.left + scrollX + r.width * anchor.fx, y: r.top + scrollY + r.height * anchor.fy, approx: false }
+                    : { x: r.left + scrollX + 18, y: r.top + scrollY + 30, approx: true };
+            }
+            const cut = path.lastIndexOf(' > ');
+            path = cut < 0 ? '' : path.slice(0, cut);
+        }
+        return null;
+    };
+
+    // ------------------------------------------------------------------ versions
+    // Every comment belongs to a page and a version. This page shows its own comments, and carries
+    // forward those of the earlier versions it lists, moved to where each place lives now.
+    const SOURCES = CFG.sources || [];
+    const VERSION = String(CFG.version || '1');
+    const verOf = (c) => String(c.version || '1');
+    const isNative = (c) => c.page === CFG.page && verOf(c) === VERSION;
+    const sourceOf = (c) => SOURCES.find((s) => s.page === c.page && String(s.version) === verOf(c));
+    const carryRoute = (s, r) => {
+        for (const [from, to] of s.carry || []) {
+            if (from === '' ? r === '' : (r === from || (from.endsWith('/') && r.startsWith(from)))) return to + r.slice(from.length);
+        }
+        return r;
+    };
+    const placed = () => comments.filter((c) => !c.parent).map((c) => {
+        if (isNative(c)) return { c, where: c.route, from: null };
+        const s = sourceOf(c);
+        return s ? { c, where: carryRoute(s, c.route), from: s } : null;
+    }).filter(Boolean);
+
+    // ------------------------------------------------------------------ two-way feedback
+    // Iris answers in the thread (role "iris", posted from the team laptop only). Each reader is the
+    // name they typed; their unread count is replies by others, since they last opened that thread,
+    // in threads they started or joined.
+    const SEEN_KEY = 'rv-seen';
+    const AVATAR = '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 18 C73 18 86 34 86 56 C86 77 70 88 50 88 C30 88 14 77 14 56 C14 34 27 18 50 18 Z" fill="#2A9D8F"/><path d="M33 52 Q39 46 45 52 M55 52 Q61 46 67 52" fill="none" stroke="#1F3A4D" stroke-width="5" stroke-linecap="round"/><path d="M43 64 Q50 70 57 64" fill="none" stroke="#1F3A4D" stroke-width="5" stroke-linecap="round"/></svg>';
+    const me = () => (localStorage.getItem(NAME_KEY) || '').trim().toLowerCase();
+    const mine = (c) => !!me() && c.role !== 'iris' && c.name.trim().toLowerCase() === me();
+    const repliesOf = (c) => comments.filter((r) => r.parent === c.id).sort((a, b) => a.created.localeCompare(b.created));
+    const isMineThread = (c) => mine(c) || repliesOf(c).some(mine);
+    const seenMap = () => { try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '{}'); } catch { return {}; } };
+    const seenAt = (id) => seenMap()[id] || '';
+    const markSeen = (id) => { const m = seenMap(); m[id] = new Date().toISOString(); localStorage.setItem(SEEN_KEY, JSON.stringify(m)); };
+    const unreadIn = (c) => {
+        if (!isMineThread(c)) return 0;
+        const lastMine = [c, ...repliesOf(c)].filter(mine).map((x) => x.created).sort().pop() || '';
+        const since = [seenAt(c.id), lastMine].sort().pop();
+        return repliesOf(c).filter((r) => !mine(r) && r.created > since).length;
     };
 
     const closePop = () => { if (pop) { pop.remove(); pop = null; } };
@@ -339,7 +416,7 @@
             if (!name) { nameInput.focus(); return; }
             if (!area.value.trim() && !image) { area.focus(); return; }
             localStorage.setItem(NAME_KEY, name);
-            const item = { page: CFG.page, route: route(), anchor, parent, name, text: area.value.trim(), image: image || null };
+            const item = { page: CFG.page, version: VERSION, route: route(), anchor, parent, name, text: area.value.trim(), image: image || null };
             save.disabled = true;
             try {
                 await api('POST', '/api/review/comments', item);
@@ -356,15 +433,27 @@
         return box;
     };
 
-    const thread = (c, x, y) => {
+    const thread = (c, x, y, from, approx) => {
         closePop();
         const box = h('div', { class: 'rv-pop' });
-        const replies = comments.filter((r) => r.parent === c.id);
+        if (from) {
+            box.append(h('div', { class: 'rv-from' },
+                h('b', {}, `From ${from.tag}`), approx ? ' · the exact spot has changed, so this pin may have moved. ' : ' ',
+                h('a', { href: `${from.file}#${c.route}`, target: '_blank', rel: 'noopener' }, 'Open where it was made →')));
+        }
+        const replies = repliesOf(c);
+        const lastSeen = seenAt(c.id);
         for (const one of [c, ...replies]) {
-            box.append(h('div', { class: 'rv-c' + (one.parent ? ' reply' : '') },
-                h('b', {}, one.name), h('time', {}, new Date(one.created).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })),
+            const fresh = one.parent && !mine(one) && one.created > lastSeen && isMineThread(c);
+            box.append(h('div', { class: 'rv-c' + (one.parent ? ' reply' : '') + (one.role === 'iris' ? ' iris' : '') + (fresh ? ' fresh' : '') },
+                one.role === 'iris' ? h('span', { class: 'rv-avatar', html: AVATAR }) : null,
+                h('b', {}, one.role === 'iris' ? 'Iris' : one.name), one.role === 'iris' ? h('span', { class: 'rv-team' }, 'RegulateED team') : null,
+                h('time', {}, new Date(one.created).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })),
                 h('p', {}, one.text), one.image ? shotOf(one.image) : null));
         }
+        if (c.resolved) box.append(h('div', { class: 'rv-closed' }, 'Closed'));
+        markSeen(c.id);
+        setTimeout(render, 0);
         const resolve = h('button', {}, c.resolved ? 'Reopen' : 'Resolve');
         resolve.addEventListener('click', async () => {
             try { await api('POST', `/api/review/comments/${c.id}/resolve`, { resolved: !c.resolved }); } catch { /* shown by sync */ }
@@ -377,21 +466,27 @@
         place(box, x, y);
     };
 
-    const tops = () => comments.filter((c) => !c.parent);
+    // Native comments are numbered 1, 2, 3; carried ones wear their version tag (v1).
+    const labelOf = (item, n) => (item.from ? String(item.from.tag).replace(/^.* (v\d+)$/, '$1') : String(n));
+    const numberedItems = () => {
+        let n = 0;
+        return placed().map((item) => ({ ...item, label: labelOf(item, item.from ? 0 : ++n) }));
+    };
     const render = () => {
         pins.replaceChildren();
         const here = route();
-        const numbered = tops();
-        numbered.forEach((c, i) => {
-            if (c.route !== here || c.resolved) return;
+        const items = numberedItems();
+        for (const item of items) {
+            const { c, where, from, label } = item;
+            if (where !== here || c.resolved) continue;
             const p = pointOf(c.anchor);
-            if (!p) return;
-            const pin = h('button', { class: 'rv-pin', 'data-id': c.id, title: `${c.name}: ${c.text.slice(0, 80)}` }, h('span', {}, String(i + 1)));
+            if (!p) continue;
+            const pin = h('button', { class: 'rv-pin' + (from ? ' carried' : '') + (p.approx ? ' moved' : '') + (unreadIn(c) ? ' unread' : ''), 'data-id': c.id, title: `${from ? from.tag + ': ' : ''}${c.name}: ${c.text.slice(0, 80)}` }, h('span', {}, label));
             pin.style.left = p.x + 'px';
             pin.style.top = p.y + 'px';
-            pin.addEventListener('click', (ev) => { ev.stopPropagation(); thread(c, p.x, p.y); });
+            pin.addEventListener('click', (ev) => { ev.stopPropagation(); thread(c, p.x, p.y, from, p.approx); });
             pins.append(pin);
-        });
+        }
         for (const [i, q] of queue().entries()) {
             if (q.route !== here || q.parent) continue;
             const p = pointOf(q.anchor);
@@ -401,28 +496,39 @@
             pin.style.top = p.y + 'px';
             pins.append(pin);
         }
-        const open = numbered.filter((c) => !c.resolved).length;
-        listBtn.textContent = `Comments ${open}`;
-        renderPanel(numbered);
+        const open = items.filter((x) => !x.c.resolved).length;
+        // Unread counts all threads this reader started or joined, on every page and version.
+        const fresh = comments.filter((x) => !x.parent).reduce((n, x) => n + unreadIn(x), 0);
+        listBtn.replaceChildren(`Comments ${open}`, fresh ? h('span', { class: 'rv-new' }, `${fresh} new`) : '');
+        renderPanel(items);
     };
 
-    const renderPanel = (numbered) => {
+    const renderPanel = (items) => {
         panelBody.replaceChildren();
-        if (!numbered.length) { panelBody.append(h('p', { class: 'empty' }, 'No comments yet. Tap Add comment, then tap anywhere on the page.')); return; }
+        const name = localStorage.getItem(NAME_KEY);
+        if (name) {
+            const change = h('button', {}, 'change');
+            change.addEventListener('click', () => {
+                const next = (prompt('Your name, as the team knows you', name) || '').trim();
+                if (next) { localStorage.setItem(NAME_KEY, next); render(); }
+            });
+            panelBody.append(h('p', { class: 'who' }, `Commenting as ${name}`, change));
+        }
+        if (!items.length) { panelBody.append(h('p', { class: 'empty' }, 'No comments yet. Tap Add comment, then tap anywhere on the page.')); return; }
         const groups = new Map();
-        numbered.forEach((c, i) => {
-            if (!groups.has(c.route)) groups.set(c.route, []);
-            groups.get(c.route).push([c, i + 1]);
-        });
-        for (const [r, items] of groups) {
+        for (const item of items) {
+            if (!groups.has(item.where)) groups.set(item.where, []);
+            groups.get(item.where).push(item);
+        }
+        for (const [r, list] of groups) {
             panelBody.append(h('div', { class: 'grp' }, routeName(r)));
-            for (const [c, n] of items) {
+            for (const { c, where, from, label } of list) {
                 const replies = comments.filter((x) => x.parent === c.id).length;
                 panelBody.append(h('button', {
-                    class: 'item' + (c.resolved ? ' done' : ''),
+                    class: 'item' + (c.resolved ? ' done' : '') + (from ? ' carried' : ''),
                     onclick: () => {
                         panel.classList.remove('open');
-                        if (route() !== c.route) location.hash = c.route;
+                        if (route() !== where) location.hash = where;
                         setTimeout(() => {
                             render();
                             const pin = pins.querySelector(`[data-id="${c.id}"]`);
@@ -431,7 +537,12 @@
                             if (pin) { pin.classList.add('flash'); setTimeout(() => pin.click(), 700); }
                         }, 80);
                     },
-                }, h('span', { class: 'n' }, String(n)), h('b', {}, c.name), ` ${c.resolved ? '(resolved) ' : ''}`, h('br'), c.text.length > 140 ? c.text.slice(0, 140) + '…' : c.text, replies ? h('div', { class: 'note', style: 'font-size:12px;opacity:.6;margin-top:4px' }, `${replies} repl${replies === 1 ? 'y' : 'ies'}`) : null));
+                }, h('span', { class: 'n' }, label), h('b', {}, c.name), ` ${c.resolved ? '(closed) ' : ''}`,
+                unreadIn(c) ? h('span', { class: 'rv-new' }, `${unreadIn(c)} new`) : null,
+                repliesOf(c).some((r) => r.role === 'iris') ? h('span', { class: 'from', style: 'color:#2A9D8F' }, 'Iris replied') : null,
+                from ? h('span', { class: 'from' }, `from ${from.tag}`) : null,
+                h('br'), c.text.length > 140 ? c.text.slice(0, 140) + '…' : c.text,
+                replies ? h('div', { class: 'note', style: 'font-size:12px;opacity:.6;margin-top:4px' }, `${replies} repl${replies === 1 ? 'y' : 'ies'}`) : null));
             }
         }
     };
