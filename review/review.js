@@ -82,6 +82,11 @@
         #rv-bar .add.on { background: #1F3A4D; }
         #rv-bar .list { background: #fff; color: #1F3A4D; }
         #rv-bar .lock { background: #fff; color: #1F3A4D; }
+        #rv-hello { position: fixed; left: 50%; top: 78px; transform: translateX(-50%); z-index: 9150; display: flex; align-items: center; gap: 10px; background: #fff; border: 2px solid #F2845C; border-radius: 40px; padding: 8px 10px 8px 14px; box-shadow: 0 10px 28px rgba(31,58,77,.25); font-weight: 700; font-size: 15px; max-width: calc(100vw - 20px); animation: rvhello .4s ease-out; }
+        #rv-hello .rv-avatar svg { width: 26px; height: 26px; margin: 0; }
+        #rv-hello .go { font: inherit; font-weight: 800; background: #F2845C; color: #fff; border: 0; border-radius: 30px; padding: 7px 14px; cursor: pointer; white-space: nowrap; }
+        #rv-hello .x { font: inherit; font-size: 20px; background: none; border: 0; color: #8A97A1; cursor: pointer; padding: 0 4px; }
+        @keyframes rvhello { from { opacity: 0; transform: translate(-50%, -10px); } to { opacity: 1; transform: translate(-50%, 0); } }
         .rv-c.iris { background: #EEF8F6; border-radius: 10px; padding: 8px 10px; margin: 6px 0; border-bottom: 0; }
         .rv-c.fresh { box-shadow: inset 3px 0 0 #F2845C; }
         .rv-avatar svg { width: 22px; height: 22px; vertical-align: -6px; margin-right: 6px; }
@@ -260,6 +265,7 @@
     // ------------------------------------------------------------------ pins
     let comments = [];
     let placing = false;
+    let greeted = false;
     let online = true;
     const pins = h('div', { id: 'rv-pins', class: 'rv-ui' });
     const banner = h('div', { id: 'rv-banner', class: 'rv-ui' });
@@ -361,10 +367,23 @@
         }
         return r;
     };
+    // Page sections are named after their route (p-method-group for method/group), so the same rules
+    // rename the element a carried anchor starts from.
+    const carryAnchor = (s, anchor) => {
+        if (!anchor || !anchor.path.startsWith('#p-')) return anchor;
+        const idOf = (r) => (r === '' ? 'p-hub' : 'p-' + r.replace(/\/$/, '-').replace(/\//g, '-'));
+        for (const [from, to] of s.carry || []) {
+            const a = '#' + idOf(from);
+            const prefix = from.endsWith('/');
+            const hit = prefix ? anchor.path.startsWith(a) : (anchor.path === a || anchor.path.startsWith(a + ' '));
+            if (hit) return { ...anchor, path: '#' + idOf(to) + anchor.path.slice(a.length) };
+        }
+        return anchor;
+    };
     const placed = () => comments.filter((c) => !c.parent).map((c) => {
-        if (isNative(c)) return { c, where: c.route, from: null };
+        if (isNative(c)) return { c, where: c.route, from: null, anchor: c.anchor };
         const s = sourceOf(c);
-        return s ? { c, where: carryRoute(s, c.route), from: s } : null;
+        return s ? { c, where: carryRoute(s, c.route), from: s, anchor: carryAnchor(s, c.anchor) } : null;
     }).filter(Boolean);
 
     // ------------------------------------------------------------------ two-way feedback
@@ -477,9 +496,9 @@
         const here = route();
         const items = numberedItems();
         for (const item of items) {
-            const { c, where, from, label } = item;
+            const { c, where, from, label, anchor } = item;
             if (where !== here || c.resolved) continue;
-            const p = pointOf(c.anchor);
+            const p = pointOf(anchor);
             if (!p) continue;
             const pin = h('button', { class: 'rv-pin' + (from ? ' carried' : '') + (p.approx ? ' moved' : '') + (unreadIn(c) ? ' unread' : ''), 'data-id': c.id, title: `${from ? from.tag + ': ' : ''}${c.name}: ${c.text.slice(0, 80)}` }, h('span', {}, label));
             pin.style.left = p.x + 'px';
@@ -500,6 +519,17 @@
         // Unread counts all threads this reader started or joined, on every page and version.
         const fresh = comments.filter((x) => !x.parent).reduce((n, x) => n + unreadIn(x), 0);
         listBtn.replaceChildren(`Comments ${open}`, fresh ? h('span', { class: 'rv-new' }, `${fresh} new`) : '');
+        // On arrival, say it in words, once per visit: a badge alone is easy to miss.
+        if (fresh && !greeted && online) {
+            greeted = true;
+            const who = localStorage.getItem(NAME_KEY) || '';
+            const note = h('div', { id: 'rv-hello', class: 'rv-ui' },
+                h('span', { class: 'rv-avatar', html: AVATAR }),
+                h('span', {}, `${who ? who.charAt(0).toUpperCase() + who.slice(1) + ', y' : 'Y'}ou have ${fresh} new repl${fresh === 1 ? 'y' : 'ies'} in your comments.`),
+                h('button', { class: 'go', onclick: () => { note.remove(); closePop(); panel.classList.add('open'); } }, 'Show me'),
+                h('button', { class: 'x', 'aria-label': 'Dismiss', onclick: () => note.remove() }, '×'));
+            document.body.append(note);
+        }
         renderPanel(items);
     };
 
@@ -520,30 +550,38 @@
             if (!groups.has(item.where)) groups.set(item.where, []);
             groups.get(item.where).push(item);
         }
+        const itemButton = ({ c, where, from, label, anchor }) => {
+            const replies = repliesOf(c).length;
+            return h('button', {
+                class: 'item' + (c.resolved ? ' done' : '') + (from ? ' carried' : '') + (unreadIn(c) ? ' fresh' : ''),
+                onclick: () => {
+                    panel.classList.remove('open');
+                    if (route() !== where) location.hash = where;
+                    setTimeout(() => {
+                        render();
+                        const pin = pins.querySelector(`[data-id="${c.id}"]`);
+                        const p = pointOf(anchor);
+                        if (p) scrollTo({ top: Math.max(0, p.y - innerHeight / 3), behavior: 'smooth' });
+                        if (pin) { pin.classList.add('flash'); setTimeout(() => pin.click(), 700); }
+                        else thread(c, scrollX + innerWidth / 2 - 170, scrollY + 90, from, true);
+                    }, 80);
+                },
+            }, h('span', { class: 'n' }, label), h('b', {}, c.name), ` ${c.resolved ? '(closed) ' : ''}`,
+            unreadIn(c) ? h('span', { class: 'rv-new' }, `${unreadIn(c)} new`) : null,
+            repliesOf(c).some((r) => r.role === 'iris') ? h('span', { class: 'from', style: 'color:#2A9D8F' }, 'Iris replied') : null,
+            from ? h('span', { class: 'from' }, `from ${from.tag}`) : null,
+            h('br'), c.text.length > 140 ? c.text.slice(0, 140) + '…' : c.text,
+            replies ? h('div', { class: 'note', style: 'font-size:12px;opacity:.6;margin-top:4px' }, `${replies} repl${replies === 1 ? 'y' : 'ies'}`) : null);
+        };
+        // Threads with replies this reader has not seen come first.
+        const fresh = items.filter((x) => unreadIn(x.c));
+        if (fresh.length) {
+            panelBody.append(h('div', { class: 'grp', style: 'color:#E0703F' }, 'New for you'));
+            for (const item of fresh) panelBody.append(itemButton(item));
+        }
         for (const [r, list] of groups) {
             panelBody.append(h('div', { class: 'grp' }, routeName(r)));
-            for (const { c, where, from, label } of list) {
-                const replies = comments.filter((x) => x.parent === c.id).length;
-                panelBody.append(h('button', {
-                    class: 'item' + (c.resolved ? ' done' : '') + (from ? ' carried' : ''),
-                    onclick: () => {
-                        panel.classList.remove('open');
-                        if (route() !== where) location.hash = where;
-                        setTimeout(() => {
-                            render();
-                            const pin = pins.querySelector(`[data-id="${c.id}"]`);
-                            const p = pointOf(c.anchor);
-                            if (p) scrollTo({ top: Math.max(0, p.y - innerHeight / 3), behavior: 'smooth' });
-                            if (pin) { pin.classList.add('flash'); setTimeout(() => pin.click(), 700); }
-                        }, 80);
-                    },
-                }, h('span', { class: 'n' }, label), h('b', {}, c.name), ` ${c.resolved ? '(closed) ' : ''}`,
-                unreadIn(c) ? h('span', { class: 'rv-new' }, `${unreadIn(c)} new`) : null,
-                repliesOf(c).some((r) => r.role === 'iris') ? h('span', { class: 'from', style: 'color:#2A9D8F' }, 'Iris replied') : null,
-                from ? h('span', { class: 'from' }, `from ${from.tag}`) : null,
-                h('br'), c.text.length > 140 ? c.text.slice(0, 140) + '…' : c.text,
-                replies ? h('div', { class: 'note', style: 'font-size:12px;opacity:.6;margin-top:4px' }, `${replies} repl${replies === 1 ? 'y' : 'ies'}`) : null));
-            }
+            for (const item of list) panelBody.append(itemButton(item));
         }
     };
 
