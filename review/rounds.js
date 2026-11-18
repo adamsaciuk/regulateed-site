@@ -243,7 +243,9 @@
         const title = h('input', { placeholder: 'Short title, for example: Reggie icons', maxlength: '80' });
         const el = h('div', { class: 'rv-file' }, h('label', {}, 'Thread title'), title, h('label', {}, 'Category'), sel, h('label', { class: 'rq' }, rq, 'This is a research request'));
         sel.addEventListener('change', () => sel.classList.remove('need'));
-        return { el, value: () => sel.value, title: () => title.value.trim(), research: () => rq.checked, ask: () => { sel.classList.add('need'); sel.focus(); RV.say('Choose a category for this thread first.'); setTimeout(() => RV.say(''), 3000); } };
+        return { el, value: () => sel.value, title: () => title.value.trim(), research: () => rq.checked,
+            get: () => ({ title: title.value, category: sel.value, research: rq.checked }),
+            set: (p) => { if (p.title != null) title.value = p.title; if (p.category) sel.value = p.category; rq.checked = !!p.research; }, ask: () => { sel.classList.add('need'); sel.focus(); RV.say('Choose a category for this thread first.'); setTimeout(() => RV.say(''), 3000); } };
     };
 
     // ------------------------------------------------------------------ panel tabs

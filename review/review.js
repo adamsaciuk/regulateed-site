@@ -291,8 +291,7 @@
     // The bottom bar's way out: Sprints on the current workflow, the current sprint on an earlier one.
     const bottomNav = (CFG.nav && CFG.nav.bottom) || { label: '← All pages', href: './' };
     const allBtn = h('a', { class: 'all', href: bottomNav.href }, bottomNav.label);
-    const drawBtn = h('button', { class: 'draw' }, 'Draw');
-    const bar = h('div', { id: 'rv-bar', class: 'rv-ui' }, allBtn, addBtn, drawBtn, listBtn, lockBtn);
+    const bar = h('div', { id: 'rv-bar', class: 'rv-ui' }, allBtn, addBtn, listBtn, lockBtn);
     let pop = null;
 
     const route = () => location.hash.replace(/^#\/?/, '');
@@ -461,7 +460,7 @@
         return input;
     };
 
-    const editor = (x, y, anchor, parent, image) => {
+    const editor = (x, y, anchor, parent, image, prefill) => {
         closePop();
         const box = h('div', { class: 'rv-pop' });
         if (image) box.append(h('img', { class: 'rv-shot', src: image, alt: 'Your drawing' }));
@@ -469,8 +468,17 @@
         const area = h('textarea', { placeholder: parent ? 'Reply' : image ? 'What does your drawing point at?' : 'Your comment: what about this thing?', maxlength: '4000' });
         const filing = !parent && RVX().categoryPicker ? RVX().categoryPicker() : null;
         if (filing) box.append(filing.el);
+        if (prefill) { area.value = prefill.text || ''; if (filing && filing.set) filing.set(prefill); }
         const save = h('button', { class: 'main' }, parent ? 'Reply' : 'Save tag');
-        box.append(area, h('div', { class: 'row' }, h('button', { onclick: closePop }, 'Cancel'), save));
+        // Draw is part of the tag: draw on the page, and the picture is saved into this tag (Adam).
+        const draw = parent ? null : h('button', { type: 'button', title: 'Draw on the page; the picture goes into this tag' }, image ? 'Redraw' : 'Draw');
+        if (draw) draw.addEventListener('click', () => {
+            const keep = { text: area.value, ...(filing && filing.get ? filing.get() : {}) };
+            if (nameInput && nameInput.value.trim()) localStorage.setItem(NAME_KEY, nameInput.value.trim());
+            closePop();
+            startDraw((pic) => editor(x, y, anchor, null, pic || image, keep));
+        });
+        box.append(area, h('div', { class: 'row' }, h('button', { onclick: closePop }, 'Cancel'), draw, save));
         save.addEventListener('click', async () => {
             const name = nameInput ? nameInput.value.trim() : localStorage.getItem(NAME_KEY);
             if (!name) { nameInput.focus(); return; }
@@ -729,7 +737,7 @@
         return url;
     };
 
-    const startDraw = () => {
+    const startDraw = (intoTag) => {
         closePop();
         setPlacing(false);
         panel.classList.remove('open');
@@ -780,15 +788,16 @@
             return b;
         });
         const end = () => { canvas.remove(); tools.remove(); html.classList.remove('rv-drawing'); offlineNote(); };
+        const cancel = () => { end(); if (intoTag) intoTag(null); };
         const done = h('button', { class: 'main' }, 'Done');
         const tools = h('div', { id: 'rv-drawbar', class: 'rv-ui' }, ...swatches,
             h('span', { class: 'gap' }),
             h('button', { onclick: () => { strokes.pop(); paint(); } }, 'Undo'),
             h('button', { onclick: () => { strokes.length = 0; paint(); } }, 'Clear'),
-            h('button', { onclick: end }, 'Cancel'), done);
+            h('button', { onclick: cancel }, 'Cancel'), done);
 
         done.addEventListener('click', async () => {
-            if (!strokes.length) { end(); return; }
+            if (!strokes.length) { cancel(); return; }
             const xs = strokes.flatMap((s) => s.pts.map((p) => p[0]));
             const ys = strokes.flatMap((s) => s.pts.map((p) => p[1]));
             const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
@@ -832,7 +841,7 @@
                 image = toJpeg(out);
             }
             end();
-            editor(cx + scrollX, cy + scrollY, anchor, null, image);
+            if (intoTag) intoTag(image); else editor(cx + scrollX, cy + scrollY, anchor, null, image);
         });
 
         html.classList.add('rv-drawing');
@@ -868,7 +877,6 @@
         new ResizeObserver(() => html.style.setProperty('--rv-bar-h', bar.offsetHeight + 'px')).observe(bar);
         addBtn.addEventListener('click', () => setPlacing(!placing));
         listBtn.addEventListener('click', () => { closePop(); panel.classList.toggle('open'); });
-        drawBtn.addEventListener('click', startDraw);
         // Capture phase, so a tap while placing never also follows a link or button on the page.
         document.addEventListener('click', (ev) => {
             if (!placing || isUi(ev.target)) return;
