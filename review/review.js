@@ -5,6 +5,8 @@
 (function () {
     'use strict';
     const CFG = window.REVIEW || {};
+    // The version of this script, from its own address (review.js?v=...), to spot a newer one.
+    const MY_V = (() => { try { return new URL(document.currentScript.src).searchParams.get('v') || ''; } catch { return ''; } })();
     const PASS_KEY = 'rv-pass';
     const NAME_KEY = 'rv-name';
     const QUEUE_KEY = 'rv-queue-' + (CFG.page || 'index');
@@ -900,6 +902,20 @@
         if (RVX().start) RVX().start();
         sync();
         setInterval(sync, 20000);
+        // A newer review published? Ask the server past any cached copy; refresh when nothing is being typed or drawn.
+        const fresh = async () => {
+            try {
+                const page = await (await fetch(location.pathname + '?fresh=' + Date.now(), { cache: 'no-store' })).text();
+                const v = (page.match(/review\.js\?v=([a-z0-9]+)/) || [])[1];
+                if (!v || !MY_V || v === MY_V) return;
+                const busy = pop || html.classList.contains('rv-drawing') || (document.activeElement && /TEXTAREA|INPUT|SELECT/.test(document.activeElement.tagName));
+                if (!busy) { location.reload(); return; }
+                say('The review has just been updated. It refreshes when you finish what you are writing.');
+            } catch { /* offline: try again later */ }
+        };
+        setTimeout(fresh, 4000);
+        setInterval(fresh, 120000);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) fresh(); });
     }
 
     gate();
