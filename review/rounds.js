@@ -430,6 +430,7 @@
         return node;
     };
     const paintSprint = () => {
+        body.dataset.shows = 'sprint';
         body.replaceChildren();
         const sp = (tracker.sprints || []).find((x) => String(x.n) === current()) || { title: `Sprint ${current()}`, note: '' };
         // One line: the sprint, and how many threads still stand between it and closing (Adam: no note text).
@@ -475,6 +476,8 @@
         const nameInput = RV.needName(wrap);
         if (nameInput) nameInput.setAttribute('style', 'display:none;width:100%;box-sizing:border-box;font:inherit;border:2px solid #E9E1D6;border-radius:10px;padding:7px 10px;margin-top:6px');
         const area = h('textarea', { placeholder, maxlength: '4000' });
+        area.value = drafts._chat || '';
+        area.addEventListener('input', () => { drafts._chat = area.value; });
         const link = h('button', { type: 'button', title: 'Tap a spot on the page to link it here' }, 'Link a spot');
         const go = h('button', { class: 'main', type: 'button' }, 'Send');
         link.addEventListener('click', () => {
@@ -492,7 +495,7 @@
             if (!area.value.trim()) { area.focus(); return; }
             localStorage.setItem(RV.NAME_KEY, name);
             go.disabled = true;
-            try { await send(name, area.value.trim()); area.value = ''; }
+            try { await send(name, area.value.trim()); area.value = ''; delete drafts._chat; }
             catch { RV.say('That did not send. The review service may be down; please try again in a little while.'); setTimeout(() => RV.say(''), 5000); }
             go.disabled = false;
             await RV.sync();
@@ -506,9 +509,15 @@
         document.documentElement.classList.remove('rv-linking');
         RV.say('');
     };
+    // The review refreshes every 20 seconds; Iris Chat is rebuilt only when the chat itself changed, so a
+    // message being typed is never wiped (Adam's bug, 2026-11-18), and the draft survives a tab switch.
     const paintIris = () => {
-        body.replaceChildren();
         const msgs = me() ? chatOf(me()) : [];
+        const sig = [me(), msgs.length, msgs.length ? msgs[msgs.length - 1].id : '', RV.isPaused()].join('|');
+        if (body.dataset.shows === 'iris' && body.dataset.sig === sig) return;
+        body.dataset.shows = 'iris';
+        body.dataset.sig = sig;
+        body.replaceChildren();
         body.append(h('div', { class: 'rv-msgs' }, ...msgs.map((m) => h('div', { class: 'rv-msg' + (m.role === 'iris' ? ' iris' : RV.mine(m) ? ' me' : '') },
             h('div', { class: 'who' }, m.role === 'iris' ? 'Iris' : m.name, h('time', {}, when(m.created))), ...chips(m.text)))));
         body.append(composer('Message Iris', (name, text) => RV.api('POST', '/api/review/comments', { page: 'chat', version: '1', route: name.trim().toLowerCase(), anchor: null, parent: null, name, text })));
