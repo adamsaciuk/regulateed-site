@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RegulateED: how we collect check-ins, K to 5</title>
+<style>
+    @font-face { font-family: "Open Sans"; font-weight: 400; src: url("../fonts/open-sans-latin-400.woff2") format("woff2"); }
+    @font-face { font-family: "Open Sans"; font-weight: 600; src: url("../fonts/open-sans-latin-600.woff2") format("woff2"); }
+    @font-face { font-family: "Open Sans"; font-weight: 700; src: url("../fonts/open-sans-latin-700.woff2") format("woff2"); }
+    @font-face { font-family: "Open Sans"; font-weight: 800; src: url("../fonts/open-sans-latin-800.woff2") format("woff2"); }
+    :root {
+        --teal: #2A9D8F; --coral: #F2845C; --slate: #1F3A4D; --paper: #FFF8F0; --mint: #7FD3C6; --line: #E9E1D6;
+        --g: #3BAA5C; --y: #F2B92F; --r: #E0524B;
+        --a: var(--coral); --b: var(--teal); --ink: var(--slate); --k: var(--slate); --ring: rgba(42,157,143,.28);
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { margin: 0; background: var(--paper); font: 17px/1.5 "Open Sans", system-ui, sans-serif; color: var(--slate); }
+    a { color: inherit; }
+    button { font: inherit; color: inherit; }
+    svg.sym { display: block; }
+
+    /* top bar */
+    .bar { position: sticky; top: 0; z-index: 5; background: var(--slate); color: #fff; --ink: #fff; --a: #F7A27F; --b: var(--mint); --ring: rgba(255,255,255,.22); }
+    .bar .in { max-width: 1120px; margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; gap: 16px; min-height: 60px; }
+    .bar .logo { width: 170px; cursor: pointer; }
+    .bar .crumb { flex: 1; font-weight: 700; opacity: .8; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .home { display: none; background: var(--mint); color: var(--slate); border: 0; border-radius: 40px; padding: 10px 20px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+    body:not(.at-hub) .home { display: inline-block; }
+
+    .page { display: none; max-width: 1120px; margin: 0 auto; padding: 32px 20px 72px; }
+    .page.on { display: block; animation: rise .25s ease-out; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--teal); margin: 0 0 6px; }
+    h1 { font-size: clamp(30px, 4.4vw, 46px); line-height: 1.1; margin: 0 0 14px; letter-spacing: -.5px; }
+    h2 { font-size: clamp(24px, 3.2vw, 34px); line-height: 1.15; margin: 0 0 14px; }
+    h3 { font-size: 19px; margin: 0 0 6px; }
+    p { margin: 0 0 12px; }
+    .lead { font-size: clamp(17px, 2vw, 20px); max-width: 760px; opacity: .9; }
+    .note { font-size: 14px; opacity: .7; }
+    .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    .split2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 32px; align-items: start; }
+    .split2.wide { grid-template-columns: minmax(0, .85fr) minmax(0, 1.2fr); }
+    @media (max-width: 860px) { .grid3, .grid2, .split2, .split2.wide { grid-template-columns: 1fr; } }
+    .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin-bottom: 14px; }
+    .card p:last-child, .card ul:last-child { margin-bottom: 0; }
+    .card ul { margin: 4px 0 0; padding-left: 22px; }
+    .card li { margin: 3px 0; }
+    .tag { font-size: 12px; font-weight: 800; letter-spacing: 1.6px; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; }
+    .warn { border-left: 6px solid var(--coral); } .warn .tag { color: var(--coral); }
+    .todo { border-left: 6px solid var(--slate); background: #F3EEE6; } .todo .tag { color: var(--slate); }
+
+    /* hub matrix */
+    .mxwrap { overflow-x: auto; margin: 18px 0 8px; -webkit-overflow-scrolling: touch; }
+    .mx { width: 100%; min-width: 680px; border-collapse: separate; border-spacing: 6px; }
+    .mx th, .mx td { border-radius: 12px; }
+    .mx thead button { width: 100%; background: var(--slate); color: #fff; border: 0; border-radius: 12px; padding: 14px 0; font-size: 22px; font-weight: 800; cursor: pointer; }
+    .mx thead button small { display: block; font-size: 11px; font-weight: 600; opacity: .7; letter-spacing: .5px; }
+    .mx tbody th { width: 32%; padding: 0; }
+    .mx tbody th button { width: 100%; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; cursor: pointer; display: flex; gap: 12px; align-items: center; }
+    .mx tbody th b { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--teal); color: #fff; font-size: 15px; }
+    .mx tbody th span { font-weight: 800; font-size: 16px; line-height: 1.25; }
+    .mx tbody th small { display: block; font-weight: 400; font-size: 13px; opacity: .7; }
+    .mx td { background: #fff; border: 1px solid var(--line); padding: 0; }
+    .mx td a { display: grid; place-items: center; height: 100%; min-height: 62px; border-radius: 12px; text-decoration: none; }
+    .mx td.on { background: var(--teal); border-color: var(--teal); }
+    .mx td.on a::after { content: ""; width: 20px; height: 20px; border-radius: 50%; background: #fff; }
+    .mx button:hover, .mx td.on a:hover { filter: brightness(1.08); }
+    .mx tbody th button:hover { border-color: var(--teal); }
+    .hint { font-size: 14px; opacity: .7; margin-bottom: 26px; }
+    .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    @media (max-width: 860px) { .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .tile { text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; cursor: pointer; }
+    .tile:hover { border-color: var(--teal); }
+    .tile b { display: block; font-size: 17px; margin-bottom: 4px; }
+    .tile span { font-size: 14px; opacity: .75; }
+    .tile.hero { background: var(--slate); color: #fff; border-color: var(--slate); }
+
+    /* grade and method chips */
+    .chips-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 22px; }
+    .gchip { min-width: 54px; text-align: center; padding: 6px 12px; border-radius: 10px; font-weight: 800; background: #EAE3D8; color: #9A9184; border: 0; cursor: pointer; text-decoration: none; }
+    .gchip.on { background: var(--teal); color: #fff; }
+    .gchip.focus { outline: 3px solid var(--coral); outline-offset: 2px; }
+    .mlink { display: flex; gap: 14px; align-items: flex-start; text-decoration: none; cursor: pointer; }
+    .mlink b.n { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--teal); color: #fff; }
+    .mlink:hover h3 { text-decoration: underline; }
+    .no b.n { background: #CFC6B9; }
+
+    .steps { list-style: none; margin: 0 0 18px; padding: 0; counter-reset: s; }
+    .steps li { counter-increment: s; position: relative; padding: 0 0 12px 44px; }
+    .steps li::before { content: counter(s); position: absolute; left: 0; top: -1px; width: 30px; height: 30px; border-radius: 50%; background: var(--teal); color: #fff; font-weight: 800; font-size: 15px; display: grid; place-items: center; }
+
+    .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+    @media (max-width: 860px) { .facts { grid-template-columns: 1fr; } }
+    .fact { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; }
+    .fact .tag { margin-bottom: 2px; }
+    .fact b { font-size: 18px; }
+
+    /* device mocks, sized in em so they scale with the page */
+    .mock { font-size: clamp(11px, 1.35vw, 15px); }
+    .tablet { background: var(--slate); border-radius: 2.2em; padding: 1em; box-shadow: 0 1em 2.6em rgba(31,58,77,.22); }
+    .phone { max-width: 22em; margin: 0 auto; background: var(--slate); border-radius: 2.6em; padding: .9em; box-shadow: 0 1em 2.6em rgba(31,58,77,.22); }
+    .laptop .lid { background: var(--slate); border-radius: 1.2em 1.2em 0 0; padding: .9em .9em 0; }
+    .laptop .base { height: 1.2em; background: #34536A; border-radius: 0 0 1.8em 1.8em; margin: 0 -1.6em; }
+    .screen { background: var(--paper); border-radius: 1.3em; padding: 1.3em 1.4em; }
+    .phone .screen { border-radius: 1.9em; }
+    .laptop .screen { border-radius: .4em .4em 0 0; }
+    .screen .top { display: flex; justify-content: space-between; font-size: .85em; font-weight: 700; opacity: .6; }
+    .screen .q { text-align: center; font-size: 1.6em; font-weight: 800; margin: .6em 0 .7em; line-height: 1.2; }
+    .screen .foot { text-align: center; margin-top: .9em; font-size: .85em; opacity: .65; }
+    .btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8em; }
+    .btns.col { grid-template-columns: 1fr; gap: .5em; }
+    .btn { border-radius: 1.1em; padding: .9em .4em .7em; text-align: center; color: #fff; font-weight: 800; font-size: 1.05em; }
+    .btn svg { display: block; width: 4.6em; margin: 0 auto .4em; }
+    .btn.row { display: flex; align-items: center; gap: .7em; padding: .55em .9em; text-align: left; }
+    .btn.row svg { width: 2.3em; margin: 0; }
+    .btn.G { background: var(--g); } .btn.Y { background: var(--y); color: var(--slate); } .btn.R { background: var(--r); }
+    .btn.sel { outline: .25em solid var(--slate); outline-offset: .1em; }
+    .pills { display: flex; flex-wrap: wrap; gap: .4em; justify-content: center; margin-top: .8em; }
+    .pill { background: #fff; border: 1px solid var(--line); border-radius: 3em; padding: .25em .8em; font-size: .85em; font-weight: 600; }
+    .pill.sel { background: var(--slate); color: #fff; border-color: var(--slate); }
+    .send { display: block; margin: .9em auto 0; width: 60%; text-align: center; background: var(--teal); color: #fff; font-weight: 800; border-radius: 3em; padding: .5em; }
+    .url { background: #fff; border-radius: 3em; padding: .3em 1em; font-size: .8em; margin-bottom: .7em; color: #6B7C88; }
+    .saved { margin-top: .9em; text-align: center; font-weight: 700; background: #fff; border: 1px solid var(--line); border-radius: .9em; padding: .5em; }
+    .saved i { display: inline-block; width: 1em; height: 1em; border-radius: 50%; background: var(--y); vertical-align: -.12em; margin-right: .35em; }
+    .flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: .7em; }
+    .flow .screen { padding: .8em; min-height: 17em; }
+    .flow .q { font-size: 1.05em; }
+    .flow .btn { font-size: .85em; padding: .45em; }
+    .flow .lab { font-size: .72em; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--teal); text-align: center; }
+    .timer { text-align: center; font-size: 2.6em; font-weight: 800; margin: .2em 0 0; }
+    .progress { height: .6em; background: #E3EFEC; border-radius: 1em; overflow: hidden; margin: .5em 0; }
+    .progress i { display: block; height: 100%; width: 62%; background: var(--teal); }
+    .token { display: inline-grid; place-items: center; width: 2.1em; height: 2.1em; border-radius: 50%; background: var(--coral); color: #fff; font-weight: 800; font-size: .9em; }
+    .token.off { background: #E7E1D8; }
+    .poster { background: #fff; border: 1px solid var(--line); border-radius: 1.2em; padding: 1.2em; text-align: center; box-shadow: 0 .6em 1.6em rgba(31,58,77,.12); }
+    .poster svg { width: 9em; margin: .7em auto; }
+    .poster b { display: block; font-size: 1.3em; }
+    .poster span { font-size: .85em; opacity: .7; }
+
+    .split { display: flex; height: 40px; border-radius: 10px; overflow: hidden; font-weight: 800; color: #fff; font-size: 15px; }
+    .split i { font-style: normal; display: grid; place-items: center; }
+    .split .G { background: var(--g); } .split .Y { background: var(--y); color: var(--slate); } .split .R { background: var(--r); }
+    .mock .split { height: 2em; font-size: .9em; border-radius: .6em; margin-top: .9em; }
+
+    /* own device diagram */
+    .devices { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8em; }
+    .mini { background: var(--slate); border-radius: 1em; padding: .45em; }
+    .mini .screen { padding: .6em .4em; border-radius: .6em; text-align: center; }
+    .mini .dot { width: 2.4em; height: 2.4em; border-radius: 50%; margin: .2em auto .3em; }
+    .mini small { font-size: .75em; font-weight: 700; opacity: .65; }
+    .arrowdown { text-align: center; font-size: 2em; color: var(--coral); line-height: 1; margin: .3em 0; }
+    .eventbox { background: #fff; border: .2em solid var(--slate); border-radius: 1em; padding: .8em 1em; text-align: center; font-weight: 800; }
+    .eventbox small { display: block; font-weight: 600; opacity: .65; }
+
+    .event { display: inline-flex; flex-wrap: wrap; border-radius: 14px; overflow: hidden; border: 3px solid var(--slate); font-size: 21px; font-weight: 700; margin: 6px 0 22px; }
+    .event div { padding: 10px 20px; background: #fff; border-right: 2px solid var(--line); }
+    .event div:last-child { border-right: 0; }
+    .event .tag { margin: 0; }
+
+    .backrow { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .backrow button { background: #fff; border: 1px solid var(--line); border-radius: 40px; padding: 10px 18px; font-weight: 700; cursor: pointer; }
+    .backrow button.main { background: var(--slate); color: #fff; border-color: var(--slate); }
+
+    @media print {
+        .bar, .backrow { display: none; }
+        .page { display: block !important; break-after: page; }
+    }
+</style>
+<meta name="robots" content="noindex, nofollow">
+<style>html.rv-locked body { visibility: hidden; }</style>
+<script>document.documentElement.classList.add('rv-locked');</script>
+</head>
+<body class="at-hub">
+
+<svg width="0" height="0" style="position:absolute">
+    <defs>
+        <symbol id="wave" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="44" fill="none" stroke-width="4" style="stroke:var(--ring)"/>
+            <path d="M14 50 L20 37 L26 62 L32 40 L38 58 L44 50" fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--a)"/>
+            <path d="M44 50 C51 37 58 37 65 50 S79 63 86 50" fill="none" stroke-width="7" stroke-linecap="round" style="stroke:var(--b)"/>
+        </symbol>
+        <symbol id="lockup" viewBox="0 0 360 100">
+            <use href="#wave" width="100" height="100"/>
+            <text x="114" y="60" style="font:800 40px 'Open Sans',system-ui,sans-serif;letter-spacing:-.5px;fill:var(--ink)">RegulateED</text>
+            <text x="116" y="82" style="font:600 10.5px 'Open Sans',system-ui,sans-serif;letter-spacing:2.2px;fill:var(--ink);opacity:.65">CLASSROOM SELF-REGULATION</text>
+        </symbol>
+        <symbol id="reggie" viewBox="0 0 100 100">
+            <path d="M50 18 C50 11 54 7 60 6" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--b)"/>
+            <circle cx="61" cy="6" r="3.5" style="fill:var(--a)"/>
+            <path d="M50 18 C73 18 86 34 86 56 C86 77 70 88 50 88 C30 88 14 77 14 56 C14 34 27 18 50 18 Z" style="fill:var(--b)"/>
+            <path d="M33 52 Q39 46 45 52 M55 52 Q61 46 67 52" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--k)"/>
+            <path d="M43 64 Q50 70 57 64" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--k)"/>
+            <circle cx="33" cy="62" r="4.5" opacity=".85" style="fill:var(--a)"/>
+            <circle cx="67" cy="62" r="4.5" opacity=".85" style="fill:var(--a)"/>
+        </symbol>
+        <symbol id="face-g" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="46" fill="#3BAA5C"/>
+            <circle cx="35" cy="40" r="6" fill="#fff"/><circle cx="65" cy="40" r="6" fill="#fff"/>
+            <path d="M30 60 Q50 80 70 60" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="face-y" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="46" fill="#F2B92F"/>
+            <circle cx="35" cy="40" r="6" fill="#1F3A4D"/><circle cx="65" cy="40" r="6" fill="#1F3A4D"/>
+            <path d="M30 66 Q40 58 50 66 T70 66" fill="none" stroke="#1F3A4D" stroke-width="7" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="face-r" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="46" fill="#E0524B"/>
+            <path d="M27 33 L41 39 M73 33 L59 39" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="35" cy="45" r="6" fill="#fff"/><circle cx="65" cy="45" r="6" fill="#fff"/>
+            <path d="M32 72 Q50 56 68 72" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+        </symbol>
+        <!-- an illustrative QR pattern, not a working code -->
+        <symbol id="qr" viewBox="0 0 21 21">
+            <rect width="21" height="21" fill="#fff"/>
+            <path fill="#1F3A4D" d="M0 0h7v7H0zM14 0h7v7h-7zM0 14h7v7H0z"/>
+            <path fill="#fff" d="M1 1h5v5H1zM15 1h5v5h-5zM1 15h5v5H1z"/>
+            <path fill="#1F3A4D" d="M2 2h3v3H2zM16 2h3v3h-3zM2 16h3v3H2zM8 0h1v1H8zM10 1h2v1h-2zM8 2h1v2H8zM11 3h1v2h-1zM9 5h2v1H9zM8 6h1v2H8zM10 7h3v1h-3zM0 8h2v1H0zM3 8h3v1H3zM13 8h1v2h-1zM15 8h2v1h-2zM18 8h3v1h-3zM1 9h1v2H1zM4 10h2v1H4zM7 9h2v2H7zM10 9h2v1h-2zM16 10h2v1h-2zM19 10h1v2h-1zM0 12h3v1H0zM5 12h2v1H5zM9 11h1v3H9zM11 12h3v1h-3zM15 12h1v2h-1zM17 12h1v1h-1zM8 15h2v1H8zM11 14h2v2h-2zM14 15h1v1h-1zM16 14h3v1h-3zM20 14h1v3h-1zM8 17h1v2H8zM10 18h3v1h-3zM14 17h2v2h-2zM17 16h2v2h-2zM9 20h3v1H9zM13 20h1v1h-1zM16 19h1v2h-1zM18 19h2v1h-2z"/>
+        </symbol>
+    </defs>
+</svg>
+
+<header class="bar"><div class="in">
+    <svg class="sym logo" viewBox="0 0 360 100" onclick="go('')"><use href="#lockup"/></svg>
+    <div class="crumb" id="crumb">Data collection, K to 5</div>
+    <button class="home" onclick="go('')">Back to the matrix</button>
+</div></header>
+
+<!-- ===================== HUB ===================== -->
+<section class="page" id="p-hub">
+    <p class="eyebrow">Data collection, Kindergarten to Grade 5</p>
+    <h1>One question, asked the way each age can answer.</h1>
+    <p class="lead">Every child is asked "How are you feeling?" and answers Green, Yellow or Red. How they answer changes as they grow. This matrix shows which method each grade uses.</p>
+    <div class="mxwrap"><table class="mx" id="matrix"></table></div>
+    <p class="hint">Tap a grade to meet those children. Tap a method to see how it works. Tap a dot to see why that grade uses that method.</p>
+    <p class="eyebrow">The ideas underneath</p>
+    <div class="tiles">
+        <button class="tile hero" onclick="go('concept/own-ipad')"><b>Each child's own iPad</b><span>G4 and G5 send their own result from the RegulateED app</span></button>
+        <button class="tile" onclick="go('concept/event')"><b>The event</b><span>Every answer belongs to a moment in the day</span></button>
+        <button class="tile" onclick="go('concept/split')"><b>Split, not average</b><span>Why an average alone can hide a child in Red</span></button>
+        <button class="tile" onclick="go('concept/privacy')"><b>Privacy</b><span>What is kept, and what never is</span></button>
+    </div>
+</section>
+
+<!-- ===================== GRADES (filled from data below) ===================== -->
+<div id="grade-pages"></div>
+
+<!-- ===================== METHOD 1 ===================== -->
+<section class="page" id="p-method-group" data-crumb="Method 1: Teacher-led group question">
+    <p class="eyebrow">Method 1</p>
+    <h2>Teacher-led group question</h2>
+    <div class="chips-row" data-grades="group"></div>
+    <div class="split2">
+        <div>
+            <p class="lead">The teacher asks the whole class and reads the room, then records one colour for the class.</p>
+            <ol class="steps">
+                <li>The teacher opens the event: Recess, today, their class.</li>
+                <li>Asks the class, "How are we feeling?"</li>
+                <li>Children answer out loud, hold up a colour card or point.</li>
+                <li>The teacher picks one colour for the class. Saved.</li>
+            </ol>
+            <div class="card"><div class="tag">Why K and G1</div><p>No reading and no device in a child's hand. It is what a K or G1 teacher already does, and it takes under a minute.</p></div>
+            <div class="card"><div class="tag">What is recorded</div><p>One colour for the class, saved to the event. Nothing about any child.</p></div>
+            <div class="card warn"><div class="tag">Watch for</div><p>Loud voices sway it and children copy each other, so a quiet child in Red can go unseen. That is why the entry survey runs alongside it in the same grades.</p></div>
+        </div>
+        <div class="mock"><div class="phone"><div class="screen">
+            <div class="top"><span>Recess · 11/18</span><span>Ms Jones · K1</span></div>
+            <div class="q">How is the class feeling?</div>
+            <div class="btns col">
+                <div class="btn G row"><svg viewBox="0 0 100 100"><use href="#face-g"/></svg>Green</div>
+                <div class="btn Y row sel"><svg viewBox="0 0 100 100"><use href="#face-y"/></svg>Yellow</div>
+                <div class="btn R row"><svg viewBox="0 0 100 100"><use href="#face-r"/></svg>Red</div>
+            </div>
+            <div class="saved"><i></i>Saved: the class is Yellow</div>
+            <div class="foot">On the teacher's phone or iPad</div>
+        </div></div></div>
+    </div>
+</section>
+
+<!-- ===================== METHOD 2 ===================== -->
+<section class="page" id="p-method-entry" data-crumb="Method 2: Event-based entry survey">
+    <p class="eyebrow">Method 2</p>
+    <h2>Event-based entry survey</h2>
+    <div class="chips-row" data-grades="entry"></div>
+    <div class="split2">
+        <div>
+            <p class="lead">The teacher's iPad stands at the classroom door. As the children come in, each one taps the face that matches how they feel.</p>
+            <ol class="steps">
+                <li>The teacher opens the event and sets their iPad on a stand at the door.</li>
+                <li>As the line comes in: "How are you feeling?"</li>
+                <li>Each child taps one face as they pass. A soft chime says "got it".</li>
+                <li>The teacher closes the event and sees the count of each colour.</li>
+            </ol>
+            <div class="card"><div class="tag">Why K to G3</div><p>Faces, not words, so no reading is needed, and every child counts the same. It stops after G3: older children are seen tapping by the line, and answer more honestly in private.</p></div>
+            <div class="card"><div class="tag">What is recorded</div><p>A count of each colour and the total taps against the children present. Never a name, and never the time or order of a tap, so a tap cannot be matched to the child who walked in.</p></div>
+            <div class="card warn"><div class="tag">Watch for, and the guard</div><ul><li>Double taps: a short pause after each tap</li><li>Pressing for fun: taps checked against children present</li><li>A bad round: the teacher can discard the event</li></ul></div>
+        </div>
+        <div class="mock"><div class="tablet"><div class="screen">
+            <div class="top"><span>Recess · 11/18/2026</span><span>Ms Jones · K1</span></div>
+            <div class="q">How are you feeling?</div>
+            <div class="btns">
+                <div class="btn G"><svg viewBox="0 0 100 100"><use href="#face-g"/></svg>Green</div>
+                <div class="btn Y"><svg viewBox="0 0 100 100"><use href="#face-y"/></svg>Yellow</div>
+                <div class="btn R"><svg viewBox="0 0 100 100"><use href="#face-r"/></svg>Red</div>
+            </div>
+            <div class="split"><i class="G" style="flex:13">13</i><i class="Y" style="flex:6">6</i><i class="R" style="flex:2">2</i></div>
+            <div class="foot">21 taps, 21 children present. No names.</div>
+        </div></div></div>
+    </div>
+</section>
+
+<!-- ===================== METHOD 3 ===================== -->
+<section class="page" id="p-method-qr" data-crumb="Method 3: QR code survey">
+    <p class="eyebrow">Method 3</p>
+    <h2>QR code survey: anonymous, by event</h2>
+    <div class="chips-row" data-grades="qr"></div>
+    <div class="split2">
+        <div>
+            <p class="lead">The event's QR code goes up on the board. Children scan it on a classroom iPad or Chromebook and answer a short web form. No name, no login, no app.</p>
+            <ol class="steps">
+                <li>The teacher opens the event; RegulateED shows its QR code.</li>
+                <li>Children scan it, or type the short link.</li>
+                <li>Pick a colour, then "Where do you feel it?"</li>
+                <li>Send. The answer joins the event.</li>
+            </ol>
+            <div class="card"><div class="tag">Why G2 to G4</div><p>Children now read simple words and can use a shared device, so each answers alone and adds one more thing: where they feel it. It stops after G4, when the app does everything the form does plus the reset.</p></div>
+            <div class="card"><div class="tag">What is recorded</div><p>One unnamed answer per child, pooled into the event: the colour and the body spot. The QR code carries the event, never the child.</p></div>
+        </div>
+        <div class="mock" style="display:grid;grid-template-columns:.8fr 1fr;gap:1.4em;align-items:start">
+            <div class="poster"><b>Check in</b><span>Recess · Ms Jones · G2</span><svg viewBox="0 0 21 21" shape-rendering="crispEdges"><use href="#qr"/></svg><span>Scan me</span></div>
+            <div class="phone"><div class="screen">
+                <div class="url">regulateed.com/check-in</div>
+                <div class="q" style="font-size:1.2em">How are you feeling?</div>
+                <div class="btns">
+                    <div class="btn G"><svg viewBox="0 0 100 100" style="width:2.6em"><use href="#face-g"/></svg>Green</div>
+                    <div class="btn Y sel"><svg viewBox="0 0 100 100" style="width:2.6em"><use href="#face-y"/></svg>Yellow</div>
+                    <div class="btn R"><svg viewBox="0 0 100 100" style="width:2.6em"><use href="#face-r"/></svg>Red</div>
+                </div>
+                <div class="q" style="font-size:1em;margin:.9em 0 0">Where do you feel it?</div>
+                <div class="pills"><span class="pill sel">Tummy</span><span class="pill">Heart</span><span class="pill">Arms</span><span class="pill">Head</span></div>
+                <span class="send">Send</span>
+            </div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== METHOD 4 ===================== -->
+<section class="page" id="p-method-mobile" data-crumb="Method 4: RegulateED mobile app">
+    <p class="eyebrow">Method 4</p>
+    <h2>RegulateED mobile app</h2>
+    <div class="chips-row" data-grades="mobile"></div>
+    <div class="split2 wide">
+        <div>
+            <p class="lead">The full RegulateED loop on the child's own school iPad: check in, a 2-minute reset chosen for how they feel, a re-check, and a Focus Token when they reach Green.</p>
+            <div class="card"><div class="tag">Why G4 and G5</div><p>Children read well and use their school device on their own, so they can run a reset themselves without the teacher stopping the class.</p></div>
+            <div class="card"><div class="tag">What is recorded</div><p>The check-in, body spot, the reset done and the re-check, each sent from the child's own iPad to the event. So the school also sees whether resets work.</p></div>
+            <p><a href="#concept/own-ipad" style="font-weight:800;color:var(--teal)">How each child's own iPad sends its result →</a></p>
+        </div>
+        <div class="mock"><div class="tablet"><div class="flow">
+            <div class="screen">
+                <div class="lab">1 Check in</div>
+                <div class="q">How are you feeling?</div>
+                <div class="btns col"><div class="btn G">Green</div><div class="btn Y">Yellow</div><div class="btn R sel">Red</div></div>
+                <div class="pills"><span class="pill sel">Fast heart</span><span class="pill">Tight tummy</span></div>
+            </div>
+            <div class="screen">
+                <div class="lab">2 Reset</div>
+                <svg viewBox="0 0 100 100" style="width:5.5em;margin:.5em auto 0;display:block"><use href="#reggie"/></svg>
+                <div class="q" style="margin-bottom:0">Wall Pushes</div>
+                <div class="timer">1:42</div>
+                <div class="progress"><i></i></div>
+            </div>
+            <div class="screen">
+                <div class="lab">3 Re-check</div>
+                <div class="q">How does your body feel now?</div>
+                <div class="btns col"><div class="btn G sel">Green</div></div>
+                <div style="text-align:center;margin-top:.8em"><span class="token">★</span> <span class="token">★</span> <span class="token off"></span></div>
+                <div class="foot" style="margin-top:.3em">Focus Token earned</div>
+            </div>
+        </div></div></div>
+    </div>
+</section>
+
+<!-- ===================== METHOD 5 ===================== -->
+<section class="page" id="p-method-web" data-crumb="Method 5: RegulateED web app">
+    <p class="eyebrow">Method 5</p>
+    <h2>RegulateED web app</h2>
+    <div class="chips-row" data-grades="web"></div>
+    <div class="split2 wide">
+        <div>
+            <p class="lead">The same app as Method 4, opened in a web browser. Nothing to install: Chromebooks, laptops and classroom smartboards all reach it.</p>
+            <div class="card"><div class="tag">Why both an app and a web app</div><p>Schools buy different devices: many classrooms run on Chromebooks, others on iPads. Two doors to the same RegulateED means no school is left out.</p></div>
+            <div class="card"><div class="tag">What is recorded</div><p>Exactly what the mobile app records, sent to the same event, so answers from both doors add up as one class.</p></div>
+        </div>
+        <div class="mock laptop">
+            <div class="lid"><div class="screen">
+                <div class="url">app.regulateed.com</div>
+                <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:1.2em;align-items:center">
+                    <div>
+                        <div class="q" style="text-align:left;font-size:1.3em;margin:0 0 .6em">How are you feeling?</div>
+                        <div class="btns">
+                            <div class="btn G"><svg viewBox="0 0 100 100" style="width:2.8em"><use href="#face-g"/></svg>Green</div>
+                            <div class="btn Y sel"><svg viewBox="0 0 100 100" style="width:2.8em"><use href="#face-y"/></svg>Yellow</div>
+                            <div class="btn R"><svg viewBox="0 0 100 100" style="width:2.8em"><use href="#face-r"/></svg>Red</div>
+                        </div>
+                        <div class="pills" style="justify-content:flex-start"><span class="pill">Fast heart</span><span class="pill sel">Fidgety legs</span><span class="pill">Heavy arms</span></div>
+                    </div>
+                    <div style="text-align:center">
+                        <svg viewBox="0 0 100 100" style="width:6.5em;margin:0 auto;display:block"><use href="#reggie"/></svg>
+                        <div style="font-weight:800;margin-top:.3em">Next: Cross-Crawl March</div>
+                        <div style="font-size:.85em;opacity:.7">2 minutes, at your desk</div>
+                    </div>
+                </div>
+            </div></div>
+            <div class="base"></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== CONCEPT: OWN IPAD ===================== -->
+<section class="page" id="p-concept-own-ipad" data-crumb="Each child's own iPad">
+    <p class="eyebrow">The concept, G4 and G5</p>
+    <h2>Every child sends their own result, from their own school iPad.</h2>
+    <div class="split2">
+        <div>
+            <p class="lead">From G4 the RegulateED app is on each child's school iPad. When the teacher opens an event, every iPad in the room asks the question at once. Each child answers privately and their result goes back to the event.</p>
+            <ol class="steps">
+                <li>The teacher opens the event from their own screen: After lunch, today, their class.</li>
+                <li>Every child's iPad shows the check-in.</li>
+                <li>Each child answers in private, does their reset, re-checks.</li>
+                <li>Each result is sent to the event, with no name attached.</li>
+                <li>The teacher sees the class split fill in, live.</li>
+            </ol>
+            <div class="card"><div class="tag">Why it matters</div><p>Every child is heard, nobody sees anybody else's answer, and the teacher does not have to stop the lesson to collect it.</p></div>
+            <div class="card"><div class="tag">Privacy</div><p>What travels is the answer and the event: colour, body spot, the reset and the re-check. Never a name, photo or voice. It is designed to stay inside student privacy law (FERPA for school records, COPPA for children's apps).</p></div>
+            <div class="card todo"><div class="tag">To decide</div><p>Whether results stay fully anonymous, or carry an anonymised school token (no name) so a school OT can follow one child's IEP or 504 goals over 30, 60 and 90 days, as the framework plans.</p></div>
+        </div>
+        <div class="mock">
+            <div class="devices">
+                <div class="mini"><div class="screen"><div class="dot" style="background:var(--g)"></div><small>Sent</small></div></div>
+                <div class="mini"><div class="screen"><div class="dot" style="background:var(--y)"></div><small>Sent</small></div></div>
+                <div class="mini"><div class="screen"><div class="dot" style="background:var(--g)"></div><small>Sent</small></div></div>
+                <div class="mini"><div class="screen"><div class="dot" style="background:#E7E1D8"></div><small>Answering</small></div></div>
+                <div class="mini"><div class="screen"><div class="dot" style="background:var(--r)"></div><small>Sent</small></div></div>
+                <div class="mini"><div class="screen"><div class="dot" style="background:var(--g)"></div><small>Sent</small></div></div>
+                <div class="mini"><div class="screen"><div class="dot" style="background:#E7E1D8"></div><small>Answering</small></div></div>
+                <div class="mini"><div class="screen"><div class="dot" style="background:var(--y)"></div><small>Sent</small></div></div>
+            </div>
+            <p style="text-align:center;font-size:.9em;opacity:.7;margin:.6em 0 0">Each child's own iPad, answered in private</p>
+            <div class="arrowdown">↓</div>
+            <div class="eventbox">After lunch · 11/18/2026 · Mr Diaz · G4<small>The event: answers arrive with no name</small></div>
+            <div class="arrowdown">↓</div>
+            <div class="tablet"><div class="screen">
+                <div class="top"><span>Teacher view</span><span>24 of 26 answered</span></div>
+                <div class="split"><i class="G" style="flex:14">14</i><i class="Y" style="flex:7">7</i><i class="R" style="flex:3">3</i></div>
+                <div class="foot">3 children in Red after lunch: a class reset is suggested</div>
+            </div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ===================== CONCEPT: EVENT ===================== -->
+<section class="page" id="p-concept-event" data-crumb="The event">
+    <p class="eyebrow">What every method shares</p>
+    <h2>Every answer belongs to an event.</h2>
+    <div class="event">
+        <div><div class="tag">Moment</div>Recess</div>
+        <div><div class="tag">Date</div>11/18/2026</div>
+        <div><div class="tag">Teacher</div>Ms Jones</div>
+        <div><div class="tag">Class</div>K1</div>
+    </div>
+    <div class="grid3">
+        <div class="card"><div class="tag">One question</div><p>"How are you feeling?" Green, Yellow or Red, the same three faces in every grade.</p></div>
+        <div class="card"><div class="tag">One event</div><p>The moment, date, teacher and class. All five methods save their answers to the event, so a K class and a G5 class line up the same way.</p></div>
+        <div class="card"><div class="tag">One pattern</div><p>Events line up over days and weeks, so the school sees when classes struggle, such as after recess.</p></div>
+    </div>
+    <p class="eyebrow" style="margin-top:14px">A week of events, Ms Jones K1 (example)</p>
+    <div class="card" id="week"></div>
+</section>
+
+<!-- ===================== CONCEPT: SPLIT ===================== -->
+<section class="page" id="p-concept-split" data-crumb="Split, not average">
+    <p class="eyebrow">From answers to a class result</p>
+    <h2>Show the split, not just the average.</h2>
+    <p class="lead">An average turns colours into a number (Green 2, Yellow 1, Red 0). It is handy for trends over weeks, but on its own it can hide the children who need help.</p>
+    <div class="grid2" style="margin-top:18px">
+        <div class="card"><div class="tag">Class X: average 1.0, "Yellow"</div><div class="split"><i class="G" style="flex:10">10 Green</i><i class="R" style="flex:10">10 Red</i></div><p style="margin-top:10px">Half the room is in Red. Nobody is actually Yellow.</p></div>
+        <div class="card"><div class="tag">Class Y: average 1.0, "Yellow"</div><div class="split"><i class="Y" style="flex:20">20 Yellow</i></div><p style="margin-top:10px">The whole room is a bit wiggly. A breathing reset will do.</p></div>
+    </div>
+    <p class="lead">Same average, very different rooms. So every method that counts children (2 to 5) shows the split of colours first, and any Red is always shown, never averaged away.</p>
+</section>
+
+<!-- ===================== CONCEPT: PRIVACY ===================== -->
+<section class="page" id="p-concept-privacy" data-crumb="Privacy">
+    <p class="eyebrow">Privacy by design</p>
+    <h2>No record about a named child, in any grade.</h2>
+    <div class="grid2">
+        <div class="card"><div class="tag">What we keep</div><ul><li>The event: moment, date, time, teacher, class</li><li>Which method collected it</li><li>The class colour, the counts, or each unnamed answer</li><li>From G4: the reset done and the re-check</li></ul></div>
+        <div class="card warn"><div class="tag">What we never keep</div><ul><li>Names, logins with names, or class rosters</li><li>Photos, video or voice</li><li>The time or order of a tap at the door</li><li>Anything a classmate could see on another child's screen</li></ul></div>
+    </div>
+    <div class="grid3">
+        <div class="card"><div class="tag">K to G3, methods 1 and 2</div><p>No child is ever recorded: the class colour or the counts only.</p></div>
+        <div class="card"><div class="tag">G2 to G4, method 3</div><p>Unnamed answers. The QR code carries the event, not the child.</p></div>
+        <div class="card todo"><div class="tag">G4 and G5, methods 4 and 5</div><p>Sent from each child's own iPad, no name. An anonymised token for IEP and 504 tracking is still to decide.</p></div>
+    </div>
+    <p class="note">The student privacy laws here are FERPA (school records) and COPPA (children's apps). To be confirmed by a privacy lawyer before any classroom pilot.</p>
+</section>
+
+<script>
+    // One source for the matrix, the grade pages and every chip row.
+    const METHODS = [
+        { id: 'group',  n: 1, name: 'Teacher-led group question', sub: 'The teacher asks the class and reads the room', grades: ['K', 'G1'] },
+        { id: 'entry',  n: 2, name: 'Event-based entry survey',   sub: "One tap each on the teacher's iPad at the door", grades: ['K', 'G1', 'G2', 'G3'] },
+        { id: 'qr',     n: 3, name: 'QR code survey',             sub: 'Anonymous web form, results by event', grades: ['G2', 'G3', 'G4'] },
+        { id: 'mobile', n: 4, name: 'RegulateED mobile app',      sub: "On each child's own school iPad", grades: ['G4', 'G5'] },
+        { id: 'web',    n: 5, name: 'RegulateED web app',         sub: 'The same app in a browser: Chromebook, smartboard', grades: ['G4', 'G5'] },
+    ];
+    const GRADES = [
+        { id: 'K', name: 'Kindergarten', age: '5 to 6',
+          who: 'Most children are just starting to read: letters, their own name, a few sight words. Big feelings arrive fast and show in the body before they find the words. Anything on a device needs an adult to start it.',
+          reading: 'Pre-readers', device: "The teacher's", answer: 'With the class',
+          can: ['Point to the face that matches how they feel', 'Answer out loud with the class', 'Tap one big picture button'],
+          cannot: ['Read a question or a password', 'Scan a QR code or log in', 'Look after a device of their own'],
+          why: { group: 'The teacher asks and reads the room: no reading, no device, under a minute.', entry: 'One tap on a face at the door: every child counts, still no reading.' },
+          whyNot: 'Not the QR form or the app yet: both need reading and a device in the child\'s hands.' },
+        { id: 'G1', name: 'Grade 1', age: '6 to 7',
+          who: 'Beginning readers: short words and simple sentences with pictures. Starting to name their feelings, still quick to copy a friend. Device skills vary a lot across one class.',
+          reading: 'Beginning readers', device: "The teacher's", answer: 'With the class',
+          can: ['Name a feeling with a picture to help', 'Tap a face at the door on their own', 'Take part in a class reset'],
+          cannot: ['Fill in a form reliably', 'Keep a login or a device of their own'],
+          why: { group: 'Still the fastest way to read a seated class.', entry: 'The door tap hears every child, including the quiet ones.' },
+          whyNot: 'The QR form waits until most of the class reads and can handle a shared device.' },
+        { id: 'G2', name: 'Grade 2', age: '7 to 8',
+          who: 'Reading simple sentences on their own. Can use a shared classroom iPad or Chromebook with a little help. Starting to link a body signal to a feeling: "my tummy feels tight".',
+          reading: 'Reads simple sentences', device: 'Shared classroom', answer: 'Each child, unnamed',
+          can: ['Answer on their own, privately', 'Scan a QR code on a shared device', 'Say where they feel it in their body'],
+          cannot: ['Run a full reset on a device without help'],
+          why: { entry: 'Still the quickest way to hear every child as they come back in.', qr: 'Each child answers alone on a shared device and adds where they feel it.' },
+          whyNot: 'No longer the group question: children can answer for themselves, so every voice counts, not the loudest. The app waits for G4.' },
+        { id: 'G3', name: 'Grade 3', age: '8 to 9',
+          who: 'Fluent readers, now reading to learn. Comfortable on classroom devices. Very aware of classmates and what they think, and some start to hide how they feel.',
+          reading: 'Fluent', device: 'Shared classroom', answer: 'Each child, unnamed',
+          can: ['Answer a short form quickly', 'Notice and name a body signal', 'Choose between two calm-down ideas'],
+          cannot: ['Always answer honestly in front of the line'],
+          why: { entry: 'Works for classes coming back from recess; G3 is its last year.', qr: 'The private option: the answer is on a screen, not seen by the line.' },
+          whyNot: 'The app waits for G4 and G5, when children can run a reset on their own.' },
+        { id: 'G4', name: 'Grade 4', age: '9 to 10',
+          who: 'Independent readers, often with a school iPad or Chromebook each. They can notice a body signal, name it and choose what helps. Privacy from classmates matters to them.',
+          reading: 'Independent', device: 'Their own school device', answer: 'Each child, privately',
+          can: ['Check in, do a 2-minute reset and re-check on their own', 'Choose a strategy that works for them', 'Use the app on an iPad or in a browser'],
+          cannot: ['Comfortably answer out loud or at the door in front of others'],
+          why: { qr: 'The light option for a school or class not on the app yet.', mobile: 'The full check-in, reset and re-check on their own iPad.', web: 'The same app in a browser, for Chromebook schools.' },
+          whyNot: 'Not the door survey: tapping in front of the line is no longer private enough at this age.' },
+        { id: 'G5', name: 'Grade 5', age: '10 to 11',
+          who: 'Ready to own their regulation: they check in, pick a reset and judge whether it worked. Privacy from peers matters most, and so does being trusted to do it themselves.',
+          reading: 'Independent', device: 'Their own school device', answer: 'Each child, privately',
+          can: ['Run the whole loop alone', 'Notice their own patterns over a week', 'Help a younger class as a reset buddy'],
+          cannot: [],
+          why: { mobile: 'The full loop on their own iPad.', web: 'The same app in a browser, whatever device the school has.' },
+          whyNot: 'Not the QR form: the app does everything the form does and adds the reset and the re-check.' },
+    ];
+    const ALL = GRADES.map(g => g.id);
+
+    const el = (h) => { const t = document.createElement('template'); t.innerHTML = h.trim(); return t.content.firstElementChild; };
+    const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+    // matrix
+    const mx = document.getElementById('matrix');
+    mx.innerHTML = '<thead><tr><th></th>' + GRADES.map(g => `<th><button onclick="go('grade/${g.id}')">${g.id}<small>age ${g.age}</small></button></th>`).join('') + '</tr></thead><tbody>' +
+        METHODS.map(m => `<tr><th><button onclick="go('method/${m.id}')"><b>${m.n}</b><span>${esc(m.name)}<small>${esc(m.sub)}</small></span></button></th>` +
+            ALL.map(g => m.grades.includes(g) ? `<td class="on"><a href="#method/${m.id}/${g}" aria-label="${esc(m.name)} in ${g}"></a></td>` : '<td></td>').join('') + '</tr>').join('') + '</tbody>';
+
+    // grade pages
+    const gp = document.getElementById('grade-pages');
+    for (const g of GRADES) {
+        const used = METHODS.filter(m => m.grades.includes(g.id));
+        gp.appendChild(el(`<section class="page" id="p-grade-${g.id}" data-crumb="Who the children are: ${g.name}">
+            <p class="eyebrow">Who the children are</p>
+            <h2>${g.name}, age ${g.age}</h2>
+            <div class="chips-row">${ALL.map(x => `<a class="gchip ${x === g.id ? 'on' : ''}" href="#grade/${x}">${x}</a>`).join('')}</div>
+            <p class="lead">${esc(g.who)}</p>
+            <div class="facts">
+                <div class="fact"><div class="tag">Reading</div><b>${g.reading}</b></div>
+                <div class="fact"><div class="tag">Device</div><b>${g.device}</b></div>
+                <div class="fact"><div class="tag">How they answer</div><b>${g.answer}</b></div>
+            </div>
+            <div class="grid2">
+                <div class="card"><div class="tag">They can</div><ul>${g.can.map(c => `<li>${esc(c)}</li>`).join('')}</ul></div>
+                ${g.cannot.length ? `<div class="card warn"><div class="tag">Not yet</div><ul>${g.cannot.map(c => `<li>${esc(c)}</li>`).join('')}</ul></div>` : '<div class="card"><div class="tag">Not yet</div><p>Nothing in the check-in is out of reach at this age.</p></div>'}
+            </div>
+            <p class="eyebrow" style="margin-top:12px">The methods ${g.id} uses, and why</p>
+            <div class="grid2">${used.map(m => `<a class="card mlink" href="#method/${m.id}/${g.id}"><b class="n">${m.n}</b><div><h3>${esc(m.name)}</h3><p>${esc(g.why[m.id])}</p></div></a>`).join('')}</div>
+            <div class="card"><div class="tag">And why not the others</div><p>${esc(g.whyNot)}</p></div>
+        </section>`));
+    }
+
+    // grade chips on method pages
+    for (const row of document.querySelectorAll('[data-grades]')) {
+        const m = METHODS.find(x => x.id === row.dataset.grades);
+        row.innerHTML = ALL.map(g => `<a class="gchip ${m.grades.includes(g) ? 'on' : ''}" data-g="${g}" href="#grade/${g}">${g}</a>`).join('') +
+            '<span class="note" style="align-self:center;margin-left:6px">Tap a grade to meet those children</span>';
+    }
+
+    // the week on the event page (example data)
+    const week = [['Arrival', [[16,4,1],[17,4,0],[15,5,1],[16,5,0],[14,6,1]]], ['Recess', [[9,8,4],[10,7,4],[13,6,2],[8,9,4],[9,7,5]]], ['Lunch', [[13,7,1],[14,6,1],[12,8,1],[15,6,0],[12,7,2]]]];
+    document.getElementById('week').innerHTML = '<div style="display:grid;grid-template-columns:70px repeat(5,1fr);gap:8px;align-items:center;font-size:14px"><span></span>' +
+        ['Mon','Tue','Wed','Thu','Fri'].map(d => `<b style="text-align:center;opacity:.6">${d}</b>`).join('') +
+        week.map(([lab, days]) => `<b>${lab}</b>` + days.map(([g, y, r]) => `<div class="split" style="height:28px;${lab === 'Recess' ? 'outline:3px solid var(--coral);outline-offset:2px' : ''}"><i class="G" style="flex:${g}"></i><i class="Y" style="flex:${y}"></i>${r ? `<i class="R" style="flex:${r}"></i>` : ''}</div>`).join('')).join('') +
+        '</div><p style="margin:12px 0 0">The class comes back from recess unsettled most days: the moment to plan a reset for.</p>';
+
+    // back buttons on every page but the hub
+    for (const p of document.querySelectorAll('.page:not(#p-hub)')) {
+        p.appendChild(el('<div class="backrow"><button class="main" onclick="go(\'\')">Back to the matrix</button><button onclick="history.back()">Back one step</button></div>'));
+    }
+
+    function go(route) { location.hash = route; if (!route) show(); }
+    function show() {
+        const parts = location.hash.replace(/^#\/?/, '').split('/');
+        const id = parts[0] ? `p-${parts[0]}-${parts[1]}` : 'p-hub';
+        const page = document.getElementById(id) || document.getElementById('p-hub');
+        document.querySelectorAll('.page.on').forEach(p => p.classList.remove('on'));
+        page.classList.add('on');
+        document.body.classList.toggle('at-hub', page.id === 'p-hub');
+        document.getElementById('crumb').textContent = page.dataset.crumb || 'Data collection, K to 5';
+        page.querySelectorAll('.gchip.focus').forEach(c => c.classList.remove('focus'));
+        if (parts[0] === 'method' && parts[2]) { const c = page.querySelector(`.gchip[data-g="${parts[2]}"]`); if (c) c.classList.add('focus'); }
+        window.scrollTo(0, 0);
+    }
+    // The review layer names each comment's place by the page it sits on.
+    window.reviewRouteName = (r) => { const p = r.split('/'); const pg = document.getElementById(p[0] ? 'p-' + p[0] + '-' + p[1] : 'p-hub'); return pg ? (pg.dataset.crumb || 'The matrix') : r; };
+    addEventListener('hashchange', show);
+    show();
+</script>
+<script>window.REVIEW = {"page":"data-collection","title":"Data collection, K to 5","api":"https://regulateed-review.sashook.com","passHash":"1a55f65e93387e97bce9768422378405e8daf8cdd3e270528c7ccc76f24e32a3"};</script>
+<script src="review.js"></script>
+</body>
+</html>
