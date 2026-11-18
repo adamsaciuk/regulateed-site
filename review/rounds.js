@@ -10,7 +10,6 @@
     let tracker = { sprint: '2', sprints: [], categories: [], legacy: {} };
     let tab = 'sprint';
     let openCat = null;
-    let showHistory = false;
     let linkTarget = null;
     let firstLoad = true;
     let cardShownFor = '';
@@ -96,18 +95,32 @@
         .rv-file select.need { border-color: #E0524B; box-shadow: 0 0 0 3px rgba(224,82,75,.15); }
         .rv-file .rq { font-size: 13px; font-weight: 700; display: flex; gap: 6px; align-items: center; }
         .rv-file .rq input { width: 17px; height: 17px; accent-color: #8A6FB0; }
-        .rv-sp { display: flex; align-items: center; gap: 8px; font-size: 20px; margin: 2px 0 2px; }
-        .rv-cn { border: 1px solid #E9E1D6; border-left: 5px solid #2A9D8F; border-radius: 12px; background: #fff; margin-bottom: 8px; }
-        .rv-cn.demo { border-left-color: #8A97A1; }
-        .rv-cnh, .rv-tnh { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; width: 100%; text-align: left; font: inherit; background: none; border: 0; padding: 10px 12px; cursor: pointer; color: #1F3A4D; }
-        .rv-cnh b { font-size: 16px; } .rv-cnh .meta { display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; font-size: 11.5px; }
-        .rv-tw, .tw { width: 14px; color: #2A9D8F; font-weight: 800; }
-        .rv-ci { padding: 0 10px 10px 22px; }
-        .rv-roll { background: #F7FBFA; border: 1px solid #CBE9E3; border-radius: 10px; padding: 6px 10px; margin-bottom: 8px; font-size: 13.5px; }
-        .rv-rolltitle { font-size: 12px; font-weight: 800; color: #1E7268; text-transform: uppercase; letter-spacing: .8px; margin: 2px 0; }
-        .rv-roll .rv-sec { margin: 6px 0 2px; font-size: 11px; } .rv-roll ul { margin: 0; padding-left: 18px; }
-        .rv-tn { border-left: 2px solid #E9E1D6; margin: 0 0 6px; } .rv-tn.open { border-left-color: #F2845C; }
-        .rv-tnh { padding: 7px 8px; font-size: 14px; } .rv-tnh b { font-size: 14.5px; } .rv-tnh .by { flex-basis: 100%; padding-left: 20px; font-size: 12px; color: #4A5E6D; }
+        /* The sprint tree (Adam): one line per row, levels indented on a guide line, a clear box on every
+           row that expands and an arrow on every row that opens a thread. */
+        .rv-sp { display: flex; align-items: center; gap: 8px; font-size: 17px; margin: 0 0 8px; }
+        .rv-sp .rv-n { margin-left: auto; font-size: 12px; }
+        .rv-cn { margin-bottom: 4px; }
+        .rv-cnh { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; font: inherit; font-size: 15px; font-weight: 800; color: #1F3A4D; background: #fff; border: 1px solid #E9E1D6; border-radius: 10px; padding: 5px 10px 5px 5px; cursor: pointer; white-space: nowrap; }
+        .rv-cnh:hover { border-color: #2A9D8F; background: #F7FBFA; }
+        .rv-cn.open > .rv-cnh { border-color: #2A9D8F; }
+        .rv-cn.demo > .rv-cnh { border-style: dashed; }
+        .rv-cn.hist > .rv-cnh { color: #5F6E78; background: #F7F1E8; }
+        .rv-tw { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; background: #DDF1EC; color: #1E7268; font-size: 11px; transition: transform .15s; }
+        .rv-cn.open > .rv-cnh .rv-tw, .rv-sumn.open > .rv-sumh .rv-tw { transform: rotate(90deg); }
+        .rv-lbl { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+        .rv-cnh .meta { display: flex; gap: 4px; flex: none; font-size: 11.5px; }
+        .rv-ci { margin: 3px 0 6px 15px; padding-left: 8px; border-left: 2px solid #E3DACD; }
+        .rv-tnh, .rv-sumh { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; font: inherit; font-size: 14px; color: #1F3A4D; background: none; border: 0; border-radius: 8px; padding: 5px 8px; cursor: pointer; white-space: nowrap; }
+        .rv-tnh:hover, .rv-sumh:hover { background: #EEF8F6; }
+        .rv-tnh .ic { flex: none; width: 9px; height: 9px; border-radius: 50%; background: #F2845C; }
+        .rv-tnh .ic.res { background: #2A9D8F; } .rv-tnh .ic.na { background: #A3AEB6; } .rv-tnh .ic.rq { background: #8A6FB0; }
+        .rv-tnh.ended .rv-lbl { color: #6B7C88; }
+        .rv-tnh .rv-n { flex: none; font-size: 11px; }
+        .rv-tnh .go { flex: none; color: #2A9D8F; font-weight: 800; font-size: 17px; line-height: 1; }
+        .rv-tn.sel > .rv-tnh { background: #DDF1EC; box-shadow: inset 3px 0 0 #2A9D8F; }
+        .rv-sumh { font-weight: 800; color: #1E7268; padding-left: 4px; }
+        .rv-sumh .rv-tw { width: 18px; height: 18px; font-size: 9px; }
+        .rv-sumb { padding: 0 8px 6px 30px; font-size: 13.5px; line-height: 1.4; } .rv-sumb ul { margin: 0; padding-left: 16px; } .rv-sumb li { margin: 3px 0; }
         .rv-talk { padding: 2px 6px 8px 18px; display: flex; flex-direction: column; gap: 6px; }
         .rv-talk .rv-msg { max-width: 100%; } .rv-talk .rv-shot { width: 100%; border-radius: 8px; margin-top: 6px; cursor: zoom-in; }
         .rv-state.ok { background: #DDF1EC; }
@@ -118,9 +131,8 @@
         #rv-detail header b { font-size: 17px; } #rv-detail header .x { font: inherit; font-size: 24px; line-height: 1; background: none; border: 0; color: #fff; cursor: pointer; }
         #rv-detail .rv-dbody { overflow: auto; flex: 1; padding: 10px 14px; } #rv-detail .rv-talk { padding: 0; }
         #rv-detail .rv-dfoot { padding: 6px 14px 12px; border-top: 1px solid #E9E1D6; } #rv-detail .rv-compose { margin-top: 6px; }
-        .rv-tn.sel { border-left-color: #2A9D8F; background: #EEF8F6; border-radius: 0 8px 8px 0; }
         @media (max-width: 900px) { #rv-detail { right: 8px; left: 8px; width: auto; z-index: 9060; border-radius: 0 0 16px 16px; } }
-        .rv-hist { font: inherit; font-weight: 800; font-size: 14px; color: #4A5E6D; background: #F7F1E8; border: 1px solid #E9E1D6; border-radius: 12px; padding: 9px 12px; width: 100%; text-align: left; cursor: pointer; margin-top: 14px; }
+        .rv-cn.hist { margin-top: 12px; }
     `;
 
     // ------------------------------------------------------------------ helpers
@@ -303,6 +315,7 @@
     // category's titled threads, then the thread's discussion and answers, all in one tree. A pin on the
     // page opens its thread here, under its category.
     const openCats = new Set();
+    const openSums = new Set();
     let focusId = null;
     const titleOf = (c) => c.title || plain(c.text).split(/[.?!\n]/)[0].slice(0, 60) || 'Untitled thread';
     const endThread = (c, resolved, outcome) => async () => {
@@ -321,9 +334,13 @@
         const [st, k] = stateOf(c);
         const fresh = RV.unreadIn(c);
         const node = h('div', { class: 'rv-tn' + (detailId === c.id ? ' sel' : ''), 'data-thread': c.id });
-        const head = h('button', { class: 'rv-tnh', type: 'button' }, h('span', { class: 'tw' }, '•'), h('b', {}, titleOf(c)),
-            h('span', { class: 'rv-n ' + k }, st), fresh ? h('span', { class: 'rv-new' }, `${fresh} new`) : null,
-            h('span', { class: 'by' }, `${c.name} · ${RV.repliesOf(c).length} repl${RV.repliesOf(c).length === 1 ? 'y' : 'ies'}`));
+        const n = RV.repliesOf(c).length;
+        // One line: the state's dot, the title, a pill only when it needs someone, and the arrow that opens it.
+        const pill = st === 'Iris asked you' ? 'Iris asked' : k === 'rq' ? 'Research' : '';
+        const head = h('button', { class: 'rv-tnh' + (c.resolved ? ' ended' : ''), type: 'button', title: `${titleOf(c)}\n${st} · ${c.name} · ${n} repl${n === 1 ? 'y' : 'ies'}` },
+            h('span', { class: 'ic ' + k }), h('span', { class: 'rv-lbl' }, titleOf(c)),
+            pill ? h('span', { class: 'rv-n ' + k }, pill) : null, fresh ? h('span', { class: 'rv-new' }, `${fresh} new`) : null,
+            h('span', { class: 'go' }, '›'));
         head.addEventListener('click', () => { if (detailId === c.id) closeDetail(); else showDetail(c.id); });
         node.append(head);
         return node;
@@ -383,42 +400,54 @@
         const n = counts(list);
         const fresh = list.reduce((a, c) => a + RV.unreadIn(c), 0);
         const open = openCats.has(ct.id);
-        const node = h('div', { class: 'rv-cn' + (ct.demo ? ' demo' : '') + (open ? ' open' : '') });
-        const head = h('button', { class: 'rv-cnh', type: 'button' }, h('span', { class: 'tw' }, open ? '▾' : '▸'), h('b', {}, ct.title),
-            h('span', { class: 'meta' }, h('span', { class: 'rv-n open' }, `${n.open + (n.rq || 0)} open`), h('span', { class: 'rv-n res' }, `${n.res} resolved`), n.na ? h('span', { class: 'rv-n na' }, `${n.na} no action`) : null, fresh ? h('span', { class: 'rv-new' }, `${fresh} new`) : null));
+        const node = h('div', { class: 'rv-cn' + (ct.demo ? ' demo' : '') + (ct.hist ? ' hist' : '') + (open ? ' open' : '') });
+        const done = n.res + (n.na || 0);
+        const busy = n.open + (n.rq || 0);
+        // Counts only when there is something to count: open, closed, unread, else the plain total.
+        const head = h('button', { class: 'rv-cnh', type: 'button', title: ct.purpose || ct.title }, h('span', { class: 'rv-tw' }, '▶'), h('span', { class: 'rv-lbl' }, ct.title),
+            h('span', { class: 'meta' }, busy ? h('span', { class: 'rv-n open' }, `${busy} open`) : null, done ? h('span', { class: 'rv-n res' }, `${done} closed`) : null,
+                !busy && !done ? h('span', { class: 'rv-n' }, '0') : null, fresh ? h('span', { class: 'rv-new' }, `${fresh} new`) : null));
         head.addEventListener('click', () => { if (open) openCats.delete(ct.id); else openCats.add(ct.id); paint(); });
         node.append(head);
         if (!open) return node;
-        const inner = h('div', { class: 'rv-ci' }, h('p', { class: 'rv-hint' }, ct.purpose || ''));
+        const inner = h('div', { class: 'rv-ci' });
+        // The category's summary is one folded row of its own, opened only when wanted.
         const sum = ct.summary || {};
-        const part = (title, items) => (items && items.length ? h('div', { class: 'rv-sumpart' }, h('div', { class: 'rv-sec' }, title), h('ul', { class: 'rv-sum' }, ...items.map((x) => h('li', {}, ...chips(x))))) : null);
-        const parts = [part('Actions', sum.actions), part('Findings', sum.findings), part('Agreements', sum.agreements)].filter(Boolean);
-        if (parts.length || (ct.research || []).length) inner.append(h('div', { class: 'rv-roll' }, h('div', { class: 'rv-rolltitle' }, 'What this category has so far'), ...parts,
-            (ct.research || []).length ? h('div', {}, h('div', { class: 'rv-sec' }, 'Research'), ...ct.research.map((r) => chipFor('research', r))) : null));
+        const items = [['Action', sum.actions], ['Finding', sum.findings], ['Agreement', sum.agreements]].flatMap(([k, xs]) => (xs || []).map((x) => h('li', {}, h('b', {}, k + ': '), ...chips(x))));
+        const research = (ct.research || []).map((r) => chipFor('research', r));
+        if (items.length || research.length) {
+            const sumOpen = openSums.has(ct.id);
+            const sn = h('div', { class: 'rv-sumn' + (sumOpen ? ' open' : '') });
+            const sh = h('button', { class: 'rv-sumh', type: 'button' }, h('span', { class: 'rv-tw' }, '▶'), h('span', { class: 'rv-lbl' }, 'Summary'), h('span', { class: 'rv-n' }, `${items.length + research.length}`));
+            sh.addEventListener('click', () => { if (sumOpen) openSums.delete(ct.id); else openSums.add(ct.id); paint(); });
+            sn.append(sh);
+            if (sumOpen) sn.append(h('div', { class: 'rv-sumb' }, items.length ? h('ul', {}, ...items) : null, research.length ? h('div', {}, ...research) : null));
+            inner.append(sn);
+        }
         const sorted = list.slice().sort((a, b) => Number(a.resolved) - Number(b.resolved) || a.created.localeCompare(b.created));
         for (const c of sorted) inner.append(threadNode(c));
-        if (!list.length) inner.append(h('p', { class: 'rv-hint' }, 'No threads yet.'));
-        inner.append(h('p', { class: 'rv-hint', style: 'margin-top:8px' }, 'To add a thread here: tap Add tag anywhere on the site, tap the thing you mean, choose this category and write your comment.'));
-        node.append(inner);
+        if (inner.childNodes.length) node.append(inner);
         return node;
     };
     const paintSprint = () => {
         body.replaceChildren();
         const sp = (tracker.sprints || []).find((x) => String(x.n) === current()) || { title: `Sprint ${current()}`, note: '' };
-        body.append(h('div', { class: 'rv-sp' }, h('b', {}, sp.title), h('span', { class: 'rv-pill ok' }, 'Open')), h('p', { class: 'rv-hint' }, sp.note || '', ' ', chipFor('manual', '', 'How this works')));
-        // The sprint can only close when every thread is Resolved or No action (Adam).
+        // One line: the sprint, and how many threads still stand between it and closing (Adam: no note text).
         const stillOpen = threadsIn(current()).filter((c) => !c.resolved).length;
-        body.append(h('div', { class: 'rv-state' + (stillOpen ? ' asked' : ' ok') }, stillOpen ? `${stillOpen} thread${stillOpen === 1 ? '' : 's'} still open. The sprint closes when every thread is Resolved or No action; anyone can reply in any thread.` : 'Every thread is ended: the sprint is ready to close.'));
+        body.append(h('div', { class: 'rv-sp', title: sp.note || '' }, h('b', {}, sp.title), h('span', { class: 'rv-pill ok' }, 'Open'),
+            stillOpen ? h('span', { class: 'rv-n open' }, `${stillOpen} open`) : h('span', { class: 'rv-n res' }, 'Ready to close')));
         for (const ct of liveCats()) body.append(categoryNode(ct, threadsIn(current(), ct.id)));
         const loose = threadsIn(current(), null);
         if (loose.length) body.append(categoryNode({ id: '_loose', title: 'Not filed yet', purpose: 'Iris attaches each of these to a category.' }, loose));
         for (const old of (tracker.sprints || []).filter((x) => String(x.n) !== current())) {
-            const t = h('button', { class: 'rv-hist', type: 'button' }, `${showHistory ? '▾' : '▸'} ${old.title} · history`);
-            t.addEventListener('click', () => { showHistory = !showHistory; paint(); });
-            body.append(t);
-            if (!showHistory) continue;
-            body.append(h('p', { class: 'rv-hint' }, old.note || ''), h('div', {}, chipFor('v1', '', 'Workflow as it was'), ' ', h('a', { class: 'rv-chip', href: links()['data-collection@1'] || 'data-collection.html' }, 'Data collection as it was')));
-            for (const c of threadsIn(String(old.n))) body.append(threadNode(c));
+            const id = '_hist' + old.n;
+            const node = categoryNode({ id, hist: true, title: `${old.title} · history`, purpose: old.note || '' }, threadsIn(String(old.n)));
+            if (openCats.has(id)) {
+                const frozen = h('div', { style: 'padding:4px 0' }, chipFor('v1', '', 'Workflow as it was'), h('a', { class: 'rv-chip', href: links()['data-collection@1'] || 'data-collection.html' }, 'Data collection as it was'));
+                const inner = node.querySelector('.rv-ci');
+                if (inner) inner.prepend(frozen); else node.append(h('div', { class: 'rv-ci' }, frozen));
+            }
+            body.append(node);
         }
         if (focusId) {
             const el = body.querySelector(`[data-thread="${focusId}"]`);
@@ -430,8 +459,7 @@
     const focusThread = (id) => {
         const c = comments().find((x) => x.id === id);
         if (!c) return;
-        openCats.add(filed(c) ? c.category : '_loose');
-        if (sprintOf(c) !== current()) showHistory = true;
+        openCats.add(sprintOf(c) !== current() ? '_hist' + sprintOf(c) : filed(c) ? c.category : '_loose');
         detailId = id;
         detailSig = '';
         RV.markSeen(id);
@@ -480,7 +508,6 @@
     };
     const paintIris = () => {
         body.replaceChildren();
-        body.append(h('p', { class: 'rv-hint' }, 'Your general chat with Iris, for anything outside a thread: the plan, the research, how to use the review. Iris checks every 10 minutes while a work session is open, otherwise at the next one. Adam can read this chat too. ', chipFor('manual')));
         const msgs = me() ? chatOf(me()) : [];
         body.append(h('div', { class: 'rv-msgs' }, ...msgs.map((m) => h('div', { class: 'rv-msg' + (m.role === 'iris' ? ' iris' : RV.mine(m) ? ' me' : '') },
             h('div', { class: 'who' }, m.role === 'iris' ? 'Iris' : m.name, h('time', {}, when(m.created))), ...chips(m.text)))));
