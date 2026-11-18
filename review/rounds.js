@@ -182,7 +182,8 @@
     };
     const spotOf = (arg) => {
         const [route, path, fx, fy, page] = String(arg || '').split('~');
-        return { route: route || '', page: page || '', anchor: path ? { path, fx: Number(fx) || 0, fy: Number(fy) || 0 } : null };
+        // A tap on the page background has no element path: it anchors to the page itself.
+        return { route: route || '', page: page || '', anchor: { path: path || 'body', fx: Number(fx) || 0, fy: Number(fy) || 0 } };
     };
     const openThreadAnywhere = (id) => {
         if (RV.openThread(id)) return;
@@ -605,7 +606,7 @@
                 const fx = r.width ? Math.min(1, Math.max(0, (ev.clientX - r.left) / r.width)).toFixed(3) : 0;
                 const fy = r.height ? Math.min(1, Math.max(0, (ev.clientY - r.top) / r.height)).toFixed(3) : 0;
                 const area = linkTarget;
-                area.value = (area.value ? area.value.replace(/\s*$/, ' ') : '') + `[[spot:${RV.route()}~${RV.pathOf(target)}~${fx}~${fy}~${RV.CFG.page || ''}]] `;
+                area.value = (area.value ? area.value.replace(/\s*$/, ' ') : '') + `[[spot:${RV.route()}~${RV.pathOf(target) || 'body'}~${fx}~${fy}~${RV.CFG.page || ''}]] `;
                 stopLinking();
                 area.focus();
             }, true);
