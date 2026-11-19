@@ -23,6 +23,10 @@
         #rv-panel header .rv-tabs .dot { display: inline-block; min-width: 8px; height: 8px; border-radius: 50%; background: #E0524B; margin-left: 5px; vertical-align: 2px; }
         #rv-panel.wide { width: min(460px, 96vw); }
         .rv-rbody { overflow: auto; padding: 10px 14px 16px; flex: 1; }
+        /* Iris Chat: the messages scroll, the box to type in stays at the bottom (Adam, 2026-11-19) */
+        .rv-rbody[data-shows="iris"] { display: flex; flex-direction: column; overflow: hidden; padding: 0; min-height: 0; }
+        .rv-rbody[data-shows="iris"] > .rv-msgs { flex: 1; min-height: 0; overflow: auto; padding: 10px 14px; }
+        .rv-rbody[data-shows="iris"] > .rv-compose { flex: none; margin: 0; padding: 8px 14px 14px; border-top: 1px solid #E9E1D6; }
         .rv-chip { display: inline-flex; align-items: center; gap: 4px; font: inherit; font-size: 12.5px; font-weight: 800; line-height: 1.2; color: #1F3A4D; background: #EEF8F6; border: 1px solid #BFE3DC; border-radius: 20px; padding: 3px 9px; margin: 2px 2px 2px 0; cursor: pointer; text-decoration: none; vertical-align: 1px; }
         .rv-chip:hover { background: #DDF1EC; }
         .rv-chip.ck-item { background: #FFF4EC; border-color: #F8D5C2; }
@@ -528,6 +532,8 @@
         body.append(h('div', { class: 'rv-msgs' }, ...msgs.map((m) => h('div', { class: 'rv-msg' + (m.role === 'iris' ? ' iris' : RV.mine(m) ? ' me' : '') },
             h('div', { class: 'who' }, m.role === 'iris' ? 'Iris' : m.name, m.team ? ' · to the team' : '', h('time', {}, when(m.created))), ...chips(m.text)))));
         body.append(composer('Message Iris', (name, text, team) => RV.api('POST', '/api/review/comments', { page: 'chat', version: '1', route: name.trim().toLowerCase(), anchor: null, parent: null, name, text, team })));
+        const list = body.firstElementChild;
+        requestAnimationFrame(() => { list.scrollTop = list.scrollHeight; });
         markSeen(CHAT_SEEN, 'chat');
         document.getElementById('rv-card')?.remove();
         setTimeout(() => irisBtn.classList.remove('fresh'), 0);
