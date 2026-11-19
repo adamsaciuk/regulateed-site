@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>RegulateED product workflow, Sprint 1</title>
+<title>RegulateED product workflow, Sprint 2</title>
 <style>
     @font-face { font-family: "Open Sans"; font-weight: 400; src: url("../fonts/open-sans-latin-400.woff2") format("woff2"); }
     @font-face { font-family: "Open Sans"; font-weight: 600; src: url("../fonts/open-sans-latin-600.woff2") format("woff2"); }
@@ -250,9 +250,11 @@
     .spill i { width: 10px; height: 10px; border-radius: 50%; }
 
     /* ---------- product workflow (v1) ---------- */
-    .trail { flex: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; min-width: 0; font-size: 14px; font-weight: 700; }
+    /* The trail (Sprint 1, UI and brand): one pill on the right, beside Reggie, in the page-title font; every part tappable. */
+    .trail { flex: 0 1 auto; margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; min-width: 0; font-size: 16px; font-weight: 800; letter-spacing: -.2px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); border-radius: 40px; padding: 7px 18px; }
     .trail a { color: rgba(255,255,255,.78); text-decoration: none; white-space: nowrap; }
     .trail a:hover { color: #fff; text-decoration: underline; }
+    .trail a.here { color: #fff; overflow: hidden; text-overflow: ellipsis; max-width: 46vw; }
     .trail span { color: rgba(255,255,255,.4); }
     .trail b { color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 46vw; }
     .spine { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 26px; margin: 26px 0 10px; position: relative; }
@@ -305,9 +307,37 @@
     .vrow .v { font-weight: 800; font-size: 18px; }
     .vrow .cur { background: var(--teal); color: #fff; border-radius: 30px; padding: 3px 10px; font-size: 12px; font-weight: 800; }
     .vrow .arc { background: #EAE3D8; color: #6B6257; border-radius: 30px; padding: 3px 10px; font-size: 12px; font-weight: 800; }
-    .topreggie { flex: none; width: 42px; height: 42px; overflow: visible; margin-left: auto; animation: topbreathe 4s ease-in-out infinite; transform-origin: 50% 85%; }
+    .topreggie { flex: none; width: 42px; height: 42px; overflow: visible; margin-left: 0; animation: topbreathe 4s ease-in-out infinite; transform-origin: 50% 85%; }
     @keyframes topbreathe { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-2px) scale(1.05); } }
     @media (prefers-reduced-motion: reduce) { .topreggie { animation: none; } }
+
+    /* ---------- version 3: Sprint 1 outcomes and the Sprint 2 demo ---------- */
+    /* The Split room dot (Sprint 1, UI and brand): hard-edged Red and Green, no blend, a thin dark outline, a little bigger. */
+    .spill i.sdot { width: 13px; height: 13px; box-shadow: 0 0 0 1.5px var(--slate); }
+    .from { font-size: 12px; font-weight: 700; letter-spacing: .4px; color: #6B7C88; margin: 6px 0 0; }
+    .from::before { content: "↺ "; color: var(--coral); }
+    .tread { display: flex; flex-wrap: wrap; gap: .4em; align-items: center; margin-top: .6em; }
+    .tread .lab { font-size: .72em; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--teal); margin-right: .2em; }
+    .tread .pill i { display: inline-block; width: .8em; height: .8em; border-radius: 50%; vertical-align: -.08em; margin-right: .3em; }
+    .moment { display: grid; grid-template-columns: 56px repeat(6, minmax(0, 1fr)); gap: 6px 8px; align-items: center; font-size: 13px; margin-top: 10px; }
+    .moment .split { height: 22px; border-radius: 6px; font-size: 11px; }
+    .moment b { opacity: .7; }
+    .ba { display: grid; grid-template-columns: 56px 1fr; gap: 6px 10px; align-items: center; font-size: 14px; }
+    .ba .split { height: 30px; font-size: 13px; }
+    .stagehead.sd { background: var(--mint); color: var(--slate); }
+    .stagehead.sd h2 { color: var(--slate); }
+    .sprintblock { margin: 6px 0 28px; }
+    .demobtn { display: flex; align-items: center; gap: 18px; width: 100%; text-align: left; background: var(--slate); color: #fff; border: 0; border-radius: 20px; padding: 22px 26px; cursor: pointer; box-shadow: 0 8px 24px rgba(31,58,77,.14); transition: transform .15s; }
+    .demobtn:hover { transform: translateY(-2px); }
+    .demobtn svg { flex: none; width: 54px; height: 54px; --b: var(--mint); --a: #F7A27F; --k: var(--slate); }
+    .demobtn b { display: block; font-size: clamp(21px, 2.6vw, 27px); line-height: 1.2; }
+    .demobtn span { display: block; font-size: 15px; opacity: .8; margin-top: 4px; }
+    .demobtn::after { content: "→"; margin-left: auto; font-size: 28px; font-weight: 800; color: var(--mint); }
+    .dpart { border-left: 4px solid var(--teal); padding: 2px 0 2px 12px; margin: 10px 0 0; }
+    .dpart.open { border-left-color: var(--coral); }
+    .dpart .tag { margin-bottom: 2px; }
+    .dpart.open .tag { color: var(--coral); }
+    .dpart p { margin: 0; }
 </style>
 <meta name="robots" content="noindex, nofollow">
 <style>html.rv-locked body { visibility: hidden; }</style>
@@ -370,22 +400,28 @@
 
 <!-- ===================== HOME: THE WORKFLOW ===================== -->
 <section class="page" id="p-hub" data-crumb="Workflow">
-    <p class="eyebrow">RegulateED product workflow · Sprint 1 · 18 November 2026</p>
+    <p class="eyebrow">RegulateED product workflow · Sprint 2 · 19 November 2026</p>
     <h1>From a feeling in the room to proof of what helps.</h1>
     <p class="lead">Four steps, run again at every check-in. Data collection hears the class, insights say what it means, an activity tries to shift the room, and trends show whether it worked. Tap a step to drill in; its branches open inside.</p>
     <div class="spine">
         <button class="stage" onclick="go('collect')"><div class="top s1"><div class="n">Step 1</div><b>Data collection</b></div><p>Ask "How are you feeling?" the way each age can answer, and tie every answer to an event.</p><div class="inside">Methods · grades · own iPad</div></button>
         <button class="stage" onclick="go('insights')"><div class="top s2"><div class="n">Step 2</div><b>Insights analysis</b></div><p>Turn events into meaning: this moment against the class's usual, and the pattern across the week.</p><div class="inside">The event · the week · split · from insight to activity</div></button>
         <button class="stage" onclick="go('activities')"><div class="top s3"><div class="n">Step 3</div><b>Activity execution</b></div><p>From the room's result to the activities that can shift it, each with how it is run and the science behind it.</p><div class="inside">5 room results · 12 activity families · the evidence</div></button>
-        <button class="stage" onclick="go('trends')"><div class="top s4"><div class="n">Step 4</div><b>Trends and effectiveness</b></div><p>Did the room shift as expected? Over weeks, which activities work for this class at this moment?</p><div class="inside">Expected against actual · what works · over time</div></button>
+        <button class="stage" onclick="go('trends')"><div class="top s4"><div class="n">Step 4</div><b>Trends and effectiveness</b></div><p>Did the room shift toward Green? Over weeks, which activities work for this class at this moment?</p><div class="inside">Before against after · what works · over time</div></button>
     </div>
     <p class="loopback">↺ The next check-in starts the loop again, and every turn adds to the evidence.</p>
+    <!-- Sprint 2: the demo (Adam: "lets add a tab in Sprint 2 that helps define exactly what we want to aim for in the demo") -->
+    <div class="sprintblock" id="hub-sprint2">
+        <div class="stagehead sd"><div class="n">Sprint 2 · now</div><h2>The demo</h2><p>The door into the demo environment, where the prototype is built. Sprint 2 works on its information and plan page; Sprint 3 builds the rooms.</p></div>
+        <button class="demobtn" id="hub-demo" onclick="go('demo')"><svg class="sym" viewBox="0 0 100 100" aria-hidden="true"><use href="#reggie"/></svg><div><b>Enter the demo environment</b><span>Start with the information and plan page: tag any block to shape the demo</span></div></button>
+    </div>
     <p class="eyebrow">Foundations, under every step</p>
     <div class="tiles">
         <button class="tile hero" onclick="go('foundations/data')"><b>The event record</b><span>What every check-in, activity and re-check stores</span></button>
         <button class="tile" onclick="go('foundations/privacy')"><b>Privacy</b><span>What is kept, and what never is</span></button>
         <button class="tile" onclick="go('foundations/evidence')"><b>How we grade evidence</b><span>Strong to weak or contested</span></button>
         <button class="tile" onclick="go('foundations/frameworks')"><b>The frameworks, honestly</b><span>Polyvagal, sensory integration, Zones, interoception</span></button>
+        <button class="tile" onclick="go('foundations/changes')"><b>What changed after Sprint 1</b><span>Every Sprint 1 outcome, and where it now lives</span></button>
         <button class="tile" onclick="go('foundations/versions')"><b>Sprints and comments</b><span>How we work in sprints, and how comments survive a change</span></button>
         <button class="tile" onclick="go('foundations/research')"><b>Research for the team</b><span>Answers to the questions asked in review</span></button>
         <a class="tile" href="manual.html" style="text-decoration:none;color:inherit"><b>How we review</b><span>The review manual: sprints, threads, the tracker, Iris Chat</span></a>
@@ -427,38 +463,68 @@
         <div class="card"><div class="tag">What the evidence says, in one line</div><p>Movement breaks and slow breathing have the best evidence; heavy work, Brain Gym style moves and weighted vests the weakest. Almost nothing has been tested on a class that is already Red, within minutes: RegulateED's own re-checks could be the first.</p></div>
         <div class="card"><div class="tag">Teacher aids, for every activity</div><ul><li>A short script to read aloud, with a story for K to 2</li><li>A visual and a 2-minute timer on the teacher's screen</li><li>Grade adaptations and the cautions</li><li>A re-check prompt when it ends</li></ul></div>
     </div>
+    <p class="eyebrow" style="margin-top:26px">3. How the options are offered</p>
+    <div class="split2" id="act-offer">
+        <div>
+            <div class="card" id="act-order"><div class="tag">The order of the options</div><ul><li>After the check-in the teacher sees 2 or 3 activities to choose from, then a re-check at the end.</li><li>The best-supported activity comes first, with 2 or 3 more behind it to "mix it up", each showing its evidence grade.</li><li>Each choice comes from a different activity family, and each is the strongest in its family.</li><li>The top two rotate, so the class does not tire of one.</li><li>The order follows what works for this class, from its own re-checks, and updates every Monday morning. One that works stays on top.</li><li>A teacher can pin an activity. A pinned one that is not working gets a note beside it.</li></ul><p class="from">From Sprint 1 · Insights, trends and pilot</p></div>
+            <div class="card" id="act-grades"><div class="tag">Every grade, the same families</div><p>K to G5 use the same activity families. G4 and G5 get an independent version of each card, and each child chooses from 2 or 3 private desk activities: paced breathing, self-soothing touch, headphones, squeeze and let go.</p><p class="from">From Sprint 1 · OT Science, and Insights, trends and pilot</p></div>
+            <div class="card" id="act-reggie"><div class="tag">Reggie shows every activity</div><p>Reggie demonstrates every activity (a calm pose for the quiet ones), stays on screen the whole time, moves with the class and finishes calm.</p><p class="from">From Sprint 1 · Product and pitch</p></div>
+        </div>
+        <div>
+            <div class="mock"><div class="tablet"><div class="screen">
+                <div class="top"><span>After recess · Ms Jones · K1</span><span>Example</span></div>
+                <div class="q" style="font-size:1.15em;text-align:left;margin:.6em 0 .5em">Choose a reset</div>
+                <div class="opt best"><b>Balloon Breath</b><span>Slow breathing · 2 min · Moderate evidence</span><em>On top: it works for this class</em><i>Start</i></div>
+                <div style="font-size:.75em;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin:1em 0 .4em">Mix it up</div>
+                <div class="opt"><b>Story Run</b><span>Movement break · 3 min · Moderate evidence</span><i>Start</i></div>
+                <div class="opt"><b>Butterfly Squeezes</b><span>Self-soothing touch · 1 min · Emerging evidence</span><em>Pinned by you · not shifting the room lately</em><i>Start</i></div>
+                <div class="foot">Mock data. The order updates every Monday morning.</div>
+            </div></div></div>
+            <div class="card" id="act-rewards" style="margin-top:18px"><div class="tag">Rewards</div><p>Rewards are for finishing and paying attention, never for the color tapped. In K to G3 the reward is the class's (a streak, a growing Reggie scene); in G4 and G5 each child has their own.</p><p class="from">From Sprint 1 · Product and pitch</p></div>
+            <div class="card" id="act-training"><div class="tag">Teacher training</div><ul><li>A short video walkthrough</li><li>Instructions and a read-aloud script for every card</li><li>A live session before the pilot, led by Jordan, in person or by video call</li></ul><p class="from">From Sprint 1 · Insights, trends and pilot</p></div>
+        </div>
+    </div>
     <p><a href="#foundations/evidence" style="font-weight:800;color:var(--teal)">How we grade evidence →</a> &nbsp; <a href="#foundations/frameworks" style="font-weight:800;color:var(--teal)">The frameworks, honestly →</a></p>
 </section>
 
 <!-- ===================== STEP 4: TRENDS ===================== -->
 <section class="page" id="p-trends" data-crumb="Trends and effectiveness">
-    <div class="stagehead s4"><div class="n">Step 4</div><h2>Trends and effectiveness</h2><p>Every activity carries an expectation. The re-check measures the shift, and over weeks the trend shows whether the activity works for this class at this moment.</p></div>
+    <div class="stagehead s4"><div class="n">Step 4</div><h2>Trends and effectiveness</h2><p>Every activity aims for fewer Reds and Yellows. The re-check measures the shift, and over weeks the trend shows whether the activity works for this class at this moment.</p></div>
     <div class="loop">
         <div><b>1</b>Activity applied<span>Chosen by the teacher from the matched options</span></div>
-        <div><b>2</b>Expectation set<span>The shift it should make, and when to re-check</span></div>
-        <div><b>3</b>Re-check<span>A linked event, a few minutes later</span></div>
-        <div><b>4</b>Outcome<span>Expected against actual</span></div>
+        <div><b>2</b>The aim<span>Fewer Reds and Yellows; no fixed target</span></div>
+        <div><b>3</b>Re-check<span>A linked event, right after the activity</span></div>
+        <div><b>4</b>Outcome<span>Before against after</span></div>
         <div><b>5</b>Effectiveness<span>Across many runs, for this class and moment</span></div>
     </div>
     <div class="split2" style="margin-top:22px">
         <div>
-            <div class="card"><div class="tag">Expected against actual, one run (example)</div>
-                <p><b>Recess, Tue 11/18 · Ms Jones · K1 · T-Rex Wall Pushes</b></p>
+            <div class="card"><div class="tag">Before against after, one run (example, placeholder numbers)</div>
+                <p><b>Start of day, Tue 11/18 · Ms Jones · K1 · Balloon Breath</b></p>
+                <p style="margin:8px 0 2px;font-size:14px">Before: the door tap, each child's tap counted separately.</p>
                 <div class="split" style="margin-top:8px"><i class="G" style="flex:11">11</i><i class="Y" style="flex:6">6</i><i class="R" style="flex:4">4</i></div>
-                <p style="margin:8px 0 2px;font-size:14px">Expected: Red down to 1 or fewer, Green up. Re-check due 5 minutes after.</p>
-                <div class="split"><i class="G" style="flex:16">16</i><i class="Y" style="flex:4">4</i><i class="R" style="flex:1">1</i></div>
-                <p style="margin:8px 0 0;font-weight:800;color:var(--teal)">Met: Red 4 to 1, Green 11 to 16</p>
+                <p style="margin:8px 0 2px;font-size:14px">After: the teacher's read of the room, right after the activity.</p>
+                <div class="tread" style="font-size:15px"><span class="lab">Teacher's read</span><span class="pill sel"><i style="background:var(--g)"></i>Class: Green</span><span class="pill sel">Voices</span><span class="pill sel">Bodies</span><span class="pill">Ready to start</span></div>
+                <p style="margin:8px 0 0;font-weight:800;color:var(--teal)">Fewer Reds and Yellows: the room read Green after</p>
             </div>
             <div class="card"><div class="tag">The baseline</div><p>Events with no activity are the baseline. Comparing recess weeks with and without an activity is what lets a trend say the activity, not the weather, made the difference.</p></div>
         </div>
         <div>
-            <div class="card"><div class="tag">After recess: share of the class in Red, by week (example)</div>
+            <div class="card"><div class="tag">After recess: share of the class in Red, by week (example, placeholder numbers)</div>
                 <div class="bars">
                     <div><i style="height:96px"></i>W1</div><div><i style="height:104px"></i>W2</div><div class="after"><i style="height:70px"></i>W3</div><div class="after"><i style="height:52px"></i>W4</div><div class="after"><i style="height:44px"></i>W5</div><div class="after"><i style="height:40px"></i>W6</div>
                 </div>
-                <p style="margin:8px 0 0;font-size:14px">Wall pushes after recess began in week 3 (lighter bars).</p>
+                <p style="margin:8px 0 0;font-size:14px">Resets after recess began in week 3 (lighter bars).</p>
             </div>
+            <div class="card" id="trend-read"><div class="tag">Read trends, not one reset</div><p>One reset can go either way. Teacher ratings are steadier as a class average over about eight resets (Wickerd and Hulac 2017), so RegulateED reads the trend, never a single run.</p><p class="from">From Sprint 1 · Insights, trends and pilot</p></div>
         </div>
+    </div>
+    <p class="eyebrow" style="margin-top:8px">Before against after, for each standard moment (example, placeholder numbers)</p>
+    <p class="note" style="margin-top:0">Three standard moments a day: start of day, after recess, after lunch. Each bar is the share of the room in Green, Yellow and Red. In K to G3 the "before" at start of day is the door tap, and the "after" is the teacher's read.</p>
+    <div class="grid3" id="trend-moments"></div>
+    <div class="grid2">
+        <div class="card" id="trend-aim"><div class="tag">No fixed targets</div><p>There is no fixed expected shift for an activity. The aim is fewer Reds and Yellows. Every number on this page is a labeled placeholder; the pilot sets the real ones.</p><p class="from">From Sprint 1 · Insights, trends and pilot</p></div>
+        <div class="card todo" id="trend-working"><div class="tag">Still open</div><p>How much data counts as "working" for a class: Jordan sets the threshold.</p></div>
     </div>
     <p class="eyebrow">Branches</p>
     <div class="branches">
@@ -473,7 +539,7 @@
     <h2>Which activities shift this class, at this moment.</h2>
     <p class="lead">Every run of an activity is scored by its re-check. Across runs, RegulateED ranks the options it offers the teacher, so the best for this class at this moment comes first.</p>
     <table class="eff">
-        <thead><tr><th>Ms Jones · K1 · after recess (example)</th><th>Runs</th><th>Average change in Red</th><th>Expectation met</th><th>Evidence</th></tr></thead>
+        <thead><tr><th>Ms Jones · K1 · after recess (example, placeholder numbers)</th><th>Runs</th><th>Average change in Red</th><th>Fewer Reds after</th><th>Evidence</th></tr></thead>
         <tbody>
             <tr><td><b>T-Rex Wall Pushes</b> (heavy work)</td><td>6</td><td>−2.5</td><td>5 of 6</td><td><span class="grade weak">Weak or contested</span></td></tr>
             <tr><td><b>Balloon Breath</b> (slow breathing)</td><td>4</td><td>−1.8</td><td>3 of 4</td><td><span class="grade moderate">Moderate</span></td></tr>
@@ -484,19 +550,20 @@
         <div class="card"><div class="tag">Two kinds of evidence</div><p>The research grade says what is known in general. The class's own record says what works here. When they disagree, as wall pushes do above, both are shown: the class record ranks the options, the research grade stays visible.</p></div>
         <div class="card"><div class="tag">Who sees it</div><ul><li>Teacher: the ranked options for each moment</li><li>School OT: which activities work, by grade and moment</li><li>Principal: whether classes need fewer resets over a term</li></ul></div>
     </div>
-    <div class="card todo"><div class="tag">To decide</div><p>How many runs before a class's own record outranks the research grade, and whether the app may reorder options on its own or only suggest.</p></div>
+    <div class="card" id="eff-order"><div class="tag">Agreed in Sprint 1: how the order moves</div><p>The best-supported activity starts on top, with 2 or 3 more behind it to mix it up. From then on the order follows this class's own re-checks and updates every Monday morning; one that works stays on top, and the top two rotate. The teacher can pin an activity, and a pinned one that is not working gets a note beside it. <a href="#activities" style="font-weight:800;color:var(--teal)">How the options are offered →</a></p><p class="from">From Sprint 1 · Insights, trends and pilot</p></div>
+    <div class="card todo"><div class="tag">To decide</div><p>How much data counts as "working" for a class, so its own record can move an activity up or down: Jordan sets the threshold.</p></div>
 </section>
 
 <!-- ===================== FOUNDATIONS ===================== -->
 <section class="page" id="p-foundations-data" data-crumb="The event record">
     <p class="eyebrow">Foundations</p>
     <h2>The event record: what every check-in, activity and re-check stores.</h2>
-    <p class="lead">An event has to know whether an activity followed it and what shift was expected, or no trend can measure the activity. That is the one change to the data from today's design.</p>
+    <p class="lead">An event has to know whether an activity followed it and what it aimed for, or no trend can measure the activity. That is the one change to the data from today's design.</p>
     <div class="ents">
-        <div class="ent"><h4>Event (check-in)</h4><ul><li>Moment, date and time</li><li>Teacher, class, grade</li><li>Method (1 to 5)</li><li>Children present</li><li>Counts: Green, Yellow, Red, or the class color</li><li class="new">Purpose: check-in</li></ul></div>
+        <div class="ent"><h4>Event (check-in)</h4><ul><li>Moment, date and time</li><li class="new">One of three standard moments: start of day, after recess, after lunch</li><li>Teacher, class, grade</li><li>Method (1 to 5)</li><li>Children present</li><li>Counts: Green, Yellow, Red, or the class color</li><li class="new">Purpose: check-in</li></ul></div>
         <div class="ent act"><h4>Activity run</h4><ul><li class="new">Responds to: the event</li><li class="new">Activity and family</li><li class="new">Led by: teacher, or the app per child (G4, G5)</li><li class="new">Started, length</li></ul></div>
-        <div class="ent act"><h4>Expectation</h4><ul><li class="new">Expected shift, e.g. Red to 1 or fewer</li><li class="new">Re-check due, e.g. 5 minutes</li><li class="new">Set from the activity's defaults</li></ul></div>
-        <div class="ent"><h4>Event (re-check)</h4><ul><li>Same fields as a check-in</li><li class="new">Purpose: re-check</li><li class="new">Linked to the activity run</li></ul></div>
+        <div class="ent act"><h4>Expectation</h4><ul><li class="new">The aim: fewer Reds and Yellows, no fixed target</li><li class="new">Re-check right after the activity</li><li class="new">Real numbers set by the pilot</li></ul></div>
+        <div class="ent"><h4>Event (re-check)</h4><ul><li>Same fields as a check-in</li><li class="new">Purpose: re-check</li><li class="new">Linked to the activity run</li><li class="new">K to G3: the teacher's read (class color, Voices, Bodies, Ready to start)</li></ul></div>
         <div class="ent"><h4>Outcome</h4><ul><li class="new">Actual shift: re-check minus check-in</li><li class="new">Met or not met</li><li class="new">Feeds effectiveness by class, moment, activity</li></ul></div>
     </div>
     <p class="note">Fields in coral are new: they exist so trends can measure activities.</p>
@@ -536,7 +603,8 @@
     </div>
     <p class="eyebrow" style="margin-top:8px">Sprints</p>
     <div class="vlist">
-        <div class="vrow"><span class="v">Sprint 1</span><span>Now. A fresh start: open for comments, every thread attached to a category.</span><span class="cur">Current</span></div>
+        <div class="vrow"><span class="v">Sprint 2</span><span>Now, from 19 November 2026, on workflow version 3: open for comments, every thread attached to a category, with a new Demo category. <a href="#foundations/changes" style="color:var(--teal);font-weight:800">What changed after Sprint 1 →</a> <a href="#demo" style="color:var(--teal);font-weight:800">The demo →</a></span><span class="cur">Current</span></div>
+        <div class="vrow"><span class="v">Sprint 1</span><span>18 to 19 November 2026, closed with all 26 threads resolved or closed with no action. The workflow as it stood is kept at workflow-v2.html. <a href="workflow-v2.html" style="color:var(--teal);font-weight:800">Workflow as it was in Sprint 1 →</a></span><span class="arc">Closed</span></div>
         <div class="vrow"><span class="v">Before Sprint 1</span><span>18 November 2026: everything said before the clean start, kept word for word with a summary of each group. <a href="earlier-comments.html" style="color:var(--teal);font-weight:800">Earlier comments →</a> <a href="workflow-v1.html" style="color:var(--teal);font-weight:800">Workflow as it was →</a> <a href="data-collection.html" style="color:var(--teal);font-weight:800">Data collection as it was →</a></span><span class="arc">Kept</span></div>
     </div>
 </section>
@@ -565,6 +633,11 @@
     <p class="lead">Every child is asked "How are you feeling?" and answers Green, Yellow or Red. How they answer changes as they grow. This matrix shows which method each grade uses.</p>
     <div class="mxwrap"><table class="mx" id="matrix"></table></div>
     <p class="hint">Tap a grade to meet those children. Tap a method to see how it works. Tap a dot to see why that grade uses that method.</p>
+    <div class="grid3" id="collect-s1">
+        <div class="card" id="collect-moments"><div class="tag">Three standard moments a day</div><p>Start of day, after recess, after lunch: the same three every day, so the weeks line up. The start of day "before" is the door tap.</p><p class="from">From Sprint 1 · Data collection</p></div>
+        <div class="card" id="collect-teacher-read"><div class="tag">The one teacher step</div><p>K and G1 keep the child door check-in. Before and after each reset, the teacher records the class color plus three taps: Voices, Bodies, Ready to start, labeled "teacher's read". In K to G3 the re-check is the teacher's read of the room, taken right before and right after the activity, not a second child tap.</p><p class="from">From Sprint 1 · Data collection</p></div>
+        <div class="card" id="collect-qr-join"><div class="tag">A shared door and a private ticket</div><p>How a child's iPad joins an event: the QR form in G2 to G4, and individual iPads in K to G3. Class-bounded and spam-resistant, never verified. <a href="#collect/method/qr" style="font-weight:800;color:var(--teal)">How it works →</a></p><p class="from">From Sprint 1 · Data collection</p></div>
+    </div>
     <p class="eyebrow">Branches</p>
     <div class="tiles">
         <button class="tile hero" onclick="go('collect/own-ipad')"><b>Each child's own iPad</b><span>G4 and G5 send their own result from the RegulateED app</span></button>
@@ -592,6 +665,7 @@
             </ol>
             <div class="card"><div class="tag">Why K and G1</div><p>No reading and no device in a child's hand. It is what a K or G1 teacher already does, and it takes under a minute.</p></div>
             <div class="card"><div class="tag">What is recorded</div><p>One color for the class, saved to the event. Nothing about any child.</p></div>
+            <div class="card" id="group-teacher-read"><div class="tag">The teacher's read, before and after each reset</div><p>This is the one teacher step. Right before and right after each reset the teacher records the class color plus three taps: Voices, Bodies, Ready to start. In K to G3 it is the re-check, not a second child tap; K and G1 keep the child door check-in as well.</p><p class="from">From Sprint 1 · Data collection</p></div>
             <div class="card warn"><div class="tag">Watch for</div><p>Loud voices sway it and children copy each other, so a quiet child in Red can go unseen. That is why the entry survey runs alongside it in the same grades.</p></div>
         </div>
         <div class="mock"><div class="phone"><div class="screen">
@@ -602,6 +676,7 @@
                 <div class="btn Y row sel"><svg viewBox="0 0 100 100"><use href="#face-y"/></svg>Yellow</div>
                 <div class="btn R row"><svg viewBox="0 0 100 100"><use href="#face-r"/></svg>Red</div>
             </div>
+            <div class="tread" style="justify-content:center"><span class="lab">Teacher's read</span><span class="pill sel">Voices</span><span class="pill">Bodies</span><span class="pill sel">Ready to start</span></div>
             <div class="saved"><i></i>Saved: the class is Yellow</div>
             <div class="foot">On the teacher's phone or iPad</div>
         </div></div></div>
@@ -624,6 +699,7 @@
             </ol>
             <div class="card"><div class="tag">Why K to G3</div><p>Faces, not words, so no reading is needed, and every child counts the same. It stops after G3: older children are seen tapping by the line, and answer more honestly in private.</p></div>
             <div class="card"><div class="tag">What is recorded</div><p>A count of each color and the total taps against the children present. Never a name, and never the time or order of a tap, so a tap cannot be matched to the child who walked in.</p></div>
+            <div class="card" id="entry-private"><div class="tag">Private, anonymous, and the start of the day</div><ul><li>The door tap stays private and anonymous, and each tap is counted separately.</li><li>There is no parent view.</li><li>At start of day the door tap is the "before"; after each reset the teacher's read is the re-check.</li></ul><p class="from">From Sprint 1 · Data collection</p></div>
             <div class="card warn"><div class="tag">Watch for, and the guard</div><ul><li>Double taps: a short pause after each tap</li><li>Pressing for fun: taps checked against children present</li><li>A bad round: the teacher can discard the event</li></ul></div>
         </div>
         <div class="mock"><div class="tablet"><div class="screen">
@@ -656,6 +732,7 @@
             </ol>
             <div class="card"><div class="tag">Why G2 to G4</div><p>Children now read simple words and can use a shared device, so each answers alone and adds one more thing: where they feel it. It stops after G4, when the app does everything the form does plus the reset.</p></div>
             <div class="card"><div class="tag">What is recorded</div><p>One unnamed answer per child, pooled into the event: the color and the body spot. The QR code carries the event, never the child.</p></div>
+            <div class="card" id="qr-ticket"><div class="tag">Joining: a shared door and a private ticket</div><p>For the QR form in G2 to G4, and for individual iPads in K to G3.</p><ul><li>The QR code on the board is the shared door. It refreshes about every 45 seconds, and the previous code still works.</li><li>Each scan gives that iPad a one-time ticket for this event: the private ticket.</li><li>The teacher sees how many have joined against how many are in class, and taps Close.</li><li>Odd results are flagged, never deleted.</li><li>No device ID and no location.</li></ul><p>We describe it as class-bounded and spam-resistant, never as verified.</p><p class="from">From Sprint 1 · Data collection</p></div>
         </div>
         <div class="mock" style="display:grid;grid-template-columns:.8fr 1fr;gap:1.4em;align-items:start">
             <div class="poster"><b>Check in</b><span>Recess · Ms Jones · G2</span><svg viewBox="0 0 21 21" shape-rendering="crispEdges"><use href="#qr"/></svg><span>Scan me</span></div>
@@ -682,7 +759,7 @@
     <div class="chips-row" data-grades="mobile"></div>
     <div class="split2 wide">
         <div>
-            <p class="lead">The full RegulateED loop on the child's own school iPad: check in, a 2-minute reset chosen for how they feel, a re-check, and a Focus Token when they reach Green.</p>
+            <p class="lead">The full RegulateED loop on the child's own school iPad: check in, a 2-minute reset chosen for how they feel, a re-check, and a Focus Token for finishing the reset and paying attention, never for the color they tap.</p>
             <div class="card"><div class="tag">Why G4 and G5</div><p>Children read well and use their school device on their own, so they can run a reset themselves without the teacher stopping the class.</p></div>
             <div class="card"><div class="tag">What is recorded</div><p>The check-in, body spot, the reset done and the re-check, each sent from the child's own iPad to the event. So the school also sees whether resets work.</p></div>
             <p><a href="#collect/own-ipad" style="font-weight:800;color:var(--teal)">How each child's own iPad sends its result →</a></p>
@@ -706,7 +783,7 @@
                 <div class="q">How does your body feel now?</div>
                 <div class="btns col"><div class="btn G sel">Green</div></div>
                 <div style="text-align:center;margin-top:.8em"><span class="token">★</span> <span class="token">★</span> <span class="token off"></span></div>
-                <div class="foot" style="margin-top:.3em">Focus Token earned</div>
+                <div class="foot" style="margin-top:.3em">Focus Token earned for finishing</div>
             </div>
         </div></div></div>
     </div>
@@ -763,6 +840,8 @@
                 <li>The teacher sees the class split fill in, live.</li>
             </ol>
             <div class="card"><div class="tag">Why it matters</div><p>Every child is heard, nobody sees anybody else's answer, and the teacher does not have to stop the lesson to collect it.</p></div>
+            <div class="card" id="own-ipad-ticket"><div class="tag">Individual iPads in K to G3: a shared door and a private ticket</div><p>When a younger class has an iPad each, the iPads join the event the same way as the QR form: a code on the board that refreshes about every 45 seconds (the previous code still works), and a one-time ticket for this event on each iPad that scans it. The teacher sees joined against in class and taps Close. Odd results are flagged, never deleted. No device ID and no location. Class-bounded and spam-resistant, never verified. <a href="#collect/method/qr" style="font-weight:800;color:var(--teal)">The QR form →</a></p><p class="from">From Sprint 1 · Data collection</p></div>
+            <div class="card" id="own-ipad-desk"><div class="tag">The reset on their own, G4 and G5</div><p>The same activity families as every grade, in an independent version of each card. Each child chooses from 2 or 3 private desk activities: paced breathing, self-soothing touch, headphones, squeeze and let go.</p><p class="from">From Sprint 1 · OT Science</p></div>
             <div class="card"><div class="tag">Privacy</div><p>What travels is the answer and the event: color, body spot, the reset and the re-check. Never a name, photo or voice. It is designed to stay inside student privacy law (FERPA for school records, COPPA for children's apps).</p></div>
             <div class="card todo"><div class="tag">To decide</div><p>Whether results stay fully anonymous, or carry an anonymised school token (no name) so a school OT can follow one child's IEP or 504 goals over 30, 60 and 90 days, as the framework plans.</p></div>
         </div>
@@ -805,8 +884,8 @@
     <div class="split2" style="margin-top:26px">
         <div>
             <div class="card"><div class="tag">The insight</div><p>Read from the split, never the average alone: how much of the room is Red, Yellow or Green, at which moment, compared with this class's usual. For example, "Back from recess, almost half the class is unsettled: more than usual for them."</p></div>
-            <div class="card"><div class="tag">The options</div><p>Two or three activities designed for that result, each about 2 minutes and done at the desk or as a class. A mostly Red room gets calming heavy work and slow breathing; a mostly Yellow room gets soothing touch or breathing. The teacher chooses; RegulateED never runs one on its own.</p></div>
-            <div class="card"><div class="tag">The proof</div><p>A quick re-check after the activity is a second event linked to the first, so the shift is measured: Red to Yellow, Yellow to Green. Over weeks, insights learn which activities work best for this class at this moment, and offer those first.</p></div>
+            <div class="card"><div class="tag">The options</div><p>Two or three activities designed for that result, each about 2 minutes and done at the desk or as a class, each from a different activity family and the strongest in its family. A mostly Red room starts with slow breathing together, with lower lights and a lower teacher voice; a mostly Yellow room gets soothing touch or breathing. The teacher chooses; RegulateED never runs one on its own. <a href="#activities" style="font-weight:800;color:var(--teal)">How the options are ordered →</a></p></div>
+            <div class="card"><div class="tag">The proof</div><p>A quick re-check after the activity is a second event linked to the first, so the shift is measured: Red to Yellow, Yellow to Green. In K to G3 the re-check is the teacher's read of the room. Over weeks, insights learn which activities work best for this class at this moment, and offer those first.</p></div>
             <div class="card"><div class="tag">By grade</div><p>K to G3: the teacher leads the activity with the whole class. G4 and G5: the teacher can apply it to the class, and the app can also offer each child a reset of their own.</p></div>
         </div>
         <div class="mock"><div class="tablet"><div class="screen">
@@ -818,9 +897,9 @@
             <div class="opt best"><b>T-Rex Wall Pushes</b><span>Heavy work · 2 min · calms high energy</span><em>Worked best for this class: 4 Red to 1</em><i>Apply</i></div>
             <div class="opt"><b>Balloon Breath</b><span>Rhythmic breathing · 2 min · slows the heart rate</span><i>Apply</i></div>
             <div class="opt"><b>Butterfly Squeezes</b><span>Touch reset · 2 min · soothes worry and overload</span><i>Apply</i></div>
-            <div style="font-size:.75em;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin:1.1em 0 .2em">After the reset: re-check</div>
-            <div class="split" style="margin-top:.4em"><i class="G" style="flex:16">16</i><i class="Y" style="flex:4">4</i><i class="R" style="flex:1">1</i></div>
-            <div class="foot">Shift: 3 fewer in Red, 5 more in Green</div>
+            <div style="font-size:.75em;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin:1.1em 0 .2em">After the reset: re-check, the teacher's read</div>
+            <div class="tread"><span class="pill sel"><i style="background:var(--g)"></i>Class: Green</span><span class="pill sel">Voices</span><span class="pill sel">Bodies</span><span class="pill sel">Ready to start</span></div>
+            <div class="foot">Mock data. In K to G3 the re-check is the teacher's read, not a second child tap.</div>
         </div></div></div>
     </div>
     <p class="eyebrow" style="margin-top:22px">What insights learn over time</p>
@@ -831,7 +910,7 @@
     </div>
     <div class="grid2">
         <div class="card"><div class="tag">To develop</div><p>The RegulateED activity library: each activity designed by an OT for a result, an age band and a place (at the desk, standing, whole class). The examples above come from the framework's four groups: heavy work, movement across the body, touch resets and rhythmic breathing.</p></div>
-        <div class="card todo"><div class="tag">To decide</div><p>Green, Yellow and Red cannot show a sluggish, low-energy class, the one that needs waking up, not calming down. The framework used a fourth state, Blue, for that. Does the check-in need a way to tell it apart?</p></div>
+        <div class="card todo"><div class="tag">Agreed in Sprint 1</div><p>Green, Yellow and Red cannot show a sluggish, low-energy class, the one that needs waking up, not calming down. The framework used a fourth state, Blue, for that. The check-in stays Green, Yellow and Red, with no Blue button: the teacher spots a low-energy room.</p><p class="from">From Sprint 1 · Product and pitch</p></div>
     </div>
 </section>
 
@@ -879,7 +958,117 @@
         <div class="card"><div class="tag">G2 to G4, method 3</div><p>Unnamed answers. The QR code carries the event, not the child.</p></div>
         <div class="card todo"><div class="tag">G4 and G5, methods 4 and 5</div><p>Sent from each child's own iPad, no name. An anonymised token for IEP and 504 tracking is still to decide.</p></div>
     </div>
-    <p class="note">The student privacy laws here are FERPA (school records) and COPPA (children's apps). To be confirmed by a privacy lawyer before any classroom pilot.</p>
+    <div class="grid3" id="privacy-s1">
+        <div class="card" id="privacy-no-parent"><div class="tag">No parent view</div><p>RegulateED stays a school-based tool for internal use. Teachers talk with parents at conferences.</p><p class="from">From Sprint 1 · Privacy and safety</p></div>
+        <div class="card" id="privacy-laws"><div class="tag">Where the heavier rules start</div><p>COPPA and FERPA apply the moment a check-in is tied to one child. Anonymous class results keep RegulateED out of the heavier rules. This is not legal advice.</p><p class="from">From Sprint 1 · Privacy and safety</p></div>
+        <div class="card todo" id="privacy-before-pilot"><div class="tag">Before any pilot</div><ul><li>A written data retention policy</li><li>A privacy notice</li><li>A privacy attorney review</li><li>State student privacy laws: not checked yet</li></ul></div>
+    </div>
+    <p class="note">The student privacy laws here are FERPA (school records) and COPPA (children's apps). To be confirmed by a privacy attorney before any classroom pilot.</p>
+</section>
+
+<!-- ===================== FOUNDATIONS: WHAT CHANGED AFTER SPRINT 1 ===================== -->
+<section class="page" id="p-foundations-changes" data-crumb="What changed after Sprint 1">
+    <p class="eyebrow">Foundations</p>
+    <h2>What changed after Sprint 1.</h2>
+    <p class="lead">Sprint 1 closed on 19 November 2026 with all 26 threads resolved or closed with no action. Each category's outcomes are built into this version, and each line below links to where it now lives.</p>
+    <div class="grid2">
+        <div class="card" id="changes-collect"><div class="tag">Data collection</div><ul>
+            <li>Three standard moments: start of day, after recess, after lunch. <a href="#collect" style="font-weight:800;color:var(--teal)">Data collection →</a></li>
+            <li>The one teacher step: the class color plus Voices, Bodies, Ready to start, the "teacher's read". In K to G3 it is the re-check. <a href="#collect/method/group" style="font-weight:800;color:var(--teal)">Method 1 →</a></li>
+            <li>The door tap stays private and anonymous, each tap counted, no parent view. <a href="#collect/method/entry" style="font-weight:800;color:var(--teal)">Method 2 →</a></li>
+            <li>Joining by a shared door and a private ticket. <a href="#collect/method/qr" style="font-weight:800;color:var(--teal)">The QR form →</a> <a href="#collect/own-ipad" style="font-weight:800;color:var(--teal)">Own iPads →</a></li>
+        </ul></div>
+        <div class="card" id="changes-ot"><div class="tag">OT Science</div><ul>
+            <li>G4 and G5 choose from 2 or 3 private desk activities. <a href="#activities" style="font-weight:800;color:var(--teal)">Activities →</a></li>
+            <li>The mindful moment starts with slow breathing; a guided meditation is the second card. <a href="#activities/family/mindful" style="font-weight:800;color:var(--teal)">Mindful attention →</a></li>
+            <li>Two movement break cards with a song, winding down at the end. <a href="#activities/family/movement" style="font-weight:800;color:var(--teal)">Movement breaks →</a></li>
+        </ul></div>
+        <div class="card" id="changes-ui"><div class="tag">UI and brand</div><ul>
+            <li>The trail is one pill on the right, beside Reggie, every part tappable. It is in the top bar of every page.</li>
+            <li>The Split room dot is a hard-edged Red and Green split with a thin outline. <a href="#insights" style="font-weight:800;color:var(--teal)">Insights →</a></li>
+        </ul></div>
+        <div class="card" id="changes-trends"><div class="tag">Insights, trends and pilot</div><ul>
+            <li>One before against after graph for each standard moment, week by week. <a href="#trends" style="font-weight:800;color:var(--teal)">Trends →</a></li>
+            <li>Read trends, not one reset; no fixed targets, the aim is fewer Reds and Yellows. <a href="#trends" style="font-weight:800;color:var(--teal)">Trends →</a></li>
+            <li>How the options are ordered, rotated and pinned, from different families. <a href="#trends/effectiveness" style="font-weight:800;color:var(--teal)">What works →</a></li>
+            <li>The same families for every grade, and teacher training. <a href="#activities" style="font-weight:800;color:var(--teal)">Activities →</a></li>
+        </ul></div>
+        <div class="card" id="changes-privacy"><div class="tag">Privacy and safety</div><ul>
+            <li>No parent view; where COPPA and FERPA start; what must exist before any pilot. <a href="#foundations/privacy" style="font-weight:800;color:var(--teal)">Privacy →</a></li>
+        </ul></div>
+        <div class="card" id="changes-product"><div class="tag">Product and pitch</div><ul>
+            <li>Rewards for finishing and paying attention, never for the color tapped. <a href="#activities" style="font-weight:800;color:var(--teal)">Activities →</a></li>
+            <li>The breathing card: Reggie's belly and three paces. <a href="#activities/family/breathing" style="font-weight:800;color:var(--teal)">Slow breathing →</a></li>
+            <li>Dance with Reggie, and story-led movement. <a href="#activities/family/movement" style="font-weight:800;color:var(--teal)">Movement breaks →</a></li>
+            <li>A mostly Red room starts with slow breathing together. <a href="#activities/state/red" style="font-weight:800;color:var(--teal)">Mostly Red →</a></li>
+            <li>No Blue button: the teacher spots a low-energy room. <a href="#activities/state/low" style="font-weight:800;color:var(--teal)">Low energy →</a></li>
+        </ul></div>
+    </div>
+    <div class="card todo" id="changes-open"><div class="tag">Still open</div><ul>
+        <li>Jordan's song picks, and the music rights (royalty-free or original)</li>
+        <li>Jordan's threshold for "working"</li>
+        <li>The seconds for each breathing pace</li>
+        <li>Recheck Laborde 2022 and Obradovic 2021</li>
+        <li>Reggie's animations for every card (Sprint 3)</li>
+        <li>The privacy policy and the attorney review</li>
+    </ul></div>
+</section>
+
+<!-- ===================== SPRINT 2: THE DEMO ===================== -->
+<!-- Adam: "lets add a tab in Sprint 2 that helps define exactly what we want to aim for in the demo... jordan can contribute." -->
+<!-- Adam: "the Demo table will be the place where we build the demo prototype so its a door into the demo environment, starting with an information and plan page which we will focus on in Sprint 2" -->
+<section class="page" id="p-demo" data-crumb="Demo">
+    <div class="stagehead sd"><div class="n">The demo environment</div><h2>Where the RegulateED demo is built</h2><p>This is the door into the demo prototype. It starts with the information and plan page, which is what Sprint 2 reviews. Each room of the prototype opens here as it is built, from Sprint 3.</p></div>
+    <p class="eyebrow">Open now · Sprint 2</p>
+    <div class="branches">
+        <a class="branch key" id="demo-room-plan" href="#demo/plan"><b>Information and plan</b><span>The goal, how it is shown, the story, the screens, the sample data, Reggie, what we say, the deck: tag any block to shape it</span></a>
+    </div>
+    <p class="eyebrow">Rooms in the plan · built from Sprint 3</p>
+    <div class="branches" id="demo-rooms">
+        <div class="branch" id="demo-room-data" style="opacity:.6"><b>The sample data</b><span>Invented classes, check-ins and weeks of results, shared with the pitch deck</span></div>
+        <div class="branch" id="demo-room-checkin" style="opacity:.6"><b>The class checks in</b><span>The teacher's iPad at the door, and the class color</span></div>
+        <div class="branch" id="demo-room-insight" style="opacity:.6"><b>The insight and the choice</b><span>What the room's result means, and 2 or 3 activities to choose from</span></div>
+        <div class="branch" id="demo-room-reggie" style="opacity:.6"><b>Reggie leads the reset</b><span>An activity run with Reggie, then the teacher's read</span></div>
+        <div class="branch" id="demo-room-trends" style="opacity:.6"><b>Trends</b><span>Weeks of before and after, per moment</span></div>
+    </div>
+    <p class="note">These rooms follow the plan as it stands; the information and plan page decides what they become.</p>
+</section>
+
+<section class="page" id="p-demo-plan" data-crumb="Information and plan">
+    <div class="stagehead sd"><div class="n">Sprint 2</div><h2>The demo: information and plan</h2><p>Sprint 2 defines the demo; Sprint 3 builds it. Tag any block below to add to it: Adam and Jordan both shape it.</p></div>
+    <div class="grid2">
+        <div class="card" id="demo-goal"><h3>The goal</h3>
+            <div class="dpart"><div class="tag">So far</div><p>A pitch deck plus a reasonably advanced simulated demo of the core concepts and some of the approaches we propose, so we can engage with people. Both are built on the same sample datasets, so every example matches (Adam).</p></div>
+            <div class="dpart open"><div class="tag">Open</div><p>Who is the first audience (schools, OT colleagues, investors), and by when?</p></div></div>
+        <div class="card" id="demo-showing"><h3>How it is shown</h3>
+            <div class="dpart"><div class="tag">So far</div><p>A little of both: Adam presenting it live, and sending it for people to try (Adam). One self-contained page with a guided mode: captions on each screen, Start over, "mock data, placeholder numbers" on every screen, one obvious next tap. It works offline, so Wi-Fi never matters.</p></div>
+            <div class="dpart open"><div class="tag">Open</div><p>Phone, tablet or laptop first for the send-along? A public demo address (mock data only) or behind the review password? (Adam's call; nothing is published until he says.)</p></div></div>
+        <div class="card" id="demo-story"><h3>The story</h3>
+            <div class="dpart"><div class="tag">So far</div><p>One short clickable story, about three minutes: the class checks in, the teacher sees the class color, RegulateED offers 2 or 3 activities, Reggie leads one, the re-check, and a mock week of trends.</p></div>
+            <div class="dpart open"><div class="tag">Open</div><p>Is this the right story, and what is the one moment the audience must remember?</p></div></div>
+        <div class="card" id="demo-screens"><h3>Which screens are real</h3>
+            <div class="dpart"><div class="tag">So far</div><p>The teacher's iPad door tap and the trend view are real screens. The QR form and the G4 and G5 app are pictures in the deck.</p></div>
+            <div class="dpart open"><div class="tag">Open</div><p>Does the insight step need its own real screen?</p></div></div>
+        <div class="card" id="demo-data"><h3>The mock data</h3>
+            <div class="dpart"><div class="tag">So far</div><p>One class, three moments a day (start of day, after recess, after lunch), about eight resets so a trend shows, a shift from Red toward Yellow and Green. Every number is labeled a placeholder, and there is never any real child data.</p></div>
+            <div class="dpart open"><div class="tag">Open</div><p>Which class leads the story?</p></div></div>
+        <div class="card" id="demo-datasets"><h3>The sample datasets</h3>
+            <div class="dpart"><div class="tag">So far</div><p>One shared set of invented sample data for the demo and the deck: survey results for each collection method (class consensus, the door tap, the QR form, the G4 and G5 app), several classes across grades K to 5, each with its own pattern over the day and the week, and trends of results over several weeks with activities applied. Every number is a labeled placeholder, and there is no real child data.</p></div>
+            <div class="dpart open"><div class="tag">Open</div><p>How many classes and schools, how many weeks, and which patterns should each class show (for example a class that is unsettled after recess, one that settles well, one where an activity stops working)?</p></div></div>
+        <div class="card" id="demo-brain"><h3>The brain</h3>
+            <div class="dpart"><div class="tag">So far</div><p>Scripted on mock numbers, following the agreed activity order rules. Jordan's real threshold for "working" waits for the pilot.</p></div>
+            <div class="dpart open"><div class="tag">Open</div><p>Is there anything the demo must show the brain deciding?</p></div></div>
+        <div class="card" id="demo-reggie"><h3>Reggie and the activities</h3>
+            <div class="dpart"><div class="tag">So far</div><p>A few animations only: breathing (the belly grows and shrinks), one dance, one calm pose. Music: silent or royalty-free placeholders until Jordan picks the songs and the rights are checked.</p></div>
+            <div class="dpart open"><div class="tag">Open</div><p>Which activities, and is story-led movement in the first cut? (Jordan)</p></div></div>
+        <div class="card" id="demo-claims"><h3>What we say on screen</h3>
+            <div class="dpart"><div class="tag">So far</div><p>"Consistent with the research", evidence grades on the cards, never "proven". Anonymous class results only, no parent view, no device ID, and the QR described as class-bounded, never verified.</p></div>
+            <div class="dpart open"><div class="tag">Open</div><p>Is there anything Jordan wants said about the OT science?</p></div></div>
+        <div class="card" id="demo-deck"><h3>The pitch deck</h3>
+            <div class="dpart"><div class="tag">So far</div><p>The deck carries the story and the demo carries the feel; the deck links to the demo. The 17 November deck is the starting point.</p></div>
+            <div class="dpart open"><div class="tag">Open</div><p>Which slides stay, which go, and what must each one prove?</p></div></div>
+    </div>
+    <div class="card todo" id="demo-next"><div class="tag">Next</div><p>When Sprint 2 closes, this page, with everything tagged on it, is the brief Iris builds the demo from in Sprint 3.</p></div>
 </section>
 
 <div id="gen"></div>
@@ -987,11 +1176,27 @@
         week.map(([lab, days]) => `<b>${lab}</b>` + days.map(([g, y, r]) => `<div class="split" style="height:28px;${lab === 'Recess' ? 'outline:3px solid var(--coral);outline-offset:2px' : ''}"><i class="G" style="flex:${g}"></i><i class="Y" style="flex:${y}"></i>${r ? `<i class="R" style="flex:${r}"></i>` : ''}</div>`).join('')).join('') +
         '</div><p style="margin:12px 0 0">The class comes back from recess unsettled most days: the moment to plan a reset for.</p>';
 
+    // Before against after for each standard moment (Sprint 1, Data collection): stacked Green, Yellow, Red as a share of
+    // the room, week by week. Placeholder numbers only, invented for the example; the pilot sets the real ones.
+    const MOMENTS = [
+        ['Start of day', [[[52, 30, 18], [66, 26, 8]], [[50, 32, 18], [68, 24, 8]], [[55, 29, 16], [70, 24, 6]], [[54, 30, 16], [72, 22, 6]], [[57, 28, 15], [74, 21, 5]], [[58, 28, 14], [75, 21, 4]]]],
+        ['After recess', [[[38, 36, 26], [52, 32, 16]], [[36, 38, 26], [54, 32, 14]], [[40, 36, 24], [60, 30, 10]], [[42, 35, 23], [62, 29, 9]], [[44, 34, 22], [66, 27, 7]], [[45, 34, 21], [68, 26, 6]]]],
+        ['After lunch', [[[46, 38, 16], [60, 32, 8]], [[48, 36, 16], [62, 30, 8]], [[47, 37, 16], [63, 30, 7]], [[50, 35, 15], [66, 28, 6]], [[51, 35, 14], [67, 28, 5]], [[52, 34, 14], [69, 26, 5]]]],
+    ];
+    const bar = ([g, y, r], n) => `<div class="split"><i class="G" style="flex:${g}">${n ? g + '%' : ''}</i><i class="Y" style="flex:${y}">${n ? y + '%' : ''}</i><i class="R" style="flex:${r}">${n ? r + '%' : ''}</i></div>`;
+    const avg = (rows) => [0, 1, 2].map((k) => Math.round(rows.reduce((s, x) => s + x[k], 0) / rows.length));
+    document.getElementById('trend-moments').innerHTML = MOMENTS.map(([name, weeks]) => `<div class="card"><div class="tag">${name}</div>
+        <div class="ba"><b>Before</b>${bar(avg(weeks.map((w) => w[0])), true)}<b>After</b>${bar(avg(weeks.map((w) => w[1])), true)}</div>
+        <div class="moment"><span></span>${weeks.map((_, i) => `<b style="text-align:center">W${i + 1}</b>`).join('')}
+            <b>Before</b>${weeks.map((w) => bar(w[0])).join('')}<b>After</b>${weeks.map((w) => bar(w[1])).join('')}</div>
+        <p class="note" style="margin:8px 0 0">Six weeks, placeholder numbers.</p></div>`).join('');
+
 
     const STATES = [
         { id: 'red', short: 'Mostly Red', name: 'Mostly Red: wired or overwhelmed', swatch: 'var(--r)', band: '#B9433D',
           split: [['g', 6], ['y', 6], ['r', 9]],
           goal: 'Bring the room down: calm bodies first, then minds.',
+          first: 'In a mostly Red room the first card is slow breathing together, with lower lights and a lower teacher voice.',
           looks: 'Loud, fast, bodies everywhere. Small things set children off, some are in tears or shutting down, and nobody can hear the instructions. Typical after recess, a fire drill, a fight in the line, or a long indoor day.',
           shift: 'From high arousal to settled: slower breathing, quieter bodies, voices down. Not to sleepy: the aim is ready to learn, which for a Red room means Yellow first, then Green.' },
         { id: 'yellow', short: 'Mostly Yellow', name: 'Mostly Yellow: wiggly or worried', swatch: 'var(--y)', band: '#B98A12',
@@ -999,7 +1204,7 @@
           goal: 'Settle and focus: take the edge off before the task.',
           looks: 'Fidgeting, chatting, getting up, slow to start. Some children are anxious about a test or a change in the day, others are simply restless.',
           shift: 'From restless or worried to steady attention: a short reset that releases the fidget or soothes the worry, then straight into the task.' },
-        { id: 'split', short: 'Split room', name: 'A split room: a few in Red, most in Green', swatch: 'linear-gradient(90deg, var(--r), var(--g))', band: '#5B6E3E',
+        { id: 'split', short: 'Split room', name: 'A split room: a few in Red, most in Green', swatch: 'linear-gradient(90deg, var(--r) 50%, var(--g) 50%)', band: '#5B6E3E',
           split: [['g', 15], ['y', 3], ['r', 3]],
           goal: 'Help the few without stopping the many.',
           looks: 'Most of the class is fine and ready, but two or three children are clearly not. A whole-class reset would cost the many; ignoring it costs the few.',
@@ -1009,7 +1214,7 @@
           goal: 'Bring the room up: wake bodies and attention.',
           looks: 'Heads on desks, slow to answer, yawning, glazed. Typical after lunch, late afternoon, or a long sitting stretch.',
           shift: 'From low arousal to alert: brief vigorous movement and rhythm that lift energy without tipping the room into Red.',
-          note: 'Green, Yellow and Red cannot show this room today: a sluggish child may tap Yellow or Green. The framework used a fourth state, Blue. Shown here in blue so the map is complete; whether the check-in adds it is Adam\'s ruling.' },
+          note: 'Green, Yellow and Red cannot show this room today: a sluggish child may tap Yellow or Green. The framework used a fourth state, Blue. Shown here in blue so the map is complete. Agreed in Sprint 1: the check-in stays Green, Yellow and Red with no Blue button, and the teacher spots a low-energy room.' },
         { id: 'green', short: 'Mostly Green', name: 'Mostly Green: calm and ready', swatch: 'var(--g)', band: '#2D8A4A',
           split: [['g', 18], ['y', 2], ['r', 1]],
           goal: 'Keep it: protect the calm and build the habit.',
@@ -1028,6 +1233,9 @@
           why: 'Slow breathing makes the heart rate rise and fall with each breath and engages the body\'s blood-pressure reflex; both shift the body toward calm, and a long out-breath adds to it.',
           evidence: 'Strong in adults: a meta-analysis of 223 studies found slow breathing raises heart rate variability. In children, a trial with 342 seven-year-olds found a one-minute video of four slow breaths lowered heart rate and raised the calming heart rhythm. A school program for ages 7 to 11 worked better for the older children. Not yet tested on on-task behavior, or on a class that is already upset.',
           cautions: '"Big deep breaths" can make children over-breathe, feel dizzy and more anxious. Take care with asthma or panic. Untested in a room that is already Red.',
+          s1: [['The breathing card', 'Reggie\'s belly grows on the in-breath and shrinks on the out-breath, with a hand-on-belly cue for the class. Three paces: slower, steady, a little quicker, one marked as the suggested start. Jordan sets the seconds for each pace.', 'Product and pitch'],
+              ['The first card for a mostly Red room', 'Slow breathing together, with lower lights and a lower teacher voice.', 'Product and pitch'],
+              ['The first mindful moment', 'Slow breathing with a long out-breath is the first card for a mindful moment, because it is the best supported. Always optional.', 'OT Science']],
           sources: [['Laborde et al. 2022, Neuroscience and Biobehavioral Reviews 138:104711', 'https://doi.org/10.1016/j.neubiorev.2022.104711'], ['Obradovic, Sulik, Armstrong-Carter 2022, Developmental Psychobiology', 'https://doi.org/10.1002/dev.22214'], ['Aritzeta et al. 2022, Int J Environ Res Public Health 19(9):5475', 'https://doi.org/10.3390/ijerph19095475'], ['Lehrer and Gevirtz 2014, Frontiers in Psychology 5:756', 'https://doi.org/10.3389/fpsyg.2014.00756']] },
         { id: 'movement', name: 'Movement breaks', grade: 'moderate', gradeNote: 'Moderate to strong for on-task behavior, the best-supported family', fit: { yellow: 1, low: 1, split: 2 },
           oneLine: 'Short whole-class bursts of movement during the lesson.',
@@ -1038,6 +1246,10 @@
           why: 'Exercise raises arousal and blood flow and releases the restlessness of sitting too long; some studies find better impulse control afterwards.',
           evidence: 'The best-supported family. A meta-analysis of 16 studies found classroom activity improved on-task behavior (effect size 0.60). In grades 3 and 4, on-task behavior rose 8%, and 20% for the least on-task children. Time on task improved in 9 of 11 interventions in another review. Claims about grades and thinking skills are weak.',
           cautions: 'It raises arousal: a Red room may need a calming step after. Adapt for physical disability and small rooms.',
+          s1: [['Movement break cards with a song', 'One tap to start. Two cards for the pilot, a moderate beat and a faster one, each winding down in the last 30 seconds, then the re-check. No sudden loud parts or upsetting lyrics, and a volume the teacher can lower. Still open: Jordan picks the songs, and the music must be royalty-free or original.', 'OT Science'],
+              ['Dance with Reggie', 'Reggie dances one easy move at a time and the class copies. The teacher picks from 2 or 3 dances labeled big, medium and gentle; the menu changes by grade.', 'Product and pitch'],
+              ['Story-led movement', 'Reggie acts out the story for every grade. The level is set from the grade and the teacher can change it. It ends in a freeze and a calm pose.', 'Product and pitch'],
+              ['What the music evidence says', 'No study says which music works best for a short classroom break, so the pilot re-checks are RegulateED\'s own evidence. On screen we say "consistent with the research", never "proven".', 'OT Science']],
           sources: [['Watson et al. 2017, IJBNPA 14:114', 'https://doi.org/10.1186/s12966-017-0569-9'], ['Daly-Smith et al. 2018, BMJ Open Sport and Exercise Medicine 4:e000341', 'https://bmjopensem.bmj.com/content/4/1/e000341'], ['Mahar et al. 2006, Medicine and Science in Sports and Exercise 38(12)', 'https://doi.org/10.1249/01.mss.0000235359.16685.a3'], ['Infantes-Paniagua et al. 2021, Brain Sciences 11(6):675', 'https://doi.org/10.3390/brainsci11060675']] },
         { id: 'energise', name: 'Energising a flat room', grade: 'moderate', gradeNote: 'Moderate for movement; weak for music alone', fit: { low: 1 },
           oneLine: 'Brief vigorous movement and rhythm to lift a sluggish class.',
@@ -1098,6 +1310,7 @@
           why: 'Trains attention and lowers reactivity through noticing without judging.',
           evidence: 'Large reviews find small benefits that shrink against fair comparisons and fade later. A trial of 8,376 teenagers found no benefit. The most encouraging elementary trial, MindUP in grades 4 and 5, was only four classes. 5-4-3-2-1 has no child trial.',
           cautions: 'Quiet inward focus can unsettle some children with trauma or anxiety.',
+          s1: [['The mindful moment', 'The first card is slow breathing with a long out-breath, the best supported. A short guided meditation is a second card, for Green and Yellow rooms. The teacher picks, and it is always optional.', 'OT Science']],
           sources: [['Dunning et al. 2022, Evidence-Based Mental Health 25:135 to 142', 'https://doi.org/10.1136/ebmental-2022-300464'], ['Kuyken et al. 2022, Evidence-Based Mental Health 25:99 to 109', 'https://doi.org/10.1136/ebmental-2021-300396'], ['Schonert-Reichl et al. 2015, Developmental Psychology', 'https://reachfamilies.umn.edu/sites/default/files/rdoc/Schonert-Reichl_2015_0.pdf'], ['Dunning et al. 2019, J Child Psychol Psychiatry', 'https://eprints.whiterose.ac.uk/id/eprint/144191/']] },
         { id: 'naming', name: 'Naming feelings and body signals', grade: 'emerging', fit: { green: 1, yellow: 2, split: 2 },
           oneLine: 'Putting a word to a feeling and a place in the body.',
@@ -1161,7 +1374,9 @@
     const swatchBar = (s) => `<span class="sb">${s.split.map(([c, n]) => `<i style="flex:${n};background:${c === 'b' ? '#6C8EBF' : `var(--${c})`}"></i>`).join('')}</span>`;
 
     document.getElementById('state-cards').innerHTML = STATES.map((s) => `<button class="state" onclick="go('activities/state/${s.id}')">${swatchBar(s)}<b>${esc(s.name)}</b><span>${esc(s.goal)}</span></button>`).join('');
-    document.getElementById('insight-states').innerHTML = STATES.map((s) => `<a class="spill" href="#activities/state/${s.id}"><i style="background:${s.swatch}"></i>${esc(s.short)}</a>`).join('');
+    // The Split room dot is hard-edged with a thin outline (Sprint 1, UI and brand); the state card bar stays as it is.
+    const dotCls = (s) => (s.id === 'split' ? ' class="sdot"' : '');
+    document.getElementById('insight-states').innerHTML = STATES.map((s) => `<a class="spill" href="#activities/state/${s.id}"><i${dotCls(s)} style="background:${s.swatch}"></i>${esc(s.short)}</a>`).join('');
     document.getElementById('amap').innerHTML = '<thead><tr><th></th>' + STATES.map((s) => `<th><span class="sw" style="background:${s.swatch}"></span>${esc(s.short)}</th>`).join('') + '</tr></thead><tbody>' +
         FAMILIES.map((f) => `<tr><th><button onclick="go('activities/family/${f.id}')"><b>${esc(f.name)}</b>${badge(f.grade)}</button></th>` +
             STATES.map((s) => (f.fit[s.id] ? `<td class="${f.fit[s.id] === 1 ? 'on' : 'side'}"><a href="#activities/family/${f.id}" aria-label="${esc(f.name)} for ${esc(s.short)}"></a></td>` : '<td></td>')).join('') + '</tr>').join('') + '</tbody>';
@@ -1180,7 +1395,8 @@
             </div>
             <p class="eyebrow" style="margin-top:8px">Activities for this result: first choices, then supporting</p>
             <div class="grid2">${ranked.map((f) => `<a class="card mlink" href="#activities/family/${f.id}"><b class="n" style="${f.fit[s.id] === 2 ? 'background:#9CC9C2' : ''}">${f.fit[s.id] === 1 ? '1st' : '+'}</b><div style="flex:1"><div class="famrow"><h3>${esc(f.name)}</h3>${badge(f.grade)}</div><p>${esc(f.oneLine)}</p></div></a>`).join('')}</div>
-            ${s.note ? `<div class="card todo"><div class="tag">To decide</div><p>${esc(s.note)}</p></div>` : ''}
+            ${s.first ? `<div class="card" id="state-first-${s.id}"><div class="tag">The first card</div><p>${esc(s.first)}</p><p class="from">From Sprint 1 · Product and pitch</p></div>` : ''}
+            ${s.note ? `<div class="card todo"><div class="tag">Note</div><p>${esc(s.note)}</p></div>` : ''}
         </section>`));
     }
     for (const f of FAMILIES) {
@@ -1188,7 +1404,7 @@
         gen.appendChild(el(`<section class="page" id="p-activities-family-${f.id}" data-crumb="${esc(f.name)}">
             <p class="eyebrow">Activity family</p>
             <h2>${esc(f.name)}</h2>
-            <div class="pill-row">${badge(f.grade)}${f.gradeNote ? `<span class="note">${esc(f.gradeNote)}</span>` : ''}${used.map((s) => `<a class="spill" href="#activities/state/${s.id}"><i style="background:${s.swatch}"></i>${esc(s.short)}${f.fit[s.id] === 2 ? ' (supporting)' : ''}</a>`).join('')}</div>
+            <div class="pill-row">${badge(f.grade)}${f.gradeNote ? `<span class="note">${esc(f.gradeNote)}</span>` : ''}${used.map((s) => `<a class="spill" href="#activities/state/${s.id}"><i${dotCls(s)} style="background:${s.swatch}"></i>${esc(s.short)}${f.fit[s.id] === 2 ? ' (supporting)' : ''}</a>`).join('')}</div>
             <p class="lead">${esc(f.what)}</p>
             <p class="eyebrow" style="margin-top:6px">Example activities</p>
             <div class="acts">${f.examples.map(([n, d]) => `<div class="act"><b>${esc(n)}</b><span>${esc(d)}</span></div>`).join('')}</div>
@@ -1203,6 +1419,7 @@
                     <div class="card warn"><div class="tag">Cautions</div><p>${esc(f.cautions)}</p></div>
                 </div>
             </div>
+            ${f.s1 ? `<p class="eyebrow" style="margin-top:8px">The RegulateED cards, agreed in Sprint 1</p><div class="grid2" id="family-s1-${f.id}">${f.s1.map(([t, x, c]) => `<div class="card"><div class="tag">${esc(t)}</div><p>${esc(x)}</p><p class="from">From Sprint 1 · ${esc(c)}</p></div>`).join('')}</div>` : ''}
             <div class="card"><div class="tag">Key sources</div>${src(f.sources)}</div>
         </section>`));
     }
@@ -1404,7 +1621,8 @@
         hit.page.classList.add('on');
         document.body.classList.toggle('at-hub', hit.page.id === 'p-hub');
         const t = trailOf(hit.route);
-        document.getElementById('trail').innerHTML = t.map((x, i) => (i === t.length - 1 ? `<b>${esc(x.name)}</b>` : `<a href="#${x.route}">${esc(x.name)}</a><span>›</span>`)).join('');
+        // One pill, every part tappable, the current page last (Sprint 1, UI and brand).
+        document.getElementById('trail').innerHTML = t.map((x, i) => (i === t.length - 1 ? `<a class="here" href="#${x.route}" aria-current="page">${esc(x.name)}</a>` : `<a href="#${x.route}">${esc(x.name)}</a><span>›</span>`)).join('');
         hit.page.querySelectorAll('.gchip.focus').forEach((c) => c.classList.remove('focus'));
         if (hit.rest[0]) { const c = hit.page.querySelector(`.gchip[data-g="${hit.rest[0]}"]`); if (c) c.classList.add('focus'); }
         window.scrollTo(0, 0);
@@ -1414,8 +1632,8 @@
     addEventListener('hashchange', show);
     show();
 </script>
-<script>window.REVIEW = {"page":"workflow","version":"2","file":"index.html","links":{"current":"index.html","currentPage":"workflow","data-collection@1":"data-collection.html","workflow@1":"workflow-v1.html","manual":"manual.html","earlier":"earlier-comments.html"},"title":"RegulateED product workflow","api":"https://regulateed-review.sashook.com","passHash":"1a55f65e93387e97bce9768422378405e8daf8cdd3e270528c7ccc76f24e32a3","sources":[{"page":"data-collection","version":"1","sprint":"1","tag":"Earlier data collection","file":"data-collection.html","carry":[["","collect"],["grade/","collect/grade/"],["method/","collect/method/"],["concept/own-ipad","collect/own-ipad"],["concept/insights","insights/to-activities"],["concept/event","insights/event"],["concept/split","insights/split"],["concept/privacy","foundations/privacy"]]},{"page":"workflow","version":"1","sprint":"1","tag":"Earlier workflow","file":"workflow-v1.html","carry":[]}],"nav":{"bottom":{"label":"Sprints","href":"#sprints"}}};</script>
-<script src="review.js?v=294c17071e"></script>
-<script src="rounds.js?v=294c17071e"></script>
+<script>window.REVIEW = {"page":"workflow","version":"3","file":"index.html","links":{"current":"index.html","currentPage":"workflow","data-collection@1":"data-collection.html","workflow@1":"workflow-v1.html","workflow@2":"workflow-v2.html","manual":"manual.html","earlier":"earlier-comments.html"},"title":"RegulateED product workflow","api":"https://regulateed-review.sashook.com","passHash":"1a55f65e93387e97bce9768422378405e8daf8cdd3e270528c7ccc76f24e32a3","sources":[{"page":"data-collection","version":"1","sprint":"1","tag":"Earlier data collection","file":"data-collection.html","carry":[["","collect"],["grade/","collect/grade/"],["method/","collect/method/"],["concept/own-ipad","collect/own-ipad"],["concept/insights","insights/to-activities"],["concept/event","insights/event"],["concept/split","insights/split"],["concept/privacy","foundations/privacy"]]},{"page":"workflow","version":"1","sprint":"1","tag":"Earlier workflow","file":"workflow-v1.html","carry":[]},{"page":"workflow","version":"2","sprint":"1","tag":"Sprint 1 workflow","file":"workflow-v2.html","carry":[]}],"nav":{"bottom":{"label":"Sprints","href":"#sprints"}}};</script>
+<script src="review.js?v=a67f0b00d3"></script>
+<script src="rounds.js?v=a67f0b00d3"></script>
 </body>
 </html>

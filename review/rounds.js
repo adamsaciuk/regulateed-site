@@ -453,7 +453,7 @@
         // One line: the sprint, and how many threads still stand between it and closing (Adam: no note text).
         const stillOpen = threadsIn(current()).filter((c) => !c.resolved).length;
         body.append(h('div', { class: 'rv-sp', title: sp.note || '' }, h('b', {}, sp.title), h('span', { class: 'rv-pill ok' }, 'Open'),
-            stillOpen ? h('span', { class: 'rv-n open' }, `${stillOpen} open`) : h('span', { class: 'rv-n res' }, 'Ready to close')));
+            stillOpen ? h('span', { class: 'rv-n open' }, `${stillOpen} open`) : threadsIn(current()).length ? h('span', { class: 'rv-n res' }, 'Ready to close') : h('span', { class: 'rv-n' }, 'No threads yet')));
         for (const ct of liveCats()) body.append(categoryNode(ct, threadsIn(current(), ct.id)));
         const loose = threadsIn(current(), null);
         if (loose.length) body.append(categoryNode({ id: '_loose', title: 'Not filed yet', purpose: 'Iris attaches each of these to a category.' }, loose));
@@ -461,9 +461,16 @@
             const id = '_hist' + old.n;
             const node = categoryNode({ id, hist: true, title: `${old.title} · history`, purpose: old.note || '' }, threadsIn(String(old.n)));
             if (openCats.has(id)) {
-                const frozen = h('div', { style: 'padding:4px 0' }, chipFor('v1', '', 'Workflow as it was'), h('a', { class: 'rv-chip', href: links()['data-collection@1'] || 'data-collection.html' }, 'Data collection as it was'));
-                const inner = node.querySelector('.rv-ci');
-                if (inner) inner.prepend(frozen); else node.append(h('div', { class: 'rv-ci' }, frozen));
+                // A closed sprint keeps its pages as they stood and its categories, each with its summary
+                // and threads (Sprint 2 on: the summaries were the update list).
+                const frozen = h('div', { style: 'padding:4px 0' }, ...(RV.CFG.sources || []).filter((s) => String(s.sprint) === String(old.n) && s.file)
+                    .map((s) => h('a', { class: 'rv-chip', href: s.file }, s.tag || `As it was (v${s.version})`)));
+                const inner = h('div', { class: 'rv-ci' }, frozen);
+                for (const ct of (tracker.categories || []).filter((x) => String(x.sprint) === String(old.n))) inner.append(categoryNode(ct, threadsIn(String(old.n), ct.id)));
+                const loose = threadsIn(String(old.n)).filter((c) => !catById(c.category));
+                if (loose.length) inner.append(categoryNode({ id: id + '_loose', title: 'Not filed', purpose: '' }, loose));
+                const flat = node.querySelector(':scope > .rv-ci');
+                if (flat) flat.replaceWith(inner); else node.append(inner);
             }
             body.append(node);
         }
