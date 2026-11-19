@@ -62,6 +62,9 @@
         .rv-msg .who { font-size: 11.5px; font-weight: 800; color: #4A5E6D; margin-bottom: 2px; white-space: normal; }
         .rv-msg .who time { font-weight: 600; opacity: .7; margin-left: 6px; }
         .rv-compose { margin-top: 10px; }
+        .rv-wait { align-self: flex-end; font-size: 12.5px; font-weight: 700; color: #4A5E6D; margin: -2px 4px 2px; }
+        .rv-wait.on { color: #2A9D8F; } .rv-wait.on::after { content: ''; animation: rv-dots 1.4s steps(4) infinite; }
+        @keyframes rv-dots { 0% { content: ''; } 25% { content: '.'; } 50% { content: '..'; } 75% { content: '...'; } }
         .rv-compose textarea { width: 100%; box-sizing: border-box; font: inherit; font-size: 15px; border: 2px solid #E9E1D6; border-radius: 12px; padding: 8px 10px; min-height: 70px; resize: vertical; }
         .rv-compose .row { display: flex; gap: 8px; justify-content: space-between; margin-top: 8px; }
         .rv-compose button { font: inherit; font-weight: 700; font-size: 14px; border: 1px solid #E9E1D6; background: #fff; border-radius: 30px; padding: 7px 14px; cursor: pointer; }
@@ -353,6 +356,10 @@
         node.append(head);
         return node;
     };
+    // "Iris is working on it" (Adam, 2026-11-19): under a message still waiting on Iris, at once when it is sent,
+    // then the watcher's word when her agent has started on it. Gone when her reply lands.
+    const isWorking = (key) => RV.working().includes(key);
+    const waitLine = (key) => isWorking(key) ? h('div', { class: 'rv-wait on' }, 'Iris is working on it') : h('div', { class: 'rv-wait' }, 'Sent. Iris picks it up within 2 minutes and answers here.');
     const showDetail = (id) => { detailId = id; detailSig = ''; RV.markSeen(id); paint(); };
     const closeDetail = () => { detailId = null; detailSig = ''; paint(); };
     const paintDetail = () => {
@@ -361,7 +368,7 @@
         detailEl.classList.toggle('open', open);
         if (!open) return;
         // Repaint only when the thread changed, so a reply being typed is never wiped by the refresh.
-        const sig = [c.id, RV.repliesOf(c).length, c.resolved, c.outcome, c.research && c.research.state, RV.isPaused()].join('|');
+        const sig = [c.id, RV.repliesOf(c).length, c.resolved, c.outcome, c.research && c.research.state, RV.isPaused(), isWorking(c.id)].join('|');
         if (sig === detailSig) return;
         detailSig = sig;
         const [st, k] = stateOf(c);
@@ -373,6 +380,8 @@
             talk.append(h('div', { class: 'rv-msg' + (m.role === 'iris' ? ' iris' : RV.mine(m) ? ' me' : '') },
                 h('div', { class: 'who' }, m.role === 'iris' ? 'Iris' : m.name, h('time', {}, when(m.created))), ...chips(m.text), m.image ? RV.shotOf(m.image) : null));
         }
+        const lastMsg = [c, ...RV.repliesOf(c)].pop();
+        if (!c.resolved && lastMsg.role !== 'iris') talk.append(waitLine(c.id));
         if (c.research) talk.append(h('div', { class: 'rv-state' }, h('b', {}, 'Research request: '), c.research.state === 'answered' && c.research.slug ? chipFor('research', c.research.slug) : c.research.state === 'progress' ? 'Iris is working on it; the answer comes back here.' : 'Iris will research it and answer here.'));
         if (c.resolved) talk.append(h('div', { class: 'rv-state' + (c.outcome === 'noaction' ? '' : ' ok') }, h('b', {}, c.outcome === 'noaction' ? 'Closed with no action' : 'Resolved'), c.note ? ': ' + plain(c.note).slice(0, 240) : ''));
         const where = h('button', { class: 'rv-chip', type: 'button' }, h('span', { class: 'k' }, 'Evidence'), 'Show it on the page');
@@ -524,13 +533,15 @@
     // message being typed is never wiped (Adam's bug, 2026-11-18), and the draft survives a tab switch.
     const paintIris = () => {
         const msgs = me() ? chatOf(me()) : [];
-        const sig = [me(), msgs.length, msgs.length ? msgs[msgs.length - 1].id : '', RV.isPaused()].join('|');
+        const own = msgs.filter((m) => m.route === me());
+        const waiting = own.length > 0 && own[own.length - 1].role !== 'iris' && msgs[msgs.length - 1].route === me();
+        const sig = [me(), msgs.length, msgs.length ? msgs[msgs.length - 1].id : '', RV.isPaused(), waiting && isWorking('chat:' + me())].join('|');
         if (body.dataset.shows === 'iris' && body.dataset.sig === sig) return;
         body.dataset.shows = 'iris';
         body.dataset.sig = sig;
         body.replaceChildren();
         body.append(h('div', { class: 'rv-msgs' }, ...msgs.map((m) => h('div', { class: 'rv-msg' + (m.role === 'iris' ? ' iris' : RV.mine(m) ? ' me' : '') },
-            h('div', { class: 'who' }, m.role === 'iris' ? 'Iris' : m.name, m.team ? ' · to the team' : '', h('time', {}, when(m.created))), ...chips(m.text)))));
+            h('div', { class: 'who' }, m.role === 'iris' ? 'Iris' : m.name, m.team ? ' · to the team' : '', h('time', {}, when(m.created))), ...chips(m.text))), waiting ? waitLine('chat:' + me()) : null));
         body.append(composer('Message Iris', (name, text, team) => RV.api('POST', '/api/review/comments', { page: 'chat', version: '1', route: name.trim().toLowerCase(), anchor: null, parent: null, name, text, team })));
         const list = body.firstElementChild;
         requestAnimationFrame(() => { list.scrollTop = list.scrollHeight; });

@@ -283,6 +283,8 @@
     let greeted = false;
     let online = true;
     let paused = null;
+    // What Iris is working on now (the watcher's list, Adam 2026-11-19): thread ids and "chat:<route>".
+    let working = [];
     const pins = h('div', { id: 'rv-pins', class: 'rv-ui' });
     const banner = h('div', { id: 'rv-banner', class: 'rv-ui' });
     const panelBody = h('div', { class: 'body' });
@@ -325,6 +327,7 @@
         try {
             // A maintenance pause (Adam): the team reads but cannot add until Iris lifts it; queued comments wait.
             const st = await api('GET', '/api/review/state').catch(() => ({ paused: false }));
+            working = Array.isArray(st.working) ? st.working : [];
             // The demo page stays open during a pause, for testing (Adam, Sprint 2).
             paused = st.paused && CFG.page !== 'demo' ? (st.note || 'Maintenance pause: comments are closed for a short while.') : null;
             html.classList.toggle('rv-paused', !!paused);
@@ -889,7 +892,7 @@
         addEventListener('keydown', (ev) => { if (ev.key === 'Escape') { setPlacing(false); closePop(); } });
         addEventListener('hashchange', () => { closePop(); setTimeout(render, 40); });
         addEventListener('resize', () => setTimeout(render, 60));
-        window.RV = { CFG, api, h, esc, say, needName, markSeen, sync, render, route, routeName, me, mine, repliesOf, unreadIn, openThread, pointOf, pathOf, isUi, closePop, panel, panelBody, bar, AVATAR, NAME_KEY, PASS_KEY, VERSION, shotOf, comments: () => comments, isPaused: () => !!paused };
+        window.RV = { CFG, api, h, esc, say, needName, markSeen, sync, render, route, routeName, me, mine, repliesOf, unreadIn, openThread, pointOf, pathOf, isUi, closePop, panel, panelBody, bar, AVATAR, NAME_KEY, PASS_KEY, VERSION, shotOf, comments: () => comments, isPaused: () => !!paused, working: () => working };
         if (RVX().start) RVX().start();
         sync();
         setInterval(sync, 20000);
