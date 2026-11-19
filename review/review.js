@@ -349,7 +349,10 @@
     };
 
     // An anchor is the element tapped (as a path from <body>) plus where in it, as fractions.
+    // A tap on the page background is the page itself: "body", never an empty path, which the API drops as no
+    // spot at all (Adam's "Accessing correct sessions" tag, 2026-11-19, saved with no pin).
     const pathOf = (el) => {
+        if (!el || el === document.documentElement) return 'body';
         const steps = [];
         while (el && el !== document.body) {
             if (el.id) { steps.unshift('#' + CSS.escape(el.id)); break; }
@@ -358,7 +361,7 @@
             steps.unshift(`${el.tagName.toLowerCase()}:nth-child(${index})`);
             el = parent;
         }
-        return steps.join(' > ');
+        return steps.join(' > ') || 'body';
     };
     // If the exact element is gone (the page changed), the pin falls back to the nearest
     // surviving part of its path and says it may have moved.
@@ -878,7 +881,8 @@
             if (!placing || isUi(ev.target)) return;
             ev.preventDefault();
             ev.stopPropagation();
-            const target = ev.target.nodeType === 1 ? ev.target : ev.target.parentElement;
+            const hit = ev.target.nodeType === 1 ? ev.target : ev.target.parentElement;
+            const target = hit === document.documentElement ? document.body : hit;
             const r = target.getBoundingClientRect();
             const anchor = {
                 path: pathOf(target),
