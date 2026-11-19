@@ -1,0 +1,37 @@
+{
+    "id": "grade-1-after-recess",
+    "title": "Reggie Comes In From the Playground",
+    "note": "Invented example to build the engine on. Jordan writes the real session.",
+    "grade": "1",
+    "age": "young",
+    "moment": "After recess",
+    "room": "wired",
+    "screen": "class",
+    "voiceMode": "reggie",
+    "theme": {"place": "the playground"},
+    "trend": {
+        "insight": "Pattern",
+        "text": "After recess this Grade 1 class is mostly Yellow 4 days out of 5, with a few in Red.",
+        "week": [
+            {"day": "Mon", "green": 7, "yellow": 11, "red": 3},
+            {"day": "Tue", "green": 6, "yellow": 12, "red": 3},
+            {"day": "Wed", "green": 13, "yellow": 6, "red": 2},
+            {"day": "Thu", "green": 7, "yellow": 10, "red": 4},
+            {"day": "Fri", "green": 8, "yellow": 10, "red": 3}
+        ]
+    },
+    "before": {"method": "Door tap on the teacher's iPad", "green": 8, "yellow": 10, "red": 3},
+    "after": {"method": "Teacher's read"},
+    "reward": {"kind": "garden", "count": 6},
+    "boxes": [
+        {"type": "before"},
+        {"type": "story", "seconds": 13, "motion": "puffed", "engagement": "watch",
+            "say": ["Phew! I just ran in from {place}. My body is still zooming!", "Is your body zooming too? Let's slow it down together."]},
+        {"type": "follow", "seconds": 30, "moves": ["jog", "walk", "tiptoe"], "tempo": {"fromBpm": 150, "toBpm": 72}, "engagement": "copy", "cue": "Stand beside your chair"},
+        {"type": "freeze", "seconds": 5, "engagement": "freeze"},
+        {"type": "breathe", "breaths": 5, "pace": "steady", "engagement": "breathe-with", "cue": "Hand on your belly"},
+        {"type": "wind-down", "engagement": "watch"},
+        {"type": "after"},
+        {"type": "reward"}
+    ]
+}

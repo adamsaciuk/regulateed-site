@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reggie Motion Engine · RegulateED</title>
+<link rel="stylesheet" href="reggie/engine.css">
+<meta name="robots" content="noindex, nofollow">
+<style>html.rv-locked body { visibility: hidden; }</style>
+<script>document.documentElement.classList.add('rv-locked');</script>
+</head>
+<body>
+<header class="bar">
+    <div class="brand"><b>RegulateED</b><span>Reggie Motion Engine · first build</span></div>
+    <nav class="tabs">
+        <button class="tab on" data-tab="player">Player</button>
+        <button class="tab" data-tab="toolkit">Reggie toolkit</button>
+        <button class="tab" data-tab="sessions">Sessions as boxes</button>
+        <a class="tab" href="reggie-lab.html">Voice and moves lab</a>
+    </nav>
+    <div class="mock-flag">Mock data · placeholder sessions · Jordan writes the real ones</div>
+</header>
+
+<main>
+    <section class="tab-page" id="page-player">
+        <div class="session-picker" id="session-picker"></div>
+        <h1 id="session-title"></h1>
+        <div class="player">
+            <div class="left">
+                <div class="screen-label">Class screen</div>
+                <div class="class-screen" id="class-screen"></div>
+                <div class="screen-label">Session boxes</div>
+                <div class="box-strip" id="box-strip"></div>
+                <div id="tablet-area" hidden>
+                    <div class="screen-label">Children's tablets <span id="tablet-note"></span></div>
+                    <div class="tablets" id="tablets"></div>
+                </div>
+            </div>
+            <aside class="teacher">
+                <div class="screen-label">Teacher</div>
+                <div class="controls">
+                    <button id="start" class="go">Start</button>
+                    <button id="pause">Pause</button>
+                    <button id="wind-down">Wind down now</button>
+                    <button id="skip">Skip box</button>
+                    <button id="restart" class="go">Run it again</button>
+                </div>
+                <div id="before-wrap" class="panel"><div id="before-panel"></div></div>
+                <div id="after-wrap" class="panel" hidden><div id="after-panel"></div></div>
+                <div class="panel settings">
+                    <label>Voice <select id="voice-mode"></select></label>
+                    <label id="pace-wrap">Breathing pace <select id="pace"></select></label>
+                    <label class="check"><input type="checkbox" id="sound" checked> Sound</label>
+                    <label class="check"><input type="checkbox" id="reduced"> Less motion</label>
+                    <p class="hint">Paces are placeholders: Jordan sets the seconds. Reggie is a young boy: until his real voice is chosen he uses a male browser voice pitched up (<span id="voice-name">none found</span>).</p>
+                </div>
+                <div id="record-box" class="panel" hidden>
+                    <div class="panel-tag">Run record · mock</div>
+                    <pre id="run-record" class="json"></pre>
+                </div>
+            </aside>
+        </div>
+    </section>
+
+    <section class="tab-page" id="page-toolkit" hidden>
+        <h1>The Reggie toolkit</h1>
+        <p class="lead">Every Reggie tool, action and feature, by category. Motions, boxes and words are read from the engine itself. Built means it works on this page; Placeholder means it works but Jordan sets the real content; Later means planned.</p>
+        <div id="toolkit"></div>
+    </section>
+
+    <section class="tab-page" id="page-sessions" hidden>
+        <h1>Sessions as boxes</h1>
+        <p class="lead">Each session is a list of boxes, kept as data in <code>reggie\sessions\</code>. Changing a session never means changing the engine.</p>
+        <div id="sessions-list"></div>
+    </section>
+</main>
+<script type="module" src="reggie/src/app.js"></script>
+<script>window.REVIEW = {"page":"reggie-engine","version":"1","file":"reggie-engine.html","links":{"current":"index.html","currentPage":"workflow","data-collection@1":"data-collection.html","workflow@1":"workflow-v1.html","workflow@2":"workflow-v2.html","manual":"manual.html","earlier":"earlier-comments.html","reggie-engine":"reggie-engine.html","reggie-lab":"reggie-lab.html"},"title":"Reggie Motion Engine","api":"https://regulateed-review.sashook.com","passHash":"1a55f65e93387e97bce9768422378405e8daf8cdd3e270528c7ccc76f24e32a3","sources":[],"nav":{"top":{"label":"← Demo","href":"index.html#demo"},"bottom":{"label":"← Demo","href":"index.html#demo"}}};</script>
+<script src="review.js?v=a67f0b00d3"></script>
+<script src="rounds.js?v=a67f0b00d3"></script>
+</body>
+</html>

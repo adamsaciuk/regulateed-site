@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en-US">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reggie lab · RegulateED</title>
+<link rel="stylesheet" href="reggie/engine.css">
+<link rel="stylesheet" href="reggie/lab.css">
+<meta name="robots" content="noindex, nofollow">
+<style>html.rv-locked body { visibility: hidden; }</style>
+<script>document.documentElement.classList.add('rv-locked');</script>
+</head>
+<body>
+<header class="bar">
+    <div class="brand"><b>RegulateED</b><span>Reggie lab: try his voice and his moves</span></div>
+    <nav class="tabs"><a class="tab" href="reggie-engine.html">Back to the Reggie Motion Engine</a></nav>
+    <div class="mock-flag">Placeholder voice · Reggie is a young boy</div>
+</header>
+<main class="lab">
+    <section class="lab-reggie">
+        <div class="lab-stage"><div id="lab-reggie" class="lab-reggie-spot"></div><div id="lab-caption" class="lab-caption"></div></div>
+        <p class="hint">He moves his mouth while he talks. Everything on this page runs in this browser; the voices are the ones this device has.</p>
+    </section>
+
+    <section class="lab-panel">
+        <h2>1. His voice</h2>
+        <div class="lab-row">
+            <label class="check"><input type="checkbox" id="english-only" checked> English (US) only</label>
+            <label class="check"><input type="checkbox" id="male-only"> Male voices first</label>
+        </div>
+        <p id="voice-warning" class="voice-warning" hidden>This browser only has basic, robotic voices. Open this page in <b>Microsoft Edge</b> for the natural voices (Andrew, Brian, Christopher, Eric, Guy and more). On the iPad, Safari has its own.</p>
+        <div id="voice-list" class="voice-list"></div>
+        <div class="sliders">
+            <label>Pitch <input type="range" id="pitch" min="0.5" max="2" step="0.05"> <output id="pitch-out"></output></label>
+            <label>Speed <input type="range" id="speed" min="0.6" max="1.5" step="0.02"> <output id="speed-out"></output></label>
+        </div>
+        <div class="lab-row presets" id="presets"></div>
+
+        <h2>2. Hear him say something</h2>
+        <div class="lab-row">
+            <label>Line <select id="intent"></select></label>
+            <label>For <select id="age"><option value="young">Grades K to 3</option><option value="older">Grades 4 and 5</option></select></label>
+            <button id="say-line" class="go">Say a line</button>
+        </div>
+        <div class="lab-row">
+            <input id="own-words" class="own-words" placeholder="Or type anything for Reggie to say" value="Hi friends! I'm Reggie. Let's take a slow breath together.">
+            <button id="say-own" class="go">Say this</button>
+        </div>
+        <div class="lab-row">
+            <button id="compare">Compare: the same words in each voice</button>
+            <button id="stop">Stop</button>
+        </div>
+
+        <h2>3. Keep it</h2>
+        <div class="lab-row">
+            <button id="save" class="go">Use this for Reggie in the engine</button>
+            <button id="reset">Back to the default</button>
+        </div>
+        <p class="hint" id="saved-note"></p>
+
+        <h2>4. His moves</h2>
+        <div id="motion-buttons" class="motion-buttons"></div>
+        <div class="sliders">
+            <label>Tempo <input type="range" id="bpm" min="40" max="170" step="2" value="100"> <output id="bpm-out">100</output> beats a minute</label>
+            <label class="check"><input type="checkbox" id="lab-reduced"> Less motion</label>
+        </div>
+        <p class="hint" id="motion-what"></p>
+    </section>
+</main>
+<script type="module" src="reggie/src/lab.js"></script>
+<script>window.REVIEW = {"page":"reggie-lab","version":"1","file":"reggie-lab.html","links":{"current":"index.html","currentPage":"workflow","data-collection@1":"data-collection.html","workflow@1":"workflow-v1.html","workflow@2":"workflow-v2.html","manual":"manual.html","earlier":"earlier-comments.html","reggie-engine":"reggie-engine.html","reggie-lab":"reggie-lab.html"},"title":"Reggie Motion Engine: voice and moves lab","api":"https://regulateed-review.sashook.com","passHash":"1a55f65e93387e97bce9768422378405e8daf8cdd3e270528c7ccc76f24e32a3","sources":[],"nav":{"top":{"label":"← Demo","href":"index.html#demo"},"bottom":{"label":"← Demo","href":"index.html#demo"}}};</script>
+<script src="review.js?v=a67f0b00d3"></script>
+<script src="rounds.js?v=a67f0b00d3"></script>
+</body>
+</html>

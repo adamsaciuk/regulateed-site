@@ -1,0 +1,36 @@
+{
+    "id": "grade-4-start-of-day",
+    "title": "Land the Day",
+    "note": "Invented example to build the engine on. Jordan writes the real session.",
+    "grade": "4",
+    "age": "older",
+    "moment": "Start of day",
+    "room": "split",
+    "screen": "device",
+    "voiceMode": "captions",
+    "theme": {"place": "home"},
+    "trend": {
+        "insight": "Split, not average",
+        "text": "At the start of the day this Grade 4 class is mostly Green, but the same few are in Red most mornings. An average would hide them.",
+        "week": [
+            {"day": "Mon", "green": 17, "yellow": 3, "red": 4},
+            {"day": "Tue", "green": 18, "yellow": 2, "red": 4},
+            {"day": "Wed", "green": 19, "yellow": 3, "red": 2},
+            {"day": "Thu", "green": 17, "yellow": 3, "red": 4},
+            {"day": "Fri", "green": 18, "yellow": 2, "red": 4}
+        ]
+    },
+    "before": {"method": "Each child's own check-in in the app, anonymous", "green": 18, "yellow": 2, "red": 4},
+    "after": {"method": "Each child's own re-check in the app, anonymous"},
+    "reward": {"kind": "own-star", "count": 0},
+    "boxes": [
+        {"type": "before"},
+        {"type": "intro", "seconds": 9, "motion": "wave", "engagement": "watch"},
+        {"type": "follow", "seconds": 44, "moves": ["reach", "sway", "reach", "sway"], "tempo": {"fromBpm": 56, "toBpm": 46}, "engagement": "copy", "cue": "Stand by your desk"},
+        {"type": "choice", "seconds": 10, "options": ["breathe", "squeeze", "headphones"], "engagement": "choose"},
+        {"type": "solo", "seconds": 60, "engagement": "alone"},
+        {"type": "wind-down", "engagement": "watch"},
+        {"type": "after"},
+        {"type": "reward"}
+    ]
+}
