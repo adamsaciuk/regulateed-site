@@ -338,6 +338,12 @@
     .dpart .tag { margin-bottom: 2px; }
     .dpart.open .tag { color: var(--coral); }
     .dpart p { margin: 0; }
+    .demobtn + .demobtn { margin-top: 12px; }
+    .demobtn.pitch { background: var(--teal); }
+    .pslide h3 { display: flex; align-items: center; gap: .5em; flex-wrap: wrap; }
+    .pnum { flex: none; display: inline-grid; place-items: center; width: 1.8em; height: 1.8em; border-radius: 50%; background: var(--slate); color: #fff; font-size: .8em; font-weight: 800; }
+    .pslide.live .pnum { background: var(--coral); }
+    .plive { font-style: normal; font-size: .62em; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--coral); border: 1.5px solid var(--coral); border-radius: 999px; padding: .1em .6em; }
 </style>
 <meta name="robots" content="noindex, nofollow">
 <style>html.rv-locked body { visibility: hidden; }</style>
@@ -412,8 +418,10 @@
     <p class="loopback">↺ The next check-in starts the loop again, and every turn adds to the evidence.</p>
     <!-- Sprint 2: the demo (Adam: "lets add a tab in Sprint 2 that helps define exactly what we want to aim for in the demo") -->
     <div class="sprintblock" id="hub-sprint2">
-        <div class="stagehead sd"><div class="n">Sprint 2 · now</div><h2>The demo</h2><p>The door into the demo environment, where the prototype is built. Sprint 2 works on its information and plan page; Sprint 3 builds the rooms.</p></div>
+        <div class="stagehead sd"><div class="n">Sprint 2 · now</div><h2>The demo and the pitch deck</h2><p>The door into the demo environment, where the prototype is built: Sprint 2 works on its information and plan page, and Sprint 3 builds the rooms. Beside it, the pitch deck's starting structure, a Sprint 2 priority.</p></div>
         <button class="demobtn" id="hub-demo" onclick="go('demo')"><svg class="sym" viewBox="0 0 100 100" aria-hidden="true"><use href="#reggie"/></svg><div><b>Enter the demo environment</b><span>Start with the information and plan page: tag any block to shape the demo</span></div></button>
+        <!-- Adam, 2026-11-21: "We will push this PitchDeck page in to sprint 2 as it's a priority" -->
+        <button class="demobtn pitch" id="hub-pitch" onclick="go('pitch')"><svg class="sym" viewBox="0 0 100 100" aria-hidden="true"><use href="#reggie"/></svg><div><b>The pitch deck</b><span>Iris's starting structure, slide by slide: Jordan shapes it in Sprint 2</span></div></button>
     </div>
     <p class="eyebrow">Foundations, under every step</p>
     <div class="tiles">
@@ -1067,10 +1075,145 @@
             <div class="dpart"><div class="tag">So far</div><p>"Consistent with the research", evidence grades on the cards, never "proven". Anonymous class results only, no parent view, no device ID, and the QR described as class-bounded, never verified.</p></div>
             <div class="dpart open"><div class="tag">Open</div><p>Is there anything Jordan wants said about the OT science?</p></div></div>
         <div class="card" id="demo-deck"><h3>The pitch deck</h3>
-            <div class="dpart"><div class="tag">So far</div><p>The deck carries the story and the demo carries the feel; the deck links to the demo. The 17 November deck is the starting point.</p></div>
+            <div class="dpart"><div class="tag">So far</div><p>The deck carries the story and the demo carries the feel; the deck links to the demo. The deck's starting structure now has its own page: <a href="#pitch">the pitch deck</a>.</p></div>
             <div class="dpart open"><div class="tag">Open</div><p>Which slides stay, which go, and what must each one prove?</p></div></div>
     </div>
     <div class="card todo" id="demo-next"><div class="tag">Next</div><p>When Sprint 2 closes, this page, with everything tagged on it, is the brief Iris builds the demo from in Sprint 3.</p></div>
+</section>
+
+<!-- ===================== SPRINT 2: THE PITCH DECK ===================== -->
+<!-- Adam, 2026-11-21: "Can you make a pitch deck section on the RegulateED review site." "Create a starting structure of what you think should be in the pitch deck based on everything you have learnt about RegulateED so far." "We will push this PitchDeck page in to sprint 2 as it's a priority" -->
+<section class="page" id="p-pitch" data-crumb="Pitch deck">
+    <div class="stagehead sd"><div class="n">Sprint 2 · priority</div><h2>The pitch deck: a starting structure</h2><p>Iris's first proposal for what the deck holds, slide by slide, from everything learned in Sprint 1 and Sprint 2 so far. Jordan shapes it: tag any slide or block to keep it, change it, move it or cut it. When the structure is agreed, Iris writes the deck and makes the PDF.</p></div>
+    <div class="grid2">
+        <div class="card" id="pitch-audience"><h3>Who it is for</h3>
+            <div class="dpart"><div class="tag">So far</div><p>OT colleagues and schools, judging whether RegulateED is feasible (Jordan). OT colleagues ask: is the science sound, and is it realistic for a teacher? Schools ask: how much teacher time does it take, how is each child's privacy kept, and what does the teacher get back?</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>Who is the very first audience, and when?</p></div></div>
+        <div class="card" id="pitch-presenting"><h3>Who presents, and how</h3>
+            <div class="dpart"><div class="tag">So far</div><p>Jordan presents everything. Each slide has a short speaker note, so the talking points sit beside the sample data. A PDF to send along afterward, which makes sense without Jordan in the room (Jordan asked for a PDF).</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>In person to a room, or on a video call? How long is the slot?</p></div></div>
+        <div class="card" id="pitch-shape"><h3>The shape</h3>
+            <div class="dpart"><div class="tag">So far</div><p>The deck runs as the story (Jordan): the room checks in, does an activity chosen from its own result, checks in again, then sees the trends. The rest of the deck sits around that loop, so the audience feels the product before they hear about it.</p></div></div>
+        <div class="card" id="pitch-rules"><h3>How it is written</h3>
+            <div class="dpart"><div class="tag">So far</div><p>Plain words that an OTD and a principal both follow. Every claim carries its evidence grade and says "consistent with the research", never "proven". Every number comes from the one invented sample data set the demo also uses, labeled as a placeholder. American English.</p></div></div>
+    </div>
+
+    <p class="eyebrow">Part 1 · Open with the room</p>
+    <div class="grid2">
+        <div class="card pslide" id="pitch-s01"><h3><span class="pnum">1</span>RegulateED</h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>The reset wave mark and Reggie. "Check in. Reset in two minutes. Back to learning." Jordan's name as the presenter.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>What this is in one line: an OT-designed classroom self-regulation program and app for grades K to 5, brought here to test whether it is feasible.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>How do you want to be introduced, and how should your role in RegulateED be described?</p></div></div>
+        <div class="card pslide live" id="pitch-s02"><h3><span class="pnum">2</span>Let's check in <em class="plive">Live</em></h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>"How is your body right now?" Everyone in the room taps Green, Yellow or Red, anonymously, the way a class does at the door. The room's result appears as one class color.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>A check-in takes seconds, is anonymous, and gives the teacher one class color.</p></div>
+            <div class="dpart"><div class="tag">Behind it</div><p>Barrett-Young et al 2024 (moderate): a very brief, anonymous, class-level check-in fits school entry better than a clinical screener.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>How does the audience tap: their phones by QR code, a show of hands, or colored cards? And on a video call?</p></div></div>
+        <div class="card pslide" id="pitch-s03"><h3><span class="pnum">3</span>The problem</h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>Three moments when regulation breaks down at the desk: wired after recess, sluggish after lunch, overloaded by noise and crowding. The teacher has a whole class to teach, and the OT is not in the room.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>The need is real, it happens every day, and it lands on the teacher.</p></div>
+            <div class="dpart"><div class="tag">Behind it</div><p>Salerni and Messetti 2025 (emerging): regulating emotions sits at the center of classroom behavior and peer relationships. Booth et al 2019 (emerging, abstract only): young children's hardest moments are social and outdoors, which is why after recess is a standard moment.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>Do you want a figure for how common dysregulation is in K to 5, or how much teaching time it costs? The library has none yet, so it would be a research ask.</p></div></div>
+    </div>
+
+    <p class="eyebrow">Part 2 · What RegulateED is</p>
+    <div class="grid2">
+        <div class="card pslide" id="pitch-s04"><h3><span class="pnum">4</span>One loop, three times a day</h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>The loop, run at the three standard moments (start of day, after recess, after lunch): check in, insight, an activity Reggie leads, re-check, trends.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>The whole program on one slide, simple enough for a teacher to picture in their own room.</p></div>
+            <div class="dpart"><div class="tag">Behind it</div><p>Kirk et al 2021 (emerging): a short daily routine, led by the teacher and done by the whole class at once, is feasible in classrooms.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>Is "loop" the right word for an OT audience?</p></div></div>
+        <div class="card pslide" id="pitch-s05"><h3><span class="pnum">5</span>What it includes</h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>For the class: the check-in and 2-minute resets that Reggie leads on the classroom screen. For the teacher: the class color and the teacher's read (three taps: Voices, Bodies, Ready to start), 2 or 3 activities to choose from, and the trends. For the OT: the activity library with an evidence grade on every card, the read-aloud scripts and the teacher training. And Reggie, the calm buddy who shows every activity and always finishes calm.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>What a school actually gets, for each person in the room.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>Does the school OT need a part of their own in the program? And is the class reward in: your idea of a class token that adds up to a prize at the end of the semester?</p></div></div>
+    </div>
+
+    <p class="eyebrow">Part 3 · The data</p>
+    <div class="grid2">
+        <div class="card pslide" id="pitch-s06"><h3><span class="pnum">6</span>How each grade checks in</h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>The method matrix. K and G1: the teacher-led group question or the door tap on the teacher's iPad. G2 and G3: the door tap or an anonymous QR code form. G4: the QR form or the RegulateED app. G5: the app, on a school iPad or in a browser. Every answer is tied to an event: the moment, the date, the teacher and the class.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>Every age can answer in under a minute, in the way it is able to.</p></div>
+            <div class="dpart"><div class="tag">Behind it</div><p>Barrett-Young et al 2024 (moderate), and the K to 5 data collection pages in this workflow.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>Your Sprint 2 idea that in K to G3 the teacher reads the room and answers for the whole class: does that replace the door tap, or sit beside it? And is the door tap an iPad, or a three-button device?</p></div></div>
+        <div class="card pslide" id="pitch-s07"><h3><span class="pnum">7</span>Privacy, plainly</h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>Anonymous class results only, never a record of one child. No names, no parent view, no device ID. Before any pilot: a written data retention policy, a privacy notice and a review by a privacy attorney.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>A principal can say yes without a privacy worry.</p></div>
+            <div class="dpart"><div class="tag">Behind it</div><p>Keeping results anonymous and class-level keeps RegulateED clear of the heavier COPPA and FERPA duties, which apply once a check-in is tied to one child (Sprint 1 research, not legal advice).</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>Your Sprint 2 question on the policy and rules for bringing a program into an elementary school: the answer lands on this slide.</p></div></div>
+        <div class="card pslide" id="pitch-s08"><h3><span class="pnum">8</span>What we do with the data</h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>Insights: this moment against the class's usual, the pattern across the week, and a split room shown as a split, not an average. Then 2 or 3 activities from different families, the best supported first.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>The data turns into a choice the teacher can make in seconds.</p></div>
+            <div class="dpart"><div class="tag">Behind it</div><p>Wickerd and Hulac 2017 (from the Sprint 1 research): teacher ratings are steadier as an average over about eight resets, so RegulateED reads trends, not one reset.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>What should the teacher see first after a check-in?</p></div></div>
+    </div>
+
+    <p class="eyebrow">Part 4 · The interventions, done in the room</p>
+    <div class="grid2">
+        <div class="card pslide live" id="pitch-s09"><h3><span class="pnum">9</span>The room picks the reset <em class="plive">Live</em></h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>The room's result from slide 2 picks the activity, and Reggie leads a 2-minute reset on screen while everyone does it. A mostly Red room gets slow breathing with a long out-breath. It runs on the Reggie Motion Engine.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>What a child experiences, felt rather than described.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>Which activity for the live moment: breathing (your favorite), or something with movement?</p></div></div>
+        <div class="card pslide" id="pitch-s10"><h3><span class="pnum">10</span>The interventions</h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>The activity families as cards, each with its grade: slow breathing with a long out-breath (Reggie's belly grows and shrinks, three paces), heavy work, movement breaks to a song (winding down in the last 30 seconds), story-led movement ending in a freeze and a calm pose, self-soothing touch, and a mindful moment. G4 and G5 also get a private desk menu of 2 or 3. A mostly Red room starts with breathing, lower lights and a lower teacher voice.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>A small, OT-designed library: the same families in every grade, each with how it is run.</p></div>
+            <div class="dpart"><div class="tag">Behind it</div><p>Culotta et al 2025 (emerging): very short, movement-based, child-chosen mindfulness works at the kindergarten level. Latifi et al 2025 (weak or contested): the closest match, short sensory activities run by teachers in class. Mazzoli et al 2021 (weak or contested): 2-minute desk breaks are feasible and cheap. A caution, Egger et al 2018 (moderate, abstract only): a mentally demanding movement break may hurt flexible thinking right afterward, so resets stay simple.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>Which families are in the first cut, and your picks for the breathing seconds and the songs?</p></div></div>
+        <div class="card pslide" id="pitch-s11"><h3><span class="pnum">11</span>The OT science behind it</h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>Four ideas, each with its honest strength. Interoception, noticing body signals (Mahler et al 2022 and 2024, Bishop et al 2023, Cangi and Bumin 2026: emerging). Sensory-based strategies and body awareness for self-regulation, with the Alert Program as the closest relative of a color check-in (Pfeiffer et al 2018: moderate). A tiered school model where whole-class supports are Tier 1 (Whiting et al 2025: emerging). And the frameworks in OT language: polyvagal theory, sensory integration, the Zones of Regulation and Person-Environment-Occupation, kept as Jordan asked.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>The science is sound, and it is stated honestly.</p></div>
+            <div class="dpart"><div class="tag">Behind it</div><p>The strong Ayres Sensory Integration evidence (Piller et al 2025, Acuña et al 2025, Schaaf et al 2018: moderate) tests one-to-one clinic therapy, not a 2-minute desk break, so it is OT background only. Two sources to recheck before the deck: Laborde 2022 and Obradovic 2021.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>Which framework leads for your audience?</p></div></div>
+        <div class="card pslide live" id="pitch-s12"><h3><span class="pnum">12</span>Check in again <em class="plive">Live</em></h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>The same tap, then before and after side by side. Then the honest line: one reset can go either way, and the trend is what counts.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>The loop closes in the room.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>Show the room's real result, or move on to the sample data if the room did not shift?</p></div></div>
+    </div>
+
+    <p class="eyebrow">Part 5 · Outcomes, and how it works</p>
+    <div class="grid2">
+        <div class="card pslide" id="pitch-s13"><h3><span class="pnum">13</span>Trends and outcomes</h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>The invented sample data (Jordan's shape): 2 schools, 2 classes in each grade, 8 weeks. One Before vs After chart per standard moment, Green, Yellow and Red stacked, week by week: a class a little restless after recess, a class wired after lunch, and which activities work for each. The outcomes we look for: fewer Reds and Yellows at each moment, children naming their body signals, and less teaching time lost at transitions. No fixed targets until the pilot sets them.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>What a school would learn after a term.</p></div>
+            <div class="dpart"><div class="tag">Behind it</div><p>Weiss 2024 (moderate): self-regulation grows with age anyway, so a trend needs a comparison before it means anything.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>Which outcome matters most to you, and to the audience?</p></div></div>
+        <div class="card pslide" id="pitch-s14"><h3><span class="pnum">14</span>A day with RegulateED</h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>A teacher's day as a timeline: the door tap at the start of the day, the check-in after recess, the three taps, a choice of 1 of 3 activities, Reggie leads 2 minutes, the re-check. Every Monday the activity order updates from the class's own re-checks. Training: a short video, a read-aloud script for every card, and a live session Jordan leads before the pilot.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>It fits a real school day without adding work.</p></div>
+            <div class="dpart"><div class="tag">Behind it</div><p>Cunha et al 2023 (emerging): teachers can run a self-regulation program with training and light monitoring. Mills and Chapparo 2018 (emerging): what teachers say about a classroom sensory schedule. Young et al 2026 (weak or contested): a short webinar can train educators.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>How many minutes per moment is realistic in a real classroom?</p></div></div>
+    </div>
+
+    <p class="eyebrow">Part 6 · The pilot</p>
+    <div class="grid2">
+        <div class="card pslide" id="pitch-s15"><h3><span class="pnum">15</span>How a pilot runs in a school</h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>3 to 6 classrooms, a multiple baseline: check-ins alone for at least 5 school days, then the resets added, each class starting a week apart in a random order. Measures: the class colors before and after each reset, the teacher's read, one outcome a teacher or observer records (on-task time, minutes lost, or office referrals), how many planned resets were delivered, and what teachers say. Success criteria written before it starts, for example 80% of planned resets delivered and 75% of check-ins completed. It tests whether the program is feasible, not how big its effect is. Before it starts: OTs, teachers and children rate the activity material and it is revised, the privacy papers are done, the school and district approve, and the music rights are cleared.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>A school can say yes to a small, safe, well-designed trial.</p></div>
+            <div class="dpart"><div class="tag">Behind it</div><p>The pilot design research from Sprint 1 (strong: consensus methods standards, the What Works Clearinghouse handbook and the CONSORT pilot extension). Roan et al 2022: a cheap, respectable way to vet material with experts and end users before a pilot.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>Your threshold for "working", which grades go first, and how long the pilot runs.</p></div></div>
+        <div class="card pslide" id="pitch-s16"><h3><span class="pnum">16</span>What we ask of you</h3>
+            <div class="dpart"><div class="tag">On the slide</div><p>For OT colleagues: is the science sound, and is it realistic for a teacher? For schools: would you host a pilot? What happens next: the demo, the materials, then the pilot. How to reach Jordan.</p></div>
+            <div class="dpart"><div class="tag">What it must show</div><p>One clear ask, and the next step.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>The one question you most want answered in the room.</p></div></div>
+    </div>
+
+    <p class="eyebrow">Backup slides, for questions</p>
+    <div class="grid2">
+        <div class="card pslide" id="pitch-backup"><h3><span class="pnum">+</span>At the back of the deck</h3>
+            <div class="dpart"><div class="tag">So far</div><p>A. Every claim with its source and grade. B. The sample data set, described. C. The method matrix, grade by grade. D. Privacy in detail.</p></div>
+            <div class="dpart open"><div class="tag">For Jordan</div><p>Anything an OT audience always asks that needs a backup slide?</p></div></div>
+        <div class="card" id="pitch-changed"><h3>What changed from the 17 November deck</h3>
+            <ul>
+                <li>Four body states became Green, Yellow and Red, with no Blue button.</li>
+                <li>Focus Tokens for each child became a reward for finishing and paying attention, never for the color tapped.</li>
+                <li>The OT portal with IEP goals, a sensory profile and BRIEF-2 for each student is out: RegulateED keeps anonymous class results only.</li>
+                <li>"FERPA and COPPA compliant" and the encryption claims are out until the privacy policy and the attorney review exist.</li>
+                <li>The app no longer picks the reset alone: the teacher chooses from 2 or 3.</li>
+                <li>The 14-week plan tied to a doctoral manuscript is replaced by the pilot slide.</li>
+                <li>Ayres Sensory Integration stays as OT background, never as proof that desk breaks work.</li>
+            </ul></div>
+    </div>
+    <div class="card todo" id="pitch-next"><div class="tag">Next</div><p>Jordan tags this structure in Sprint 2, under Product and pitch. When it is agreed, Iris writes the deck on the shared sample data, links it to the demo and makes the PDF.</p></div>
 </section>
 
 <div id="gen"></div>
