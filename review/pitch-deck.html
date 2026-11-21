@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RegulateED pitch deck, draft 1</title>
+<!-- Adam, 2026-11-21: "Next round actually what a draft of the pitch deck.  Pages presented like a PowerPoint.  Just build it in html to start with but put a page navigator on each page so we can navigate through the deck."
+     Written from Jordan's Sprint 2 resolutions on the pitch deck page (C2-PITCH). Every number in it is invented sample data, labeled as such. -->
+<style>
+    @font-face { font-family: "Open Sans"; font-weight: 400; src: url("../fonts/open-sans-latin-400.woff2") format("woff2"); }
+    @font-face { font-family: "Open Sans"; font-weight: 600; src: url("../fonts/open-sans-latin-600.woff2") format("woff2"); }
+    @font-face { font-family: "Open Sans"; font-weight: 700; src: url("../fonts/open-sans-latin-700.woff2") format("woff2"); }
+    @font-face { font-family: "Open Sans"; font-weight: 800; src: url("../fonts/open-sans-latin-800.woff2") format("woff2"); }
+    :root {
+        --teal: #2A9D8F; --coral: #F2845C; --slate: #1F3A4D; --paper: #FFF8F0; --mint: #7FD3C6; --line: #E9E1D6;
+        --g: #3BAA5C; --y: #F2B92F; --r: #E0524B;
+        --a: var(--coral); --b: var(--teal); --ink: var(--slate); --k: var(--slate); --ring: rgba(42,157,143,.28);
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body { margin: 0; background: #E8E2D9; font: 20px/1.45 "Open Sans", system-ui, sans-serif; color: var(--slate); }
+    svg.sym { display: block; }
+    button { font: inherit; color: inherit; }
+
+    /* the stage: one slide at a time, 1280 by 720, scaled to the window */
+    .stage { display: flex; justify-content: center; padding: 20px 20px 90px; }
+    .frame { position: relative; }
+    .slide { display: none; position: absolute; top: 0; left: 0; width: 1280px; height: 720px; transform-origin: 0 0; background: var(--paper); border-radius: 14px; box-shadow: 0 10px 40px rgba(31,58,77,.18); overflow: hidden; }
+    .slide.on { display: flex; flex-direction: column; }
+    .body { flex: 1; padding: 46px 64px 0; display: flex; flex-direction: column; min-height: 0; }
+    .kick { font-size: 15px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--teal); margin: 0 0 6px; }
+    h1 { font-size: 62px; line-height: 1.05; margin: 0; letter-spacing: -.01em; }
+    h2 { font-size: 40px; line-height: 1.12; margin: 0 0 22px; letter-spacing: -.01em; }
+    h3 { font-size: 23px; line-height: 1.2; margin: 0 0 8px; }
+    p { margin: 0 0 12px; }
+    .lead { font-size: 23px; max-width: 980px; }
+    .small { font-size: 16px; }
+    .muted { opacity: .72; }
+    .cols { display: grid; gap: 22px; }
+    .c2 { grid-template-columns: 1fr 1fr; }
+    .c3 { grid-template-columns: repeat(3, 1fr); }
+    .c4 { grid-template-columns: repeat(4, 1fr); }
+    .box { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; }
+    .box.teal { background: var(--teal); color: #fff; border: 0; }
+    .box.slate { background: var(--slate); color: #fff; border: 0; }
+    .box.mint { background: var(--mint); border: 0; }
+    .box ul { margin: 6px 0 0; padding-left: 20px; }
+    .box li { margin-bottom: 4px; }
+    .big { font-size: 54px; font-weight: 800; line-height: 1; color: var(--coral); margin-bottom: 8px; }
+    .grade { display: inline-block; font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; border-radius: 999px; padding: 2px 10px; border: 1.5px solid currentColor; vertical-align: 2px; white-space: nowrap; }
+    .grade.mod { color: var(--teal); }
+    .grade.eme { color: #B7791F; }
+    .grade.weak { color: var(--r); }
+    .grade.str { color: var(--slate); }
+    .sample { display: inline-block; font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; background: var(--y); color: var(--slate); border-radius: 6px; padding: 2px 8px; }
+    .note { font-size: 15px; opacity: .75; margin-top: auto; padding-top: 10px; }
+    .src { font-size: 14px; opacity: .7; }
+
+    /* the navigator, in every slide's footer */
+    .foot { flex: none; height: 64px; display: flex; align-items: center; gap: 14px; padding: 0 28px 0 64px; border-top: 1px solid var(--line); background: rgba(255,255,255,.55); font-size: 15px; }
+    .foot .brand { width: 132px; }
+    .foot .dots { display: flex; gap: 6px; margin-left: 10px; }
+    .foot .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--slate); background: transparent; padding: 0; cursor: pointer; opacity: .45; }
+    .foot .dot.here { background: var(--slate); opacity: 1; }
+    .foot .dot:hover { opacity: 1; }
+    .foot .nb { border: 0; background: var(--slate); color: #fff; border-radius: 999px; width: 42px; height: 42px; font-size: 22px; font-weight: 800; cursor: pointer; }
+    .foot .nb:disabled { opacity: .25; cursor: default; }
+    .foot .count { font-weight: 800; min-width: 64px; text-align: center; }
+    .foot .all { border: 1.5px solid var(--slate); background: transparent; border-radius: 999px; padding: 6px 14px; font-weight: 700; cursor: pointer; }
+    .foot .tag { margin-left: auto; font-size: 13px; opacity: .6; }
+
+    /* all slides */
+    .overview { display: none; position: fixed; inset: 0; z-index: 20; background: rgba(31,58,77,.92); overflow: auto; padding: 30px; }
+    .overview.on { display: block; }
+    .overview .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; max-width: 1200px; margin: 0 auto; }
+    .overview button.card { text-align: left; background: var(--paper); border: 0; border-radius: 12px; padding: 14px 16px; cursor: pointer; font-size: 15px; }
+    .overview button.card b { display: block; font-size: 28px; color: var(--teal); }
+    .overview button.card.here { outline: 4px solid var(--mint); }
+    .overview .close { display: block; margin: 0 auto 18px; background: var(--mint); border: 0; border-radius: 999px; padding: 10px 24px; font-weight: 800; cursor: pointer; }
+
+    /* pictures drawn in the page */
+    .ipad { background: var(--slate); border-radius: 26px; padding: 14px; }
+    .ipad .scr { background: var(--paper); border-radius: 14px; padding: 18px; text-align: center; }
+    .faces { display: flex; justify-content: center; gap: 18px; margin-top: 12px; }
+    .faces .f { width: 92px; }
+    .faces .f svg { width: 92px; height: 92px; }
+    .faces .f span { display: block; font-weight: 800; font-size: 16px; margin-top: 4px; }
+    .split { display: flex; height: 44px; border-radius: 10px; overflow: hidden; font-weight: 800; font-size: 17px; }
+    .split > div { display: flex; align-items: center; justify-content: center; color: #fff; }
+    .split .y { color: var(--slate); }
+    .bg-g { background: var(--g); } .bg-y { background: var(--y); } .bg-r { background: var(--r); }
+    .pick { border-left: 5px solid var(--teal); padding: 6px 0 6px 12px; margin-top: 10px; }
+    .pick.top { background: #fff; border-radius: 0 10px 10px 0; }
+    .loop { display: flex; align-items: stretch; gap: 14px; }
+    .loop .st { flex: 1; border-radius: 18px; padding: 20px; color: #fff; }
+    .loop .ar { align-self: center; font-size: 34px; font-weight: 800; color: var(--coral); }
+    .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 6px; }
+    .chart { display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; align-items: end; height: 250px; }
+    .chart .col { display: flex; flex-direction: column-reverse; height: 100%; border-radius: 8px; overflow: hidden; }
+    .chart .lab { text-align: center; font-size: 14px; font-weight: 700; margin-top: 6px; }
+    .reggie-big { width: 180px; height: 180px; --b: var(--teal); }
+    .steps { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+    .steps li { counter-increment: s; position: relative; padding-left: 46px; margin-bottom: 12px; }
+    .steps li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--teal); color: #fff; font-weight: 800; display: grid; place-items: center; font-size: 17px; }
+
+    /* the title and closing slides */
+    .slide.dark { background: var(--slate); color: #fff; --ink: #fff; --a: #F7A27F; --b: var(--mint); --ring: rgba(255,255,255,.22); }
+    .slide.dark .foot { background: rgba(0,0,0,.15); border-top-color: rgba(255,255,255,.15); }
+    .slide.dark .foot .dot { border-color: #fff; }
+    .slide.dark .foot .dot.here { background: #fff; }
+    .slide.dark .foot .nb { background: var(--mint); color: var(--slate); }
+    .slide.dark .foot .all { border-color: #fff; }
+    .slide.dark .kick { color: var(--mint); }
+
+    /* a phone: the slides flow down the page at full width, still one at a time */
+    @media (max-width: 760px) {
+        body { font-size: 17px; }
+        .stage { padding: 10px 8px 90px; }
+        .frame { width: 100% !important; height: auto !important; }
+        .slide { position: relative; width: 100%; height: auto; transform: none !important; }
+        .body { padding: 26px 20px 16px; }
+        h1 { font-size: 40px; } h2 { font-size: 28px; } .lead { font-size: 19px; }
+        .c2, .c3, .c4 { grid-template-columns: minmax(0, 1fr) !important; }
+        .cols > * { min-width: 0; }
+        .ipad { padding: 8px; border-radius: 18px; } .ipad .scr { padding: 12px 8px; }
+        .faces { gap: 8px; } .faces .f, .faces .f svg { width: 64px; height: 64px; }
+        .faces .f span { font-size: 14px; }
+        #s11 .box > div { grid-template-columns: minmax(0, 1fr) !important; }
+        .split { font-size: 14px; }
+        #s1 .body > svg { width: 100% !important; max-width: 300px; }
+        .loop { flex-direction: column; } .loop .ar { transform: rotate(90deg); }
+        .timeline { grid-template-columns: 1fr; }
+        .foot { flex-wrap: wrap; height: auto; padding: 12px 16px; }
+        .foot .brand, .foot .tag { display: none; }
+        .foot .dots { order: 9; width: 100%; margin: 6px 0 0; flex-wrap: wrap; }
+        .chart { height: 180px; gap: 5px; }
+    }
+
+    /* print: one slide per page, the PDF */
+    @page { size: 13.333in 7.5in; margin: 0; }
+    @media print {
+        body { background: #fff; }
+        body > :not(.stage):not(svg) { display: none !important; }
+        .slide { height: 720px !important; overflow: hidden; }
+        .stage { padding: 0; display: block; }
+        .frame { width: auto !important; height: auto !important; }
+        .slide { display: flex !important; flex-direction: column; position: relative; transform: none !important; border-radius: 0; box-shadow: none; page-break-after: always; break-after: page; }
+        .foot .dots, .foot .nb, .foot .all { display: none; }
+        .overview { display: none !important; }
+    }
+</style>
+<meta name="robots" content="noindex, nofollow">
+<style>html.rv-locked body { visibility: hidden; }</style>
+<script>document.documentElement.classList.add('rv-locked');</script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+    <defs>
+        <!-- brand symbols copied from the product workflow page in this repo (DOCS/2026-11-18 RegulateED product workflow.html) -->
+        <symbol id="wave" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="44" fill="none" stroke-width="4" style="stroke:var(--ring)"/>
+            <path d="M14 50 L20 37 L26 62 L32 40 L38 58 L44 50" fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--a)"/>
+            <path d="M44 50 C51 37 58 37 65 50 S79 63 86 50" fill="none" stroke-width="7" stroke-linecap="round" style="stroke:var(--b)"/>
+        </symbol>
+        <symbol id="lockup" viewBox="0 0 360 100">
+            <use href="#wave" width="100" height="100"/>
+            <text x="114" y="60" style="font:800 40px 'Open Sans',system-ui,sans-serif;letter-spacing:-.5px;fill:var(--ink)">RegulateED</text>
+            <text x="116" y="82" style="font:600 10.5px 'Open Sans',system-ui,sans-serif;letter-spacing:2.2px;fill:var(--ink);opacity:.65">CLASSROOM SELF-REGULATION</text>
+        </symbol>
+        <symbol id="reggie" viewBox="0 0 100 100">
+            <path d="M50 18 C50 11 54 7 60 6" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--b)"/>
+            <circle cx="61" cy="6" r="3.5" style="fill:var(--a)"/>
+            <path d="M50 18 C73 18 86 34 86 56 C86 77 70 88 50 88 C30 88 14 77 14 56 C14 34 27 18 50 18 Z" style="fill:var(--b)"/>
+            <path d="M33 52 Q39 46 45 52 M55 52 Q61 46 67 52" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--k)"/>
+            <path d="M43 64 Q50 70 57 64" fill="none" stroke-width="4" stroke-linecap="round" style="stroke:var(--k)"/>
+            <circle cx="33" cy="62" r="4.5" opacity=".85" style="fill:var(--a)"/>
+            <circle cx="67" cy="62" r="4.5" opacity=".85" style="fill:var(--a)"/>
+        </symbol>
+        <symbol id="face-g" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="46" fill="#3BAA5C"/>
+            <circle cx="35" cy="40" r="6" fill="#fff"/><circle cx="65" cy="40" r="6" fill="#fff"/>
+            <path d="M30 60 Q50 80 70 60" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="face-y" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="46" fill="#F2B92F"/>
+            <circle cx="35" cy="40" r="6" fill="#1F3A4D"/><circle cx="65" cy="40" r="6" fill="#1F3A4D"/>
+            <path d="M30 66 Q40 58 50 66 T70 66" fill="none" stroke="#1F3A4D" stroke-width="7" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="face-r" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="46" fill="#E0524B"/>
+            <path d="M27 33 L41 39 M73 33 L59 39" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+            <circle cx="35" cy="45" r="6" fill="#fff"/><circle cx="65" cy="45" r="6" fill="#fff"/>
+            <path d="M32 72 Q50 56 68 72" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+        </symbol>
+    </defs>
+</svg>
+
+<div class="stage"><div class="frame" id="frame">
+
+<!-- 1 -->
+<section class="slide dark" id="s1" data-title="RegulateED">
+    <div class="body" style="justify-content:center">
+        <svg class="sym" viewBox="0 0 360 100" style="width:420px;margin-bottom:34px"><use href="#lockup"/></svg>
+        <h1>Check in. Reset in two minutes.<br>Back to learning.</h1>
+        <p class="lead" style="margin-top:22px;opacity:.9">An OT-designed classroom self-regulation program and app for elementary school: a quick check-in, a 2-minute reset led by Reggie, and a second check-in, at the moments of the day when classes struggle most.</p>
+        <p style="margin-top:26px;font-size:24px"><b>Jordan</b>, founder of RegulateED</p>
+        <p class="small" style="opacity:.7">Draft 1 for OT colleagues · November 2026 · every number in this deck is invented sample data</p>
+    </div>
+</section>
+
+<!-- 2 -->
+<section class="slide" id="s2" data-title="The problem">
+    <div class="body">
+        <p class="kick">The problem</p>
+        <h2>Regulation breaks down at the desk, and it lands on the teacher.</h2>
+        <div class="cols c3">
+            <div class="box"><div class="big">1 in 3</div><p>public school teachers say student misbehavior interferes with their teaching (33% in elementary schools).</p><p class="src">NCES National Teacher and Principal Survey, 2020-21</p></div>
+            <div class="box"><div class="big">8 in 10</div><p>public schools report stunted behavioral and socioemotional development in their students.</p><p class="src">NCES School Pulse Panel, May 2024, as reported by EdWeek</p></div>
+            <div class="box"><div class="big">Top 3</div><p>Student behavior is one of teachers' top three sources of stress, ahead of low pay, five years running.</p><p class="src">RAND State of the American Teacher, 2026, as reported by EdWeek</p></div>
+        </div>
+        <div class="cols c2" style="margin-top:16px">
+            <p><b>When it happens:</b> wired after recess, sluggish after lunch, overloaded by noise and crowding. The hardest moments for young children are social and outdoors (Booth et al 2019, abstract only).</p>
+            <p><b>Who is there:</b> one teacher with a whole class. The OT who knows what helps is rarely in the room when it happens.</p>
+        </div>
+        <p class="note">National figures for now. A short RegulateED teacher survey will add local numbers once it is run.</p>
+    </div>
+</section>
+
+<!-- 3 -->
+<section class="slide" id="s3" data-title="What RegulateED is">
+    <div class="body">
+        <p class="kick">What RegulateED is</p>
+        <h2>One short loop, at three moments of the school day.</h2>
+        <div class="loop">
+            <div class="st" style="background:var(--teal)"><h3>1. Check in</h3><p>The children answer one question: "How is your body feeling right now?" Green, Yellow or Red, anonymously.</p></div>
+            <div class="ar">→</div>
+            <div class="st" style="background:var(--coral)"><h3>2. Reset</h3><p>RegulateED suggests the activity that best suits the class's result. The teacher picks, and Reggie leads it.</p></div>
+            <div class="ar">→</div>
+            <div class="st" style="background:var(--slate)"><h3>3. Check in again</h3><p>The teacher reads the room in a few seconds and records how the class is now.</p></div>
+        </div>
+        <div class="cols c2" style="margin-top:24px">
+            <div class="box mint"><h3>The three moments</h3><p>Start of day, after recess and after lunch, the times classes most often come in unsettled.</p></div>
+            <div class="box"><h3>Trends, for reference</h3><p>The loop is the daily work. Trends are there for anyone who wants them: to see how the class changes over time, and for analysis at the end of the pilot.</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- 4 -->
+<section class="slide" id="s4" data-title="What it includes">
+    <div class="body">
+        <p class="kick">What it includes</p>
+        <h2>Something for the class, the teacher and the school OT.</h2>
+        <div class="cols c4">
+            <div class="box"><h3>The class</h3><p>A check-in that takes seconds, and 2-minute resets on the classroom screen, led by Reggie.</p></div>
+            <div class="box"><h3>The teacher</h3><p>The class's split after each check-in, a top suggested activity with others behind it, the read of the room afterward, and the trends when wanted.</p></div>
+            <div class="box"><h3>The school OT</h3><p>Helps put RegulateED into the school, trains the teachers, and stays involved to make sure it runs smoothly.</p></div>
+            <div class="box teal"><svg class="sym" viewBox="0 0 100 100" style="width:84px;--b:var(--mint);--a:#F7A27F"><use href="#reggie"/></svg><h3 style="margin-top:8px">Reggie</h3><p>The calm buddy who shows every activity, moves with the class, and always finishes calm.</p></div>
+        </div>
+        <p class="note">Every activity card carries how it is run, a read-aloud script, and the strength of the evidence behind it.</p>
+    </div>
+</section>
+
+<!-- 5 -->
+<section class="slide" id="s5" data-title="The check-in">
+    <div class="body">
+        <p class="kick">The check-in</p>
+        <h2>Children tap at the door. The teacher sees the split and a suggestion.</h2>
+        <div class="cols c2" style="align-items:start">
+            <div>
+                <div class="ipad"><div class="scr">
+                    <p style="font-weight:800;font-size:25px;margin:4px 0 0">How is your body feeling right now?</p>
+                    <div class="faces">
+                        <div class="f"><svg viewBox="0 0 100 100"><use href="#face-g"/></svg><span>Green</span></div>
+                        <div class="f"><svg viewBox="0 0 100 100"><use href="#face-y"/></svg><span>Yellow</span></div>
+                        <div class="f"><svg viewBox="0 0 100 100"><use href="#face-r"/></svg><span>Red</span></div>
+                    </div>
+                </div></div>
+                <p class="small" style="margin-top:10px"><b>The child's view:</b> the iPad at the classroom door. One fixed question, the same at every check-in so results can be compared. One tap each, no names.</p>
+            </div>
+            <div>
+                <div class="box">
+                    <p style="margin:0 0 8px"><b>After recess · Class 2A · 24 children</b> <span class="sample">Sample data</span></p>
+                    <div class="split"><div class="bg-g" style="width:25%">6</div><div class="bg-y y" style="width:41.7%">10</div><div class="bg-r" style="width:33.3%">8</div></div>
+                    <div class="pick top"><b>Top pick: slow breathing</b><br><span class="small">A long out-breath, best supported for a room with this much Red</span></div>
+                    <div class="pick"><span class="small">Also suggested: heavy work · a movement break to a song</span></div>
+                </div>
+                <p class="small" style="margin-top:10px"><b>The teacher's view:</b> the app or website records every tap and shows the split, never one average color. The teacher chooses and starts the reset.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 6 -->
+<section class="slide" id="s6" data-title="How each grade checks in">
+    <div class="body">
+        <p class="kick">How each grade checks in</p>
+        <h2>Every age answers in the way it can.</h2>
+        <div class="cols c2">
+            <div class="box"><h3>Before the reset: the children's own answer</h3>
+                <ul>
+                    <li><b>K and Grade 1:</b> the teacher asks the class, or each child taps at the door on the iPad</li>
+                    <li><b>Grades 2 and 3:</b> the door tap, or an anonymous QR code form</li>
+                    <li><b>Grade 4:</b> the QR form, or the RegulateED app</li>
+                    <li><b>Grade 5:</b> the app, on a school iPad or in a browser</li>
+                </ul>
+                <p class="small" style="margin-top:8px">Every answer is tied to an event: the moment, the date, the teacher and the class.</p></div>
+            <div class="box"><h3>After the reset: the teacher's read of the room</h3>
+                <p>Lining the class up to tap again takes too long, so the teacher reads the room in a few seconds and records the split, for example "most Green, a few Yellow".</p>
+                <p class="small">The first check-in is the children's own answer and the second is the teacher's read. They are different kinds of measure, and the pilot analysis treats them that way.</p></div>
+        </div>
+        <p class="note">Behind it: a very brief, anonymous, class-level check-in fits school entry better than a clinical screener (Barrett-Young et al 2024) <span class="grade mod">moderate</span></p>
+    </div>
+</section>
+
+<!-- 7 -->
+<section class="slide" id="s7" data-title="What we do with the data">
+    <div class="body">
+        <p class="kick">What we do with the data</p>
+        <h2>Each check-in becomes a choice the teacher can make in seconds.</h2>
+        <div class="cols c3">
+            <div class="box"><h3>This check-in</h3><p>The teacher sees only this check-in's split, and the activities that suit it, the best supported first and the others behind it.</p></div>
+            <div class="box"><h3>Trends that build</h3><p>The trends update after every check-in, so the picture of the class grows as the weeks go on.</p></div>
+            <div class="box"><h3>"Not steady yet"</h3><p>Until the class has 8 check-ins at a moment, the trend says plainly that its average is not steady yet.</p></div>
+        </div>
+        <div class="box mint" style="margin-top:20px"><p style="margin:0"><b>Why 8:</b> one reset can go either way. Teacher ratings are steadier as an average over about eight resets (Wickerd and Hulac 2017), so RegulateED reads trends, not a single day.</p></div>
+    </div>
+</section>
+
+<!-- 8 -->
+<section class="slide" id="s8" data-title="The interventions">
+    <div class="body">
+        <p class="kick">The interventions</p>
+        <h2>Three resets to start, each two minutes, each with its evidence.</h2>
+        <div class="cols c3">
+            <div class="box"><h3>Slow breathing</h3><p>A long out-breath. Reggie's belly grows on the in-breath and shrinks on the out-breath, with a hand on the belly. Three paces. The first choice for a mostly Red room, with lower lights and a lower teacher voice.</p></div>
+            <div class="box"><h3>Movement break to a song</h3><p>Reggie dances one easy move at a time and the class copies, winding down in the last 30 seconds before the check-in.</p></div>
+            <div class="box"><h3>Heavy work</h3><p>Muscle work such as pushing the hands together or chair push-ups, for a wired, restless body.</p></div>
+        </div>
+        <div style="margin-top:18px" class="small">
+            <p><b>What the research says, honestly:</b> very short, movement-based mindfulness works at the kindergarten level (Culotta et al 2025) <span class="grade eme">emerging</span>. Short sensory activities run by teachers in class are the closest match to these resets (Latifi et al 2025) <span class="grade weak">weak or contested</span>. Two-minute desk breaks are feasible and cheap for teachers (Mazzoli et al 2021) <span class="grade weak">weak or contested</span>.</p>
+            <p><b>A caution we design for:</b> a mentally demanding movement break may hurt flexible thinking right afterward (Egger et al 2018, abstract only) <span class="grade mod">moderate</span>, so the resets stay simple.</p>
+        </div>
+    </div>
+</section>
+
+<!-- 9 -->
+<section class="slide" id="s9" data-title="Reggie leads the reset">
+    <div class="body">
+        <p class="kick">Reggie leads the reset</p>
+        <h2>Two minutes of slow breathing, on the classroom screen.</h2>
+        <div class="cols c2" style="align-items:center">
+            <div class="box slate" style="text-align:center;padding:30px">
+                <svg class="sym reggie-big" viewBox="0 0 100 100" style="margin:0 auto;--b:var(--mint);--a:#F7A27F"><use href="#reggie"/></svg>
+                <p style="font-size:26px;font-weight:800;margin:16px 0 4px">Breathe in... and slowly out.</p>
+                <p class="small" style="opacity:.75">1:14 left · then a calm pose</p>
+            </div>
+            <ol class="steps">
+                <li>The teacher taps the top pick, and Reggie appears on the classroom screen.</li>
+                <li>Reggie shows each breath with his belly and a hand-on-belly cue, and the class follows.</li>
+                <li>The last 30 seconds wind down into Reggie's calm pose.</li>
+                <li>The teacher reads the room and records the split.</li>
+            </ol>
+        </div>
+        <p class="note">In the younger grades Reggie leads from the classroom screen with a voice. Older grades can do a private version on their own device.</p>
+    </div>
+</section>
+
+<!-- 10 -->
+<section class="slide" id="s10" data-title="The OT science behind it">
+    <div class="body">
+        <p class="kick">The OT science behind it</p>
+        <h2>Consistent with OT evidence, and honest about its strength.</h2>
+        <div class="box teal"><h3>Leading idea: sensory-based strategies and body awareness <span class="grade" style="color:#fff">moderate</span></h3>
+            <p style="margin:0">An AOTA systematic review rated self-regulation programs like the Alert Program as moderate evidence. The Alert Program's "engine levels" are the closest relative of RegulateED's Green, Yellow and Red check-in (Pfeiffer et al 2018). It was tested with children who have sensory processing challenges, not whole classes, so RegulateED builds on it rather than borrowing its results.</p></div>
+        <div class="cols c4" style="margin-top:16px">
+            <div class="box"><h3>Interoception</h3><p class="small">Noticing body signals, the skill behind "How is your body feeling?" (Mahler et al 2022 and 2024, Bishop et al 2023, Cangi and Bumin 2026)</p><span class="grade eme">emerging</span></div>
+            <div class="box"><h3>A tiered school model</h3><p class="small">Whole-class supports sit at Tier 1, before small groups and referral (Whiting et al 2025)</p><span class="grade eme">emerging</span></div>
+            <div class="box"><h3>Ayres Sensory Integration</h3><p class="small">Strong reviews, but of one-to-one clinic therapy, not a 2-minute desk break: background only (Piller et al 2025, Schaaf et al 2018)</p><span class="grade mod">moderate</span></div>
+            <div class="box"><h3>Co-regulation</h3><p class="small">A recent OT capstone that points the same way: co-regulation can be taught as practical strategies (Kelley 2025)</p><span class="grade eme">emerging</span></div>
+        </div>
+    </div>
+</section>
+
+<!-- 11 -->
+<section class="slide" id="s11" data-title="One reset, before and after">
+    <div class="body">
+        <p class="kick">One reset, before and after</p>
+        <h2>What one check-in pair looks like.</h2>
+        <div class="box">
+            <p style="margin:0 0 10px"><b>After recess · Class 2A</b> <span class="sample">Sample data</span></p>
+            <div style="display:grid;grid-template-columns:200px 1fr;gap:14px 18px;align-items:center">
+                <b>Before (the children)</b>
+                <div class="split"><div class="bg-g" style="width:25%">6</div><div class="bg-y y" style="width:41.7%">10</div><div class="bg-r" style="width:33.3%">8</div></div>
+                <b>After (the teacher's read)</b>
+                <div class="split"><div class="bg-g" style="width:70%">Most Green</div><div class="bg-y y" style="width:30%">A few Yellow</div></div>
+            </div>
+        </div>
+        <div class="cols c2" style="margin-top:20px">
+            <p><b>The honest line:</b> one reset can go either way. If a room does not shift, RegulateED says so, and the teacher can try a different suggestion next time.</p>
+            <p><b>What matters</b> is the pattern over many check-ins, which is what the trends and the pilot look at.</p>
+        </div>
+    </div>
+</section>
+
+<!-- 12 -->
+<section class="slide" id="s12" data-title="A day with RegulateED">
+    <div class="body">
+        <p class="kick">A day with RegulateED</p>
+        <h2>It fits into a real school day.</h2>
+        <div class="timeline">
+            <div class="box"><h3>Start of day</h3><p class="small">The children tap at the door as they arrive. If the room needs it, a reset before the first lesson.</p></div>
+            <div class="box"><h3>After recess</h3><p class="small">Tap at the door, the split and the top pick, a reset, then the teacher's read.</p></div>
+            <div class="box"><h3>After lunch</h3><p class="small">The same loop, often a movement reset for a sluggish room.</p></div>
+        </div>
+        <div class="cols c3" style="margin-top:18px">
+            <div class="box mint"><div class="big" style="color:var(--slate)">2 to 5</div><p style="margin:0">minutes for a reset. The check-in and the teacher's read are quick taps beside it.</p></div>
+            <div class="box"><h3>Every Monday</h3><p class="small">The order of suggested activities updates from the class's own check-ins: what works for this class comes first.</p></div>
+            <div class="box"><h3>Training</h3><p class="small">A short video, a read-aloud script for every card, and a live session with Jordan before the pilot.</p></div>
+        </div>
+        <p class="note">Behind it: teachers can run a self-regulation program with training and light monitoring (Cunha et al 2023) <span class="grade eme">emerging</span>. Teachers say time and paperwork are what sink a classroom sensory schedule (Mills and Chapparo 2018) <span class="grade eme">emerging</span>.</p>
+    </div>
+</section>
+
+<!-- 13 -->
+<section class="slide" id="s13" data-title="Privacy, ready for schools">
+    <div class="body">
+        <p class="kick">Privacy, ready for schools</p>
+        <h2>Anonymous class results only. Never a record of one child.</h2>
+        <div class="cols c2">
+            <div class="box"><h3>What RegulateED keeps</h3>
+                <ul>
+                    <li>Anonymous, class-level counts tied to an event</li>
+                    <li>No names, no parent view, no device ID</li>
+                    <li>No ads, and no selling or sharing of data</li>
+                    <li>Deleted or returned within 90 days of the end</li>
+                    <li>A named contact for every school</li>
+                </ul></div>
+            <div class="box"><h3>Before the St. Paul pilot</h3>
+                <p class="small">Minnesota's student data law (Minn. Stat. 13.32) covers a school's data even in a free trial. The pilot needs:</p>
+                <ul class="small">
+                    <li>District and school approval, starting with the district's data privacy contact</li>
+                    <li>A written agreement, a plain privacy page and a deletion process</li>
+                    <li>Wording for the district's notice to parents</li>
+                </ul></div>
+        </div>
+        <p class="note">A research map, not legal advice. Keeping results anonymous and class-level keeps RegulateED clear of the heavier FERPA and COPPA duties that apply once a check-in is tied to one child.</p>
+    </div>
+</section>
+
+<!-- 14 -->
+<section class="slide" id="s14" data-title="What the pilot is built to test">
+    <div class="body">
+        <p class="kick">Outcomes</p>
+        <h2>What the pilot is built to test. No results exist yet.</h2>
+        <div class="cols c2" style="grid-template-columns:1fr 1.15fr">
+            <ol class="steps">
+                <li><b>Self-regulation.</b> Do children's own check-ins shift toward Green over the semester? What the program targets directly.</li>
+                <li><b>Class climate.</b> Does the teacher's read of the room improve after resets, and across weeks?</li>
+                <li><b>Learning.</b> An open question, not a promise: nothing yet ties a short break to better learning.</li>
+            </ol>
+            <div class="box">
+                <p style="margin:0 0 8px"><b>Before each reset · after recess · Class 2A</b> <span class="sample">Sample data</span></p>
+                <div class="chart" id="chart"></div>
+                <p class="small" style="margin:8px 0 0">Weeks 1 and 2: check-ins only, the baseline. An illustration of what a result could look like, not a finding.</p>
+            </div>
+        </div>
+        <p class="note">Self-regulation grows with age anyway, so a trend needs a comparison before it means anything (Weiss 2024) <span class="grade mod">moderate</span>.</p>
+    </div>
+</section>
+
+<!-- 15 -->
+<section class="slide" id="s15" data-title="The pilot">
+    <div class="body">
+        <p class="kick">The pilot</p>
+        <h2>One school in St. Paul, Minnesota, grades 1 to 5, one semester.</h2>
+        <div class="cols c3">
+            <div class="box"><h3>The shape</h3>
+                <ul class="small">
+                    <li>A free trial, run with a school-based OT</li>
+                    <li>About 16 weeks, with check-ins alone in the first 1 to 2 weeks as the baseline</li>
+                    <li>Classes start the resets a week apart, in a random order, so any change shows more than once</li>
+                    <li>Grades 4 and 5 need school devices for the app</li>
+                </ul></div>
+            <div class="box"><h3>What it measures</h3>
+                <ul class="small">
+                    <li>The children's check-ins before each reset</li>
+                    <li>The teacher's read after each reset</li>
+                    <li>One outcome a teacher records, such as minutes lost or on-task time</li>
+                    <li>How many planned resets were run, and what teachers say</li>
+                </ul></div>
+            <div class="box"><h3>What counts as working</h3>
+                <p class="small">Written down before it starts, for example 80% of planned resets run and 75% of check-ins completed. It tests whether the program is feasible in a real school, not how big its effect is.</p></div>
+        </div>
+        <div class="box mint" style="margin-top:16px"><p class="small" style="margin:0"><b>Before it starts:</b> approvals, the privacy papers, OTs and teachers rate the activity material, music rights cleared. <b>Then:</b> more schools, and Jordan's analysis of the outcomes. Design standards: the What Works Clearinghouse handbook and the CONSORT pilot extension <span class="grade str">strong</span></p></div>
+    </div>
+</section>
+
+<!-- 16 -->
+<section class="slide dark" id="s16" data-title="Thank you">
+    <div class="body" style="justify-content:center">
+        <svg class="sym" viewBox="0 0 100 100" style="width:120px;margin-bottom:20px"><use href="#reggie"/></svg>
+        <h1>Thank you.</h1>
+        <p class="lead" style="margin-top:20px;opacity:.9">I would value your view as an OT: is the science sound, and is it realistic for a teacher to run?</p>
+        <p style="margin-top:22px;font-size:24px"><b>Jordan</b>, founder of RegulateED · regulateed.com</p>
+    </div>
+</section>
+
+<!-- 17 -->
+<section class="slide" id="s17" data-title="Sources">
+    <div class="body">
+        <p class="kick">Sources</p>
+        <h2 style="font-size:30px;margin-bottom:12px">Every source in this deck, with its strength.</h2>
+        <div class="cols c2 small" style="font-size:14px;line-height:1.35;gap:6px 30px">
+            <div>
+                <p>Barrett-Young et al 2024, self-regulation screening at school entry <span class="grade mod">moderate</span></p>
+                <p>Bishop et al 2023, interoception and executive function <span class="grade eme">emerging</span></p>
+                <p>Booth et al 2019, children's views on starting school (abstract) <span class="grade eme">emerging</span></p>
+                <p>Cangi and Bumin 2026, interoception and sensory processing <span class="grade eme">emerging</span></p>
+                <p>Culotta et al 2025, mindfulness in pre-K and kindergarten <span class="grade eme">emerging</span></p>
+                <p>Cunha et al 2023, a teacher-led self-regulation program <span class="grade eme">emerging</span></p>
+                <p>Egger et al 2018, demanding movement breaks (abstract) <span class="grade mod">moderate</span></p>
+                <p>Kelley 2025, co-regulation, an OT capstone (Western Michigan University) <span class="grade eme">emerging</span></p>
+                <p>Latifi et al 2025, sensory activity schedules in school <span class="grade weak">weak or contested</span></p>
+                <p>Mahler et al 2022 and 2024, interoception programs <span class="grade eme">emerging</span></p>
+                <p>Mazzoli et al 2021, classroom active breaks <span class="grade weak">weak or contested</span></p>
+            </div>
+            <div>
+                <p>Mills and Chapparo 2018, teachers' views on a sensory schedule <span class="grade eme">emerging</span></p>
+                <p>Pfeiffer et al 2018, AOTA review of sensory interventions <span class="grade mod">moderate</span></p>
+                <p>Piller et al 2025 and Schaaf et al 2018, Ayres Sensory Integration reviews <span class="grade mod">moderate</span></p>
+                <p>Weiss 2024, effortful control and executive function <span class="grade mod">moderate</span></p>
+                <p>Whiting et al 2025, sensory integration in schools <span class="grade eme">emerging</span></p>
+                <p>Wickerd and Hulac 2017, how steady teacher ratings are</p>
+                <p>NCES National Teacher and Principal Survey 2020-21; NCES School Pulse Panel May 2024; RAND State of the American Teacher 2026</p>
+                <p>Minn. Stat. 13.32, educational data</p>
+                <p>What Works Clearinghouse handbook; CONSORT pilot extension (Eldridge et al 2016) <span class="grade str">strong</span></p>
+                <p class="muted">Strength is RegulateED's own reading of each source: strong, moderate, emerging, or weak or contested.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+</div></div>
+
+<div class="overview" id="overview" role="dialog" aria-label="All slides">
+    <button class="close" id="ov-close">Back to the slide</button>
+    <div class="grid" id="ov-grid"></div>
+</div>
+
+<script>
+    // Sample data: before each reset, after recess, Class 2A, 24 children, weeks 1 to 8 (invented; weeks 1 and 2 the baseline).
+    const TREND = [[6, 10, 8], [6, 10, 8], [7, 10, 7], [8, 10, 6], [9, 9, 6], [10, 9, 5], [11, 9, 4], [12, 8, 4]];
+    document.getElementById('chart').innerHTML = TREND.map(([g, y, r], i) => {
+        const t = g + y + r;
+        return `<div><div class="col" style="height:220px"><div class="bg-g" style="height:${g / t * 100}%"></div><div class="bg-y" style="height:${y / t * 100}%"></div><div class="bg-r" style="height:${r / t * 100}%"></div></div><div class="lab">W${i + 1}</div></div>`;
+    }).join('');
+
+    // The navigator, in every slide's footer.
+    const slides = [...document.querySelectorAll('.slide')];
+    const N = slides.length;
+    slides.forEach((s, i) => {
+        const dots = slides.map((t, j) => `<button class="dot${i === j ? ' here' : ''}" data-go="${j + 1}" title="${j + 1}. ${t.dataset.title}" aria-label="Slide ${j + 1}: ${t.dataset.title}"></button>`).join('');
+        s.insertAdjacentHTML('beforeend', `<nav class="foot" aria-label="Slides">
+            <svg class="sym brand" viewBox="0 0 360 100"><use href="#lockup"/></svg>
+            <button class="nb" data-go="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Previous slide">‹</button>
+            <span class="count">${i + 1} / ${N}</span>
+            <button class="nb" data-go="${i + 2}" ${i === N - 1 ? 'disabled' : ''} aria-label="Next slide">›</button>
+            <button class="all" data-all>All slides</button>
+            <div class="dots">${dots}</div>
+            <span class="tag">Draft 1 · sample data invented</span>
+        </nav>`);
+    });
+    document.getElementById('ov-grid').innerHTML = slides.map((s, i) => `<button class="card" data-go="${i + 1}"><b>${i + 1}</b>${s.dataset.title}</button>`).join('');
+
+    const current = () => Math.min(N, Math.max(1, parseInt(location.hash.replace(/^#\/?/, ''), 10) || 1));
+    const go = (n) => { location.hash = String(Math.min(N, Math.max(1, n))); };
+    function show() {
+        const n = current();
+        slides.forEach((s, i) => s.classList.toggle('on', i === n - 1));
+        document.querySelectorAll('#ov-grid .card').forEach((c, i) => c.classList.toggle('here', i === n - 1));
+        document.title = `${n}. ${slides[n - 1].dataset.title} · RegulateED pitch deck, draft 1`;
+        fit();
+    }
+    // Scale the 1280 by 720 slide to the window; a phone gets the flowing layout instead.
+    function fit() {
+        const frame = document.getElementById('frame');
+        if (innerWidth <= 760) { frame.style.width = ''; frame.style.height = ''; return; }
+        const k = Math.min((innerWidth - 40) / 1280, (innerHeight - 110) / 720);
+        frame.style.width = 1280 * k + 'px';
+        frame.style.height = 720 * k + 'px';
+        slides.forEach((s) => { s.style.transform = `scale(${k})`; });
+    }
+    document.addEventListener('click', (ev) => {
+        const g = ev.target.closest('[data-go]');
+        if (g) { document.getElementById('overview').classList.remove('on'); go(+g.dataset.go); return; }
+        if (ev.target.closest('[data-all]')) document.getElementById('overview').classList.add('on');
+        if (ev.target.closest('#ov-close')) document.getElementById('overview').classList.remove('on');
+    });
+    document.addEventListener('keydown', (ev) => {
+        if (ev.target.closest('input, textarea, [contenteditable]')) return;
+        if (ev.key === 'ArrowRight' || ev.key === 'PageDown') go(current() + 1);
+        else if (ev.key === 'ArrowLeft' || ev.key === 'PageUp') go(current() - 1);
+        else if (ev.key === 'Home') go(1);
+        else if (ev.key === 'End') go(N);
+        else if (ev.key === 'Escape') document.getElementById('overview').classList.remove('on');
+    });
+    // The review layer names each comment's place by its slide.
+    window.reviewRouteName = (r) => { const n = parseInt(r, 10) || 1; return `Slide ${n}: ${slides[Math.min(N, n) - 1].dataset.title}`; };
+    addEventListener('hashchange', show);
+    addEventListener('resize', fit);
+    show();
+</script>
+<script>window.REVIEW = {"page":"pitch-deck","version":"1","file":"pitch-deck.html","links":{"current":"index.html","currentPage":"workflow","data-collection@1":"data-collection.html","workflow@1":"workflow-v1.html","workflow@2":"workflow-v2.html","manual":"manual.html","earlier":"earlier-comments.html","reggie-engine":"reggie-engine.html","reggie-lab":"reggie-lab.html","pitch-deck":"pitch-deck.html"},"title":"RegulateED pitch deck, draft 1","api":"https://regulateed-review.sashook.com","passHash":"1a55f65e93387e97bce9768422378405e8daf8cdd3e270528c7ccc76f24e32a3","sources":[],"nav":{"top":{"label":"← Pitch deck","href":"index.html#pitch"},"bottom":{"label":"← Pitch deck","href":"index.html#pitch"}}};</script>
+<script src="review.js?v=a67f0b00d3"></script>
+<script src="rounds.js?v=a67f0b00d3"></script>
+</body>
+</html>
