@@ -67,7 +67,9 @@
     .foot .nb[aria-disabled] { opacity: .25; cursor: default; }
     .foot .count { font-weight: 800; min-width: 64px; text-align: center; }
     .foot .all { border: 1.5px solid var(--slate); background: transparent; border-radius: 999px; padding: 6px 14px; font-weight: 700; cursor: pointer; }
-    .foot .tag { margin-left: auto; font-size: 13px; opacity: .6; }
+    .foot .tag { margin-left: auto; font-size: 13px; line-height: 1.25; opacity: .6; white-space: nowrap; text-align: right; }
+    .foot .tag i { display: block; font-size: 11px; font-style: italic; }
+    .foot .all { white-space: nowrap; }
     .foot .dl { background: var(--coral); color: #fff; border-radius: 999px; padding: 7px 14px; font-weight: 800; text-decoration: none; white-space: nowrap; }
     .slide.dark .foot .dl { background: #F7A27F; color: var(--slate); }
 
@@ -210,7 +212,7 @@
         <h1>Check in. Reset in two minutes.<br>Back to learning.</h1>
         <p class="lead" style="margin-top:22px;opacity:.9">An OT-designed classroom self-regulation program and app for elementary school: a quick check-in, a 2-minute reset led by Reggie, and a second check-in, at the moments of the day when classes struggle most.</p>
         <p style="margin-top:26px;font-size:24px"><b>Jordan Saciuk</b>, Founder of RegulateED</p>
-        <p class="small" style="opacity:.7">Final 11/22/2026 · every number in this deck is invented sample data</p>
+        <p class="small" style="opacity:.7">Final 11/22/2026<br><i style="font-size:13px">Every number in this deck is invented sample data.</i></p>
     </div>
 </section>
 
@@ -619,7 +621,7 @@
             <button class="all" data-all>All slides</button>
             <a class="dl" href="pitch-deck.pdf" download="RegulateED pitch deck Final 11-22-2026.pdf">Download PDF</a>
             <div class="dots">${dots}</div>
-            <span class="tag">Final 11/22/2026 · sample data invented</span>
+            <span class="tag">Final 11/22/2026<i>sample data invented</i></span>
         </nav>`);
     });
     document.getElementById('ov-grid').innerHTML = slides.map((s, i) => `<button class="card" data-go="${i + 1}"><b>${i + 1}</b>${s.dataset.title}</button>`).join('');
