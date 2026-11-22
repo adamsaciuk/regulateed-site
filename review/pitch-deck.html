@@ -60,11 +60,11 @@
     .foot { flex: none; height: 64px; display: flex; align-items: center; gap: 14px; padding: 0 28px 0 64px; border-top: 1px solid var(--line); background: rgba(255,255,255,.55); font-size: 15px; }
     .foot .brand { width: 132px; }
     .foot .dots { display: flex; gap: 6px; margin-left: 10px; }
-    .foot .dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--slate); background: transparent; padding: 0; cursor: pointer; opacity: .45; }
+    .foot .dot { display: block; box-sizing: border-box; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--slate); background: transparent; padding: 0; cursor: pointer; opacity: .45; }
     .foot .dot.here { background: var(--slate); opacity: 1; }
     .foot .dot:hover { opacity: 1; }
-    .foot .nb { border: 0; background: var(--slate); color: #fff; border-radius: 999px; width: 42px; height: 42px; font-size: 22px; font-weight: 800; cursor: pointer; }
-    .foot .nb:disabled { opacity: .25; cursor: default; }
+    .foot .nb { display: inline-grid; place-items: center; text-decoration: none; line-height: 1; border: 0; background: var(--slate); color: #fff; border-radius: 999px; width: 42px; height: 42px; font-size: 22px; font-weight: 800; cursor: pointer; }
+    .foot .nb[aria-disabled] { opacity: .25; cursor: default; }
     .foot .count { font-weight: 800; min-width: 64px; text-align: center; }
     .foot .all { border: 1.5px solid var(--slate); background: transparent; border-radius: 999px; padding: 6px 14px; font-weight: 700; cursor: pointer; }
     .foot .tag { margin-left: auto; font-size: 13px; opacity: .6; }
@@ -430,7 +430,7 @@
         <div class="cols c3" style="margin-top:18px">
             <div class="box mint"><div class="big" style="color:var(--slate)">2 to 5</div><p style="margin:0">minutes for a reset. The check-in and the teacher's read are quick taps beside it.</p></div>
             <div class="box"><h3>Every Monday</h3><p class="small">The order of suggested activities updates from the class's own check-ins: what works for this class comes first.</p></div>
-            <div class="box"><h3>Training</h3><p class="small">A short video, a read-aloud script for every card, and a live session with Jordan Saciuk, Founder, before the pilot.</p></div>
+            <div class="box"><h3>Training</h3><p class="small">A short video, a read-aloud script for every card, and a live session with Jordan Saciuk before the pilot.</p></div>
         </div>
         <p class="note">Behind it: teachers can run a self-regulation program with training and light monitoring (Cunha et al 2023) <span class="grade eme">emerging</span>. Teachers say time and paperwork are what sink a classroom sensory schedule (Mills and Chapparo 2018) <span class="grade eme">emerging</span>.</p>
     </div>
@@ -535,7 +535,7 @@
             <div class="box"><h3>Its honest limits</h3>
                 <p class="small">Each class has its own teacher, which is part of any difference, and five pairs is small. So this is a pilot comparison that shows whether a larger study is worth running, not proof that RegulateED works.</p></div>
         </div>
-        <div class="box mint" style="margin-top:16px"><p class="small" style="margin:0"><b>Before it starts:</b> approvals, the privacy papers, OTs and teachers rate the activity material, music rights cleared. <b>Then:</b> Jordan Saciuk, Founder, analyzes the outcomes, and more schools. Design standards: the What Works Clearinghouse handbook and the CONSORT pilot extension <span class="grade str">strong</span></p></div>
+        <div class="box mint" style="margin-top:16px"><p class="small" style="margin:0"><b>Before it starts:</b> approvals, the privacy papers, OTs and teachers rate the activity material, music rights cleared. <b>Then:</b> Jordan Saciuk analyzes the outcomes, and more schools. Design standards: the What Works Clearinghouse handbook and the CONSORT pilot extension <span class="grade str">strong</span></p></div>
     </div>
 </section>
 
@@ -606,12 +606,16 @@
     const slides = [...document.querySelectorAll('.slide')];
     const N = slides.length;
     slides.forEach((s, i) => {
-        const dots = slides.map((t, j) => `<button class="dot${i === j ? ' here' : ''}" data-go="${j + 1}" title="${j + 1}. ${t.dataset.title}" aria-label="Slide ${j + 1}: ${t.dataset.title}"></button>`).join('');
+        // Real links to each slide's id, so the printed PDF navigates too (Adam, 2026-11-21: "next page advances
+        // to the next page, if i click or hover over page 11, it gives me a tool tip and takes me straight to page 11").
+        const to = (n, cls, label, body) => `<a class="${cls}" href="#s${n}" data-go="${n}" title="${label}" aria-label="${label}">${body}</a>`;
+        const off = (body) => `<a class="nb" aria-disabled="true">${body}</a>`;
+        const dots = slides.map((t, j) => to(j + 1, `dot${i === j ? ' here' : ''}`, `Slide ${j + 1}: ${t.dataset.title}`, '')).join('');
         s.insertAdjacentHTML('beforeend', `<nav class="foot" aria-label="Slides">
             <svg class="sym brand" viewBox="0 0 360 100"><use href="#lockup"/></svg>
-            <button class="nb" data-go="${i}" ${i === 0 ? 'disabled' : ''} aria-label="Previous slide">‹</button>
+            ${i === 0 ? off('‹') : to(i, 'nb', `Previous: slide ${i}, ${slides[i - 1].dataset.title}`, '‹')}
             <span class="count">${i + 1} / ${N}</span>
-            <button class="nb" data-go="${i + 2}" ${i === N - 1 ? 'disabled' : ''} aria-label="Next slide">›</button>
+            ${i === N - 1 ? off('›') : to(i + 2, 'nb', `Next: slide ${i + 2}, ${slides[i + 1].dataset.title}`, '›')}
             <button class="all" data-all>All slides</button>
             <a class="dl" href="pitch-deck.pdf" download="RegulateED pitch deck draft 2.pdf">Download PDF</a>
             <div class="dots">${dots}</div>
@@ -640,7 +644,7 @@
     }
     document.addEventListener('click', (ev) => {
         const g = ev.target.closest('[data-go]');
-        if (g) { document.getElementById('overview').classList.remove('on'); go(+g.dataset.go); return; }
+        if (g) { ev.preventDefault(); document.getElementById('overview').classList.remove('on'); go(+g.dataset.go); return; }
         if (ev.target.closest('[data-all]')) document.getElementById('overview').classList.add('on');
         if (ev.target.closest('#ov-close')) document.getElementById('overview').classList.remove('on');
     });
