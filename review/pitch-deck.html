@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>RegulateED pitch deck, draft 2</title>
+<title>RegulateED pitch deck, Final 11/22/2026</title>
 <!-- Adam, 2026-11-21: "Next round actually what a draft of the pitch deck.  Pages presented like a PowerPoint.  Just build it in html to start with but put a page navigator on each page so we can navigate through the deck."
      Written from Jordan's Sprint 2 resolutions on the pitch deck page (C2-PITCH). Every number in it is invented sample data, labeled as such. -->
 <style>
@@ -210,7 +210,7 @@
         <h1>Check in. Reset in two minutes.<br>Back to learning.</h1>
         <p class="lead" style="margin-top:22px;opacity:.9">An OT-designed classroom self-regulation program and app for elementary school: a quick check-in, a 2-minute reset led by Reggie, and a second check-in, at the moments of the day when classes struggle most.</p>
         <p style="margin-top:26px;font-size:24px"><b>Jordan Saciuk</b>, Founder of RegulateED</p>
-        <p class="small" style="opacity:.7">Draft 2 · November 2026 · every number in this deck is invented sample data</p>
+        <p class="small" style="opacity:.7">Final 11/22/2026 · every number in this deck is invented sample data</p>
     </div>
 </section>
 
@@ -617,9 +617,9 @@
             <span class="count">${i + 1} / ${N}</span>
             ${i === N - 1 ? off('›') : to(i + 2, 'nb', `Next: slide ${i + 2}, ${slides[i + 1].dataset.title}`, '›')}
             <button class="all" data-all>All slides</button>
-            <a class="dl" href="pitch-deck.pdf" download="RegulateED pitch deck draft 2.pdf">Download PDF</a>
+            <a class="dl" href="pitch-deck.pdf" download="RegulateED pitch deck Final 11-22-2026.pdf">Download PDF</a>
             <div class="dots">${dots}</div>
-            <span class="tag">Draft 2 · sample data invented</span>
+            <span class="tag">Final 11/22/2026 · sample data invented</span>
         </nav>`);
     });
     document.getElementById('ov-grid').innerHTML = slides.map((s, i) => `<button class="card" data-go="${i + 1}"><b>${i + 1}</b>${s.dataset.title}</button>`).join('');
@@ -630,7 +630,7 @@
         const n = current();
         slides.forEach((s, i) => s.classList.toggle('on', i === n - 1));
         document.querySelectorAll('#ov-grid .card').forEach((c, i) => c.classList.toggle('here', i === n - 1));
-        document.title = `${n}. ${slides[n - 1].dataset.title} · RegulateED pitch deck, draft 2`;
+        document.title = `${n}. ${slides[n - 1].dataset.title} · RegulateED pitch deck, Final 11/22/2026`;
         fit();
     }
     // Scale the 1280 by 720 slide to the window; a phone gets the flowing layout instead.
@@ -658,11 +658,14 @@
     });
     // The review layer names each comment's place by its slide.
     window.reviewRouteName = (r) => { const n = parseInt(r, 10) || 1; return `Slide ${n}: ${slides[Math.min(N, n) - 1].dataset.title}`; };
+    // The PDF takes its title from the page at print time: the deck's name, not the slide on screen.
+    addEventListener('beforeprint', () => { document.title = 'RegulateED pitch deck, Final 11/22/2026'; });
+    addEventListener('afterprint', show);
     addEventListener('hashchange', show);
     addEventListener('resize', fit);
     show();
 </script>
-<script>window.REVIEW = {"page":"pitch-deck","version":"1","file":"pitch-deck.html","links":{"current":"index.html","currentPage":"workflow","data-collection@1":"data-collection.html","workflow@1":"workflow-v1.html","workflow@2":"workflow-v2.html","manual":"manual.html","earlier":"earlier-comments.html","reggie-engine":"reggie-engine.html","reggie-lab":"reggie-lab.html","pitch-deck":"pitch-deck.html"},"title":"RegulateED pitch deck, draft 2","api":"https://regulateed-review.sashook.com","passHash":"1a55f65e93387e97bce9768422378405e8daf8cdd3e270528c7ccc76f24e32a3","sources":[],"nav":{"top":{"label":"← Pitch deck","href":"index.html#pitch"},"bottom":{"label":"← Pitch deck","href":"index.html#pitch"}}};</script>
+<script>window.REVIEW = {"page":"pitch-deck","version":"1","file":"pitch-deck.html","links":{"current":"index.html","currentPage":"workflow","data-collection@1":"data-collection.html","workflow@1":"workflow-v1.html","workflow@2":"workflow-v2.html","manual":"manual.html","earlier":"earlier-comments.html","reggie-engine":"reggie-engine.html","reggie-lab":"reggie-lab.html","pitch-deck":"pitch-deck.html"},"title":"RegulateED pitch deck, Final 11/22/2026","api":"https://regulateed-review.sashook.com","passHash":"1a55f65e93387e97bce9768422378405e8daf8cdd3e270528c7ccc76f24e32a3","sources":[],"nav":{"top":{"label":"← Pitch deck","href":"index.html#pitch"},"bottom":{"label":"← Pitch deck","href":"index.html#pitch"}}};</script>
 <script src="review.js?v=a67f0b00d3"></script>
 <script src="rounds.js?v=a67f0b00d3"></script>
 </body>
