@@ -68,6 +68,8 @@
     .foot .count { font-weight: 800; min-width: 64px; text-align: center; }
     .foot .all { border: 1.5px solid var(--slate); background: transparent; border-radius: 999px; padding: 6px 14px; font-weight: 700; cursor: pointer; }
     .foot .tag { margin-left: auto; font-size: 13px; opacity: .6; }
+    .foot .dl { background: var(--coral); color: #fff; border-radius: 999px; padding: 7px 14px; font-weight: 800; text-decoration: none; white-space: nowrap; }
+    .slide.dark .foot .dl { background: #F7A27F; color: var(--slate); }
 
     /* all slides */
     .overview { display: none; position: fixed; inset: 0; z-index: 20; background: rgba(31,58,77,.92); overflow: auto; padding: 30px; }
@@ -113,7 +115,7 @@
     .slide.dark .kick { color: var(--mint); }
 
     /* a phone: the slides flow down the page at full width, still one at a time */
-    @media (max-width: 760px) {
+    @media screen and (max-width: 760px) {
         body { font-size: 17px; }
         .stage { padding: 10px 8px 90px; }
         .frame { width: 100% !important; height: auto !important; }
@@ -138,15 +140,18 @@
 
     /* print: one slide per page, the PDF */
     @page { size: 13.333in 7.5in; margin: 0; }
+    /* Adam, 2026-11-21: "a presentation grade pdf export of the whole deck. it needs to be borderless and frames exactly as we see it in the html review" */
     @media print {
+        * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         body { background: #fff; }
         body > :not(.stage):not(svg) { display: none !important; }
         .slide { height: 720px !important; overflow: hidden; }
         .stage { padding: 0; display: block; }
         .frame { width: auto !important; height: auto !important; }
         .slide { display: flex !important; flex-direction: column; position: relative; transform: none !important; border-radius: 0; box-shadow: none; page-break-after: always; break-after: page; }
-        .foot .dots, .foot .nb, .foot .all { display: none; }
         .overview { display: none !important; }
+        .foot .dl { display: none !important; }
+        .slide:last-of-type { page-break-after: auto; break-after: auto; }
     }
 </style>
 <meta name="robots" content="noindex, nofollow">
@@ -204,7 +209,7 @@
         <svg class="sym" viewBox="0 0 360 100" style="width:420px;margin-bottom:34px"><use href="#lockup"/></svg>
         <h1>Check in. Reset in two minutes.<br>Back to learning.</h1>
         <p class="lead" style="margin-top:22px;opacity:.9">An OT-designed classroom self-regulation program and app for elementary school: a quick check-in, a 2-minute reset led by Reggie, and a second check-in, at the moments of the day when classes struggle most.</p>
-        <p style="margin-top:26px;font-size:24px"><b>Jordan</b>, founder of RegulateED</p>
+        <p style="margin-top:26px;font-size:24px"><b>Jordan Saciuk</b>, Founder of RegulateED</p>
         <p class="small" style="opacity:.7">Draft 2 · November 2026 · every number in this deck is invented sample data</p>
     </div>
 </section>
@@ -425,7 +430,7 @@
         <div class="cols c3" style="margin-top:18px">
             <div class="box mint"><div class="big" style="color:var(--slate)">2 to 5</div><p style="margin:0">minutes for a reset. The check-in and the teacher's read are quick taps beside it.</p></div>
             <div class="box"><h3>Every Monday</h3><p class="small">The order of suggested activities updates from the class's own check-ins: what works for this class comes first.</p></div>
-            <div class="box"><h3>Training</h3><p class="small">A short video, a read-aloud script for every card, and a live session with Jordan before the pilot.</p></div>
+            <div class="box"><h3>Training</h3><p class="small">A short video, a read-aloud script for every card, and a live session with Jordan Saciuk, Founder, before the pilot.</p></div>
         </div>
         <p class="note">Behind it: teachers can run a self-regulation program with training and light monitoring (Cunha et al 2023) <span class="grade eme">emerging</span>. Teachers say time and paperwork are what sink a classroom sensory schedule (Mills and Chapparo 2018) <span class="grade eme">emerging</span>.</p>
     </div>
@@ -530,7 +535,7 @@
             <div class="box"><h3>Its honest limits</h3>
                 <p class="small">Each class has its own teacher, which is part of any difference, and five pairs is small. So this is a pilot comparison that shows whether a larger study is worth running, not proof that RegulateED works.</p></div>
         </div>
-        <div class="box mint" style="margin-top:16px"><p class="small" style="margin:0"><b>Before it starts:</b> approvals, the privacy papers, OTs and teachers rate the activity material, music rights cleared. <b>Then:</b> Jordan's analysis of the outcomes, and more schools. Design standards: the What Works Clearinghouse handbook and the CONSORT pilot extension <span class="grade str">strong</span></p></div>
+        <div class="box mint" style="margin-top:16px"><p class="small" style="margin:0"><b>Before it starts:</b> approvals, the privacy papers, OTs and teachers rate the activity material, music rights cleared. <b>Then:</b> Jordan Saciuk, Founder, analyzes the outcomes, and more schools. Design standards: the What Works Clearinghouse handbook and the CONSORT pilot extension <span class="grade str">strong</span></p></div>
     </div>
 </section>
 
@@ -540,7 +545,7 @@
         <svg class="sym" viewBox="0 0 100 100" style="width:120px;margin-bottom:20px"><use href="#reggie"/></svg>
         <h1>Thank you.</h1>
         <p class="lead" style="margin-top:20px;opacity:.9">I would value your view as an OT: is the science sound, and is it realistic for a teacher to run?</p>
-        <p style="margin-top:22px;font-size:24px"><b>Jordan</b>, founder of RegulateED · regulateed.com</p>
+        <p style="margin-top:22px;font-size:24px"><b>Jordan Saciuk</b>, Founder of RegulateED · regulateed.com</p>
     </div>
 </section>
 
@@ -608,6 +613,7 @@
             <span class="count">${i + 1} / ${N}</span>
             <button class="nb" data-go="${i + 2}" ${i === N - 1 ? 'disabled' : ''} aria-label="Next slide">›</button>
             <button class="all" data-all>All slides</button>
+            <a class="dl" href="pitch-deck.pdf" download="RegulateED pitch deck draft 2.pdf">Download PDF</a>
             <div class="dots">${dots}</div>
             <span class="tag">Draft 2 · sample data invented</span>
         </nav>`);
